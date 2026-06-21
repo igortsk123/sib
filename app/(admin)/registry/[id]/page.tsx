@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { notFound, redirect } from "next/navigation"
-import { AlertTriangle, ChevronLeft, FileText, Mail, Paperclip } from "lucide-react"
+import { AlertTriangle, ChevronLeft, FileText, Paperclip } from "lucide-react"
 
 import { getCurrentUser } from "@/lib/server/auth/session"
 import { getLetter } from "@/lib/server/registry/queries"
@@ -75,42 +75,64 @@ export default async function LetterCardPage({ params }: { params: Promise<{ id:
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Источник</CardTitle>
+            <CardTitle className="text-base">О записи</CardTitle>
           </CardHeader>
-          <CardContent className="flex flex-col gap-3">
-            <p className="text-xs text-muted-foreground">
-              Оригинал письма и вложения хранятся на сервере. Можно открыть для сверки.
-            </p>
-            {data.emailId && (
-              <div className="flex flex-wrap gap-2">
-                <Button asChild variant="outline" className="justify-start gap-2">
-                  <a href={`/api/original/email/${data.emailId}`} target="_blank" rel="noreferrer">
-                    <Mail className="size-4" /> Открыть письмо (просмотр)
-                  </a>
-                </Button>
-                <Button asChild variant="ghost" size="sm" className="gap-2 text-muted-foreground">
-                  <a href={`/api/original/email/${data.emailId}?raw=1`}>Скачать .eml</a>
-                </Button>
-              </div>
-            )}
-            {data.attachments.map((a) => (
-              <Button key={a.id} asChild variant="outline" className="justify-start gap-2">
-                <a href={`/api/original/attachment/${a.id}`} target="_blank" rel="noreferrer">
-                  {a.ext === "pdf" ? <FileText className="size-4" /> : <Paperclip className="size-4" />}
-                  {a.filename ?? `Вложение .${a.ext}`}
-                </a>
-              </Button>
-            ))}
-            {data.attachments.length === 0 && (
-              <p className="text-sm text-muted-foreground">Вложений нет — данные в теле письма.</p>
-            )}
-            <div className="mt-2 border-t border-border pt-2 text-xs text-muted-foreground">
-              Ящик: {data.mailbox ?? "—"} · Получено: {data.receivedAt ? new Date(data.receivedAt).toLocaleString("ru") : "—"}
-              {l.reviewStatus === "auto" && " · авто-распознавание (не проверено)"}
-            </div>
+          <CardContent className="grid grid-cols-2 gap-4">
+            <Field label="Страховая" value={data.insurer} />
+            <Field label="Источник" value={SOURCE_LABELS[l.source ?? ""] ?? l.source} />
+            <Field label="Получено" value={data.sourceEmails[0]?.receivedAt ? new Date(data.sourceEmails[0].receivedAt).toLocaleString("ru") : "—"} />
+            <Field label="Метод" value={l.method === "deterministic" ? "Из таблицы" : l.method === "llm_vision" ? "LLM (скан)" : l.method === "llm" ? "LLM" : "—"} />
+            <Field label="Писем-источников" value={String(data.sourceEmails.length)} />
+            <Field label="Вложений" value={String(data.attachments.length)} />
           </CardContent>
         </Card>
       </div>
+
+      {/* Единая сверка: все источники записи подряд (письма + вложения) */}
+      <Card className="mt-4">
+        <CardHeader>
+          <CardTitle className="text-base">Источники для сверки</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-6">
+          {data.sourceEmails.map((e, i) => (
+            <div key={e.id} className="flex flex-col gap-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="text-sm font-medium">
+                  {e.docType === "archive_password" ? "🔑 Письмо с паролем" : i === 0 ? "✉ Письмо страховой" : "✉ Сопутствующее письмо"}
+                </span>
+                <Button asChild variant="ghost" size="sm" className="gap-2 text-muted-foreground">
+                  <a href={`/api/original/email/${e.id}?raw=1`}>Скачать .eml</a>
+                </Button>
+              </div>
+              <iframe
+                src={`/api/original/email/${e.id}`}
+                className="h-96 w-full rounded-md border border-border bg-white"
+                title="Письмо"
+              />
+            </div>
+          ))}
+          {data.attachments.map((a) => (
+            <div key={a.id} className="flex flex-col gap-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="inline-flex items-center gap-2 text-sm font-medium">
+                  {a.ext === "pdf" ? <FileText className="size-4" /> : <Paperclip className="size-4" />}
+                  {a.filename ?? `Вложение .${a.ext}`}
+                </span>
+                <Button asChild variant="ghost" size="sm" className="gap-2 text-muted-foreground">
+                  <a href={`/api/original/attachment/${a.id}`} target="_blank" rel="noreferrer">Открыть в новой вкладке</a>
+                </Button>
+              </div>
+              {a.ext === "pdf" && (
+                <iframe
+                  src={`/api/original/attachment/${a.id}`}
+                  className="h-[600px] w-full rounded-md border border-border"
+                  title={a.filename ?? "PDF"}
+                />
+              )}
+            </div>
+          ))}
+        </CardContent>
+      </Card>
     </>
   )
 }

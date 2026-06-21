@@ -15,6 +15,13 @@
       "when": 1782049497044,
       "tag": "0001_cloudy_doctor_octopus",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1782054359311,
+      "tag": "0002_dusty_franklin_storm",
+      "breakpoints": true
     }
   ]
 }

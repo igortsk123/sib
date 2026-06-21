@@ -1,5 +1,5 @@
 import "server-only"
-import { and, desc, eq, ilike, or, sql } from "drizzle-orm"
+import { and, desc, eq, ilike, inArray, or, sql } from "drizzle-orm"
 
 import { db } from "@/lib/db"
 import { attachment, emailMessage, guaranteeLetter, insuranceCompany } from "@/lib/db/schema"
@@ -56,23 +56,31 @@ export async function countLetters() {
 
 export async function getLetter(id: string) {
   const rows = await db()
-    .select({
-      letter: guaranteeLetter,
-      insurer: insuranceCompany.name,
-      emailId: emailMessage.id,
-      mailbox: emailMessage.mailbox,
-      receivedAt: emailMessage.receivedAt,
-      rawStoragePath: emailMessage.rawStoragePath,
-    })
+    .select({ letter: guaranteeLetter, insurer: insuranceCompany.name })
     .from(guaranteeLetter)
     .leftJoin(insuranceCompany, eq(insuranceCompany.id, guaranteeLetter.insuranceCompanyId))
-    .leftJoin(emailMessage, eq(emailMessage.id, guaranteeLetter.emailMessageId))
     .where(eq(guaranteeLetter.id, id))
     .limit(1)
   const row = rows[0]
   if (!row) return null
-  const atts = row.emailId
-    ? await db().select().from(attachment).where(eq(attachment.emailMessageId, row.emailId))
-    : []
-  return { ...row, attachments: atts }
+
+  // Источники: все письма записи (письмо ГП + связанные письма-пароли).
+  const srcIds = row.letter.sourceEmailIds?.length
+    ? row.letter.sourceEmailIds
+    : [row.letter.emailMessageId]
+  const emails = await db()
+    .select({
+      id: emailMessage.id,
+      mailbox: emailMessage.mailbox,
+      receivedAt: emailMessage.receivedAt,
+      docType: emailMessage.docType,
+    })
+    .from(emailMessage)
+    .where(inArray(emailMessage.id, srcIds))
+  // главное письмо — первым, письма-пароли — после.
+  const sourceEmails = emails.sort((a, b) =>
+    a.id === row.letter.emailMessageId ? -1 : b.id === row.letter.emailMessageId ? 1 : 0,
+  )
+  const atts = await db().select().from(attachment).where(inArray(attachment.emailMessageId, srcIds))
+  return { ...row, sourceEmails, attachments: atts }
 }

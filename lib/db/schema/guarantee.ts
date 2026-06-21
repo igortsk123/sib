@@ -1,4 +1,5 @@
 import { boolean, date, index, integer, jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core"
+// (sourceEmailIds — список id всех писем-источников записи: письмо + связанные письма-пароли)
 
 import { attachment } from "./attachment"
 import { emailMessage } from "./email"
@@ -19,6 +20,8 @@ export const guaranteeLetter = pgTable(
     emailMessageId: uuid("email_message_id")
       .notNull()
       .references(() => emailMessage.id, { onDelete: "cascade" }),
+    // Все письма-источники (письмо ГП + связанные письма-пароли) — для единой ссылки сверки.
+    sourceEmailIds: uuid("source_email_ids").array().notNull().default([]),
     attachmentId: uuid("attachment_id").references(() => attachment.id, { onDelete: "set null" }),
     insuranceCompanyId: uuid("insurance_company_id").references(() => insuranceCompany.id),
     rowIndex: integer("row_index"), // строка Excel-реестра (если из реестра)

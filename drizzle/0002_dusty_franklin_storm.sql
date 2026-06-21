@@ -1,0 +1,1 @@
+ALTER TABLE "guarantee_letter" ADD COLUMN "source_email_ids" uuid[] DEFAULT '{}' NOT NULL;
