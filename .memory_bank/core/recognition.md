@@ -44,4 +44,7 @@ Regex + правила по страховой + словари/справочн
 только на извлечение полей. Эмпирика корпуса (13 страховых → домены, форматы, структура) — `domain/insurer-recognition.md`.
 Карта срезов — `plans/recognition-roadmap.md`.
 
-**Tier 2:** `domain/product-spec.md` §5/§11/§18; **`domain/insurer-recognition.md`** (реальный корпус, реестр сигналов).
+📐 **Чёткий алгоритм (письмо→домен→тип→метод)** — `domain/recognition-architecture.md` (авторитетный конвейер).
+
+**Tier 2:** `domain/product-spec.md` §5/§11/§18; **`domain/recognition-architecture.md`** (алгоритм);
+`domain/insurer-recognition.md` (эмпирика корпуса, реестр сигналов).
