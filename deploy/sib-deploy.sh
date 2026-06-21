@@ -8,10 +8,14 @@ exec 9>/var/lock/sib-deploy.lock
 flock -n 9 || { echo "deploy already running, skip"; exit 0; }
 
 REPO=/opt/sib
+STATE=/opt/sib-deployed.commit   # последний УСПЕШНО задеплоенный коммит (не git HEAD!)
 cd "$REPO"
 git fetch --quiet origin main
-LOCAL=$(git rev-parse HEAD); REMOTE=$(git rev-parse origin/main)
-if [ "$LOCAL" = "$REMOTE" ] && [ "${1:-}" != "--force" ]; then exit 0; fi
+REMOTE=$(git rev-parse origin/main)
+DEPLOYED=$(cat "$STATE" 2>/dev/null || echo none)
+# Сверяем с реально задеплоенным коммитом, а НЕ с git HEAD: иначе провал сборки
+# (git reset уже уехал на новый HEAD) навсегда стопорит авто-деплой до следующего пуша.
+if [ "$REMOTE" = "$DEPLOYED" ] && [ "${1:-}" != "--force" ]; then exit 0; fi
 SHORT=$(git rev-parse --short origin/main)
 echo "[$(date -Is)] deploying $REMOTE"
 git reset --hard origin/main
@@ -50,6 +54,9 @@ if [ "$ok" != "1" ]; then
   run_fe sib:latest
   exit 1
 fi
+
+# Успех — фиксируем задеплоенный коммит (только теперь рано-выход сработает для него).
+echo "$REMOTE" > "$STATE"
 
 # Очистка, чтобы диск не разрастался. БЕЗОПАСНО для общего сервера:
 #  - image prune -f (БЕЗ -a): только висячие/untagged слои, чужие образы не трогает;

@@ -5,7 +5,12 @@ WORKDIR /app
 
 FROM base AS deps
 COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --no-frozen-lockfile
+# Ретраи на транзиентные сетевые сбои реестра (иначе деплой падает на сетевом блипе).
+RUN pnpm config set fetch-retries 5 \
+ && pnpm config set fetch-retry-mintimeout 5000 \
+ && pnpm config set fetch-retry-maxtimeout 120000 \
+ && pnpm config set network-concurrency 4 \
+ && pnpm install --no-frozen-lockfile
 
 FROM base AS build
 COPY --from=deps /app/node_modules ./node_modules
