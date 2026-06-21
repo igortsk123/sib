@@ -82,11 +82,16 @@ export default async function LetterCardPage({ params }: { params: Promise<{ id:
               Оригинал письма и вложения хранятся на сервере. Можно открыть для сверки.
             </p>
             {data.emailId && (
-              <Button asChild variant="outline" className="justify-start gap-2">
-                <a href={`/api/original/email/${data.emailId}`} target="_blank" rel="noreferrer">
-                  <Mail className="size-4" /> Открыть исходное письмо (.eml)
-                </a>
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <Button asChild variant="outline" className="justify-start gap-2">
+                  <a href={`/api/original/email/${data.emailId}`} target="_blank" rel="noreferrer">
+                    <Mail className="size-4" /> Открыть письмо (просмотр)
+                  </a>
+                </Button>
+                <Button asChild variant="ghost" size="sm" className="gap-2 text-muted-foreground">
+                  <a href={`/api/original/email/${data.emailId}?raw=1`}>Скачать .eml</a>
+                </Button>
+              </div>
             )}
             {data.attachments.map((a) => (
               <Button key={a.id} asChild variant="outline" className="justify-start gap-2">
