@@ -70,3 +70,7 @@ export const userRoleEnum = pgEnum("user_role", [
 ])
 
 export const userStatusEnum = pgEnum("user_status", ["active", "blocked"])
+
+// Статус организации (клиники) и участия сотрудника в клинике.
+export const orgStatusEnum = pgEnum("org_status", ["active", "blocked"])
+export const membershipStatusEnum = pgEnum("membership_status", ["active", "invited", "blocked"])

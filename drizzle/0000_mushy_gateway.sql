@@ -1,11 +1,73 @@
 CREATE TYPE "public"."approval_status" AS ENUM('approved', 'denied', 'partial', 'need_info', 'need_approval', 'unknown');--> statement-breakpoint
 CREATE TYPE "public"."doc_type" AS ENUM('guarantee', 'denial', 'info_request', 'archive_password', 'service', 'other');--> statement-breakpoint
 CREATE TYPE "public"."email_status" AS ENUM('received', 'parsing', 'parsed', 'manual_review', 'error', 'irrelevant');--> statement-breakpoint
+CREATE TYPE "public"."membership_status" AS ENUM('active', 'invited', 'blocked');--> statement-breakpoint
+CREATE TYPE "public"."org_status" AS ENUM('active', 'blocked');--> statement-breakpoint
 CREATE TYPE "public"."queue_reason" AS ENUM('low_confidence', 'missing_patient', 'missing_policy', 'unknown_insurer', 'archive_no_password', 'password_no_archive', 'duplicate', 'conflict', 'multi_patient', 'extract_error', 'other');--> statement-breakpoint
 CREATE TYPE "public"."queue_status" AS ENUM('open', 'in_progress', 'resolved');--> statement-breakpoint
 CREATE TYPE "public"."review_status" AS ENUM('auto', 'confirmed', 'edited', 'rejected');--> statement-breakpoint
 CREATE TYPE "public"."user_role" AS ENUM('owner', 'dms', 'doctor', 'registry', 'registry_senior');--> statement-breakpoint
 CREATE TYPE "public"."user_status" AS ENUM('active', 'blocked');--> statement-breakpoint
+CREATE TABLE "organization" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"name" text NOT NULL,
+	"status" "org_status" DEFAULT 'active' NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "app_user" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"phone" text NOT NULL,
+	"name" text,
+	"email" text,
+	"telegram_user_id" text,
+	"is_platform_admin" boolean DEFAULT false NOT NULL,
+	"password_hash" text,
+	"status" "user_status" DEFAULT 'active' NOT NULL,
+	"last_login_at" timestamp with time zone,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "app_user_phone_unique" UNIQUE("phone")
+);
+--> statement-breakpoint
+CREATE TABLE "membership" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"user_id" uuid NOT NULL,
+	"organization_id" uuid NOT NULL,
+	"role" "user_role" NOT NULL,
+	"status" "membership_status" DEFAULT 'active' NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "membership_user_org" UNIQUE("user_id","organization_id")
+);
+--> statement-breakpoint
+CREATE TABLE "login_attempt" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"phone" text NOT NULL,
+	"code" text NOT NULL,
+	"token" text NOT NULL,
+	"chat_id" text,
+	"verified" boolean DEFAULT false NOT NULL,
+	"attempts" integer DEFAULT 0 NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"expires_at" timestamp with time zone NOT NULL,
+	CONSTRAINT "login_attempt_token_unique" UNIQUE("token")
+);
+--> statement-breakpoint
+CREATE TABLE "session" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"user_id" uuid NOT NULL,
+	"token" text NOT NULL,
+	"expires_at" timestamp with time zone NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "session_token_unique" UNIQUE("token")
+);
+--> statement-breakpoint
+CREATE TABLE "telegram_contact" (
+	"telegram_user_id" text PRIMARY KEY NOT NULL,
+	"phone" text NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE "insurance_company" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"name" text NOT NULL,
@@ -104,18 +166,6 @@ CREATE TABLE "processing_queue" (
 	"resolved_at" timestamp with time zone
 );
 --> statement-breakpoint
-CREATE TABLE "app_user" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"full_name" text,
-	"email" text NOT NULL,
-	"password_hash" text,
-	"role" "user_role" DEFAULT 'dms' NOT NULL,
-	"status" "user_status" DEFAULT 'active' NOT NULL,
-	"last_login_at" timestamp with time zone,
-	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
-	CONSTRAINT "app_user_email_unique" UNIQUE("email")
-);
---> statement-breakpoint
 CREATE TABLE "audit_log" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"user_id" uuid,
@@ -128,12 +178,20 @@ CREATE TABLE "audit_log" (
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
+ALTER TABLE "membership" ADD CONSTRAINT "membership_user_id_app_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."app_user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "membership" ADD CONSTRAINT "membership_organization_id_organization_id_fk" FOREIGN KEY ("organization_id") REFERENCES "public"."organization"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "session" ADD CONSTRAINT "session_user_id_app_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."app_user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "attachment" ADD CONSTRAINT "attachment_email_message_id_email_message_id_fk" FOREIGN KEY ("email_message_id") REFERENCES "public"."email_message"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "guarantee_letter" ADD CONSTRAINT "guarantee_letter_email_message_id_email_message_id_fk" FOREIGN KEY ("email_message_id") REFERENCES "public"."email_message"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "guarantee_letter" ADD CONSTRAINT "guarantee_letter_attachment_id_attachment_id_fk" FOREIGN KEY ("attachment_id") REFERENCES "public"."attachment"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "guarantee_letter" ADD CONSTRAINT "guarantee_letter_insurance_company_id_insurance_company_id_fk" FOREIGN KEY ("insurance_company_id") REFERENCES "public"."insurance_company"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "processing_queue" ADD CONSTRAINT "processing_queue_email_message_id_email_message_id_fk" FOREIGN KEY ("email_message_id") REFERENCES "public"."email_message"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "processing_queue" ADD CONSTRAINT "processing_queue_guarantee_letter_id_guarantee_letter_id_fk" FOREIGN KEY ("guarantee_letter_id") REFERENCES "public"."guarantee_letter"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+CREATE INDEX "org_name_idx" ON "organization" USING btree ("name");--> statement-breakpoint
+CREATE INDEX "user_phone_idx" ON "app_user" USING btree ("phone");--> statement-breakpoint
+CREATE INDEX "membership_org_idx" ON "membership" USING btree ("organization_id");--> statement-breakpoint
+CREATE INDEX "login_attempt_phone_idx" ON "login_attempt" USING btree ("phone");--> statement-breakpoint
+CREATE INDEX "session_user_idx" ON "session" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX "email_mailbox_idx" ON "email_message" USING btree ("mailbox");--> statement-breakpoint
 CREATE INDEX "email_message_id_idx" ON "email_message" USING btree ("message_id");--> statement-breakpoint
 CREATE INDEX "email_status_idx" ON "email_message" USING btree ("status");--> statement-breakpoint
@@ -147,6 +205,5 @@ CREATE INDEX "gl_letter_no_idx" ON "guarantee_letter" USING btree ("letter_numbe
 CREATE INDEX "queue_status_idx" ON "processing_queue" USING btree ("status");--> statement-breakpoint
 CREATE INDEX "queue_reason_idx" ON "processing_queue" USING btree ("reason");--> statement-breakpoint
 CREATE INDEX "queue_corr_idx" ON "processing_queue" USING btree ("correlation_key");--> statement-breakpoint
-CREATE INDEX "user_email_idx" ON "app_user" USING btree ("email");--> statement-breakpoint
 CREATE INDEX "audit_object_idx" ON "audit_log" USING btree ("object_type","object_id");--> statement-breakpoint
 CREATE INDEX "audit_user_idx" ON "audit_log" USING btree ("user_id");

@@ -25,6 +25,21 @@ const schema = z.object({
   INNGEST_EVENT_KEY: z.string().optional(),
   INNGEST_SIGNING_KEY: z.string().optional(),
 
+  // Telegram-вход (порт sup2, бот doconpro_bot). Хостер режет Telegram → прокси TELEGRAM_API_BASE
+  // + long-poll. TELEGRAM_POLLING=0 выключает поллер (локально/сборка).
+  TELEGRAM_BOT_TOKEN: z.string().optional(),
+  TELEGRAM_BOT_USERNAME: z.string().default("doconpro_bot"),
+  TELEGRAM_API_BASE: z.string().url().default("https://tg.claude-access.ru"),
+  TELEGRAM_POLLING: z.enum(["0", "1"]).optional(),
+  APP_URL: z.string().url().default("https://sib.docon.pro"),
+
+  // Bootstrap первого платформенного админа по телефону (при входе получает is_platform_admin).
+  BOOTSTRAP_ADMIN_PHONE: z.string().optional(),
+
+  // ТЕСТ-ВХОД (демо без Telegram): фикс. телефон+код. Убрать перед боевым.
+  TEST_LOGIN_PHONE: z.string().optional(),
+  TEST_LOGIN_CODE: z.string().optional(),
+
   NEXT_PUBLIC_APP_URL: z.string().optional(),
 })
 

@@ -1,0 +1,56 @@
+import { asc } from "drizzle-orm"
+
+import { db } from "@/lib/db"
+import { insuranceCompany } from "@/lib/db/schema"
+import { PageHeader } from "@/components/admin/page-header"
+import { Badge } from "@/components/ui/badge"
+import { Card } from "@/components/ui/card"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+
+export default async function InsurersPage() {
+  const companies = await db()
+    .select()
+    .from(insuranceCompany)
+    .orderBy(asc(insuranceCompany.name))
+
+  return (
+    <>
+      <PageHeader
+        title="Страховые компании"
+        description="Реестр для идентификации писем по домену отправителя. Заполнен по реальному тестовому набору."
+      />
+      <Card className="overflow-hidden p-0">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Страховая</TableHead>
+              <TableHead>Домены отправителей</TableHead>
+              <TableHead>Статус</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {companies.map((c) => (
+              <TableRow key={c.id}>
+                <TableCell className="font-medium">{c.name}</TableCell>
+                <TableCell className="text-muted-foreground">
+                  <div className="flex flex-wrap gap-1">
+                    {c.domains.map((d) => (
+                      <Badge key={d} variant="outline" className="font-mono text-xs">
+                        {d}
+                      </Badge>
+                    ))}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <Badge variant={c.active ? "secondary" : "outline"}>
+                    {c.active ? "активна" : "выключена"}
+                  </Badge>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </Card>
+    </>
+  )
+}
