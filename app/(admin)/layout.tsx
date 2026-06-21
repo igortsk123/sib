@@ -15,7 +15,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const roleLabel = user.isPlatformAdmin
     ? "Платформенный администратор"
     : isOwner
-      ? "Владелец клиники"
+      ? "Администратор клиники"
       : "Сотрудник"
 
   return (

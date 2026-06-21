@@ -2,22 +2,25 @@ import { asc } from "drizzle-orm"
 
 import { db } from "@/lib/db"
 import { insuranceCompany } from "@/lib/db/schema"
+import { getCurrentUser } from "@/lib/server/auth/session"
 import { PageHeader } from "@/components/admin/page-header"
+import { CreateInsurerDialog } from "@/components/admin/create-insurer-dialog"
+import { DomainsEditor } from "@/components/admin/domains-editor"
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
 export default async function InsurersPage() {
-  const companies = await db()
-    .select()
-    .from(insuranceCompany)
-    .orderBy(asc(insuranceCompany.name))
+  const user = await getCurrentUser()
+  const isAdmin = Boolean(user?.isPlatformAdmin)
+  const companies = await db().select().from(insuranceCompany).orderBy(asc(insuranceCompany.name))
 
   return (
     <>
       <PageHeader
         title="Страховые компании"
         description="Реестр для идентификации писем по домену отправителя. Заполнен по реальному тестовому набору."
+        action={isAdmin ? <CreateInsurerDialog /> : undefined}
       />
       <Card className="overflow-hidden p-0">
         <Table>
@@ -31,17 +34,21 @@ export default async function InsurersPage() {
           <TableBody>
             {companies.map((c) => (
               <TableRow key={c.id}>
-                <TableCell className="font-medium">{c.name}</TableCell>
+                <TableCell className="align-top font-medium">{c.name}</TableCell>
                 <TableCell className="text-muted-foreground">
-                  <div className="flex flex-wrap gap-1">
-                    {c.domains.map((d) => (
-                      <Badge key={d} variant="outline" className="font-mono text-xs">
-                        {d}
-                      </Badge>
-                    ))}
-                  </div>
+                  {isAdmin ? (
+                    <DomainsEditor id={c.id} domains={c.domains} />
+                  ) : (
+                    <div className="flex flex-wrap gap-1">
+                      {c.domains.map((d) => (
+                        <Badge key={d} variant="outline" className="font-mono text-xs">
+                          {d}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
                 </TableCell>
-                <TableCell>
+                <TableCell className="align-top">
                   <Badge variant={c.active ? "secondary" : "outline"}>
                     {c.active ? "активна" : "выключена"}
                   </Badge>

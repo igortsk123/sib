@@ -1,6 +1,7 @@
 "use server"
 
 import { randomBytes, randomInt } from "node:crypto"
+import { redirect } from "next/navigation"
 import { and, desc, eq, gt } from "drizzle-orm"
 
 import { db } from "@/lib/db"
@@ -47,6 +48,12 @@ export async function requestCode(phoneRaw: string): Promise<RequestCodeResult> 
     return ok({ token: "test", deepLink: "", sentToBot: false })
   }
 
+  // ЗАКРЫТЫЙ ВХОД (медданные): код выдаём ТОЛЬКО заведённым телефонам (или bootstrap-админу).
+  // Бот отдаёт код лишь по существующей попытке → неизвестным номерам код не уйдёт.
+  if (!(await isProvisioned(phone))) {
+    return err("Этот номер не зарегистрирован. Обратитесь к администратору клиники.")
+  }
+
   const code = String(randomInt(1000, 10000))
   const token = randomBytes(16).toString("hex")
   const expiresAt = new Date(Date.now() + CODE_TTL_MS)
@@ -85,9 +92,17 @@ export async function verifyCode(phoneRaw: string, codeRaw: string): Promise<Ver
   const code = (codeRaw ?? "").trim()
   if (!phone || !code) return err("Введите номер и код")
 
-  // Тест-вход.
+  // Тест-вход (демо): заводит/находит тест-пользователя.
   if (TEST_PHONE && phone === TEST_PHONE && env.TEST_LOGIN_CODE && code === env.TEST_LOGIN_CODE) {
-    const user = await upsertUser(phone)
+    const existing = await db().select().from(appUser).where(eq(appUser.phone, phone)).limit(1)
+    let user = existing[0]
+    if (!user) {
+      const ins = await db()
+        .insert(appUser)
+        .values({ phone, isPlatformAdmin: BOOTSTRAP_PHONE === phone, lastLoginAt: new Date() })
+        .returning()
+      user = ins[0]
+    }
     await createSession(user.id)
     return ok({ isPlatformAdmin: user.isPlatformAdmin })
   }
@@ -107,33 +122,41 @@ export async function verifyCode(phoneRaw: string, codeRaw: string): Promise<Ver
   }
   await db().update(loginAttempt).set({ verified: true }).where(eq(loginAttempt.id, attempt.id))
 
-  const user = await upsertUser(phone, attempt.chatId ?? undefined)
+  const user = await resolveUserForLogin(phone, attempt.chatId ?? undefined)
+  if (!user) return err("Этот номер не зарегистрирован. Обратитесь к администратору клиники.")
   await createSession(user.id)
   log.info("login_ok", { userId: user.id, isPlatformAdmin: user.isPlatformAdmin })
   return ok({ isPlatformAdmin: user.isPlatformAdmin })
 }
 
-// Найти/создать пользователя по телефону. Bootstrap: телефон из BOOTSTRAP_ADMIN_PHONE → платформенный админ.
-async function upsertUser(phone: string, telegramUserId?: string) {
+// Известный ли телефон: bootstrap-админ ИЛИ уже заведён админом (закрытый вход).
+async function isProvisioned(phone: string): Promise<boolean> {
+  if (BOOTSTRAP_PHONE != null && phone === BOOTSTRAP_PHONE) return true
+  const rows = await db().select({ id: appUser.id }).from(appUser).where(eq(appUser.phone, phone)).limit(1)
+  return rows.length > 0
+}
+
+// Вход разрешён ТОЛЬКО заведённым (или bootstrap). Неизвестных НЕ создаём (медданные).
+async function resolveUserForLogin(phone: string, telegramUserId?: string) {
   const existing = await db().select().from(appUser).where(eq(appUser.phone, phone)).limit(1)
-  const makeAdmin = BOOTSTRAP_PHONE != null && phone === BOOTSTRAP_PHONE
-  let user = existing[0]
+  const isBootstrap = BOOTSTRAP_PHONE != null && phone === BOOTSTRAP_PHONE
+  const user = existing[0]
   if (!user) {
-    const inserted = await db()
+    if (!isBootstrap) return null // закрытый вход — неизвестных не впускаем
+    const ins = await db()
       .insert(appUser)
-      .values({ phone, isPlatformAdmin: makeAdmin, telegramUserId, lastLoginAt: new Date() })
+      .values({ phone, isPlatformAdmin: true, telegramUserId, lastLoginAt: new Date() })
       .returning()
-    user = inserted[0]
-  } else {
-    const patch: Partial<typeof appUser.$inferInsert> = { lastLoginAt: new Date() }
-    if (makeAdmin && !user.isPlatformAdmin) patch.isPlatformAdmin = true
-    if (telegramUserId && !user.telegramUserId) patch.telegramUserId = telegramUserId
-    const updated = await db().update(appUser).set(patch).where(eq(appUser.id, user.id)).returning()
-    user = updated[0]
+    return ins[0]
   }
-  return user
+  const patch: Partial<typeof appUser.$inferInsert> = { lastLoginAt: new Date() }
+  if (isBootstrap && !user.isPlatformAdmin) patch.isPlatformAdmin = true
+  if (telegramUserId && !user.telegramUserId) patch.telegramUserId = telegramUserId
+  const upd = await db().update(appUser).set(patch).where(eq(appUser.id, user.id)).returning()
+  return upd[0]
 }
 
 export async function logout() {
   await destroySession()
+  redirect("/login")
 }

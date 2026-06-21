@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation"
 
+import Link from "next/link"
+
 import { requirePlatformAdmin } from "@/lib/server/auth/guards"
 import { listClinics } from "@/lib/server/clinics/queries"
 import { PageHeader } from "@/components/admin/page-header"
@@ -44,7 +46,11 @@ export default async function ClinicsPage() {
             <TableBody>
               {clinics.map((c) => (
                 <TableRow key={c.id}>
-                  <TableCell className="font-medium">{c.name}</TableCell>
+                  <TableCell className="font-medium">
+                    <Link href={`/admin/clinics/${c.id}`} className="text-primary hover:underline">
+                      {c.name}
+                    </Link>
+                  </TableCell>
                   <TableCell>{c.members}</TableCell>
                   <TableCell>
                     <Badge variant={c.status === "active" ? "secondary" : "outline"}>

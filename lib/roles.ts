@@ -2,7 +2,7 @@
 export type ClinicRole = "owner" | "dms" | "doctor" | "registry" | "registry_senior"
 
 export const ROLE_LABELS: Record<ClinicRole, string> = {
-  owner: "Владелец клиники",
+  owner: "Администратор клиники",
   dms: "Специалист ДМС",
   doctor: "Врач",
   registry: "Регистратура",
