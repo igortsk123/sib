@@ -1,6 +1,8 @@
 # sib — агрегатор гарантийных писем ДМС. Продакшн-образ Next.js (сборка на сервере, CI/CD).
 FROM node:20-alpine AS base
-RUN npm install -g pnpm@9
+# Ретраи на транзиентные сетевые сбои npmjs (сеть сервера бывает нестабильна).
+RUN npm install -g pnpm@9 \
+      --fetch-retries=5 --fetch-retry-mintimeout=10000 --fetch-retry-maxtimeout=120000
 WORKDIR /app
 
 FROM base AS deps
