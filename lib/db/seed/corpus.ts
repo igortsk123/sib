@@ -5,7 +5,7 @@ import postgres from "postgres"
 import { eq } from "drizzle-orm"
 
 import * as schema from "@/lib/db/schema"
-import { attachment, emailMessage, guaranteeLetter, insuranceCompany, organization } from "@/lib/db/schema"
+import { attachment, emailMessage, guaranteeLetter, insuranceCompany, organization, parseLog } from "@/lib/db/schema"
 
 // ─────────────────────────────────────────────────────────────────────
 // Сид демо-реестра из корпуса. Структура датасета: { emails, letters }.
@@ -103,6 +103,30 @@ async function main() {
     await db.delete(guaranteeLetter)
     await db.delete(attachment)
     await db.delete(emailMessage)
+
+    // Журнал разбора (parse_log.jsonl рядом с dataset.json) → таблица parse_log для админки.
+    await db.delete(parseLog)
+    try {
+      const logPath = datasetPath.replace(/dataset\.json$/, "parse_log.jsonl")
+      const lines = readFileSync(logPath, "utf-8").split("\n").filter((l) => l.trim())
+      const rows = lines.map((l) => JSON.parse(l) as Record<string, unknown>)
+      if (rows.length) {
+        await db.insert(parseLog).values(
+          rows.map((r) => ({
+            insurer: (r.insurer as string) ?? null,
+            source: (r.source as string) ?? null,
+            method: (r.method as string) ?? null,
+            rowIndex: (r.rowIndex as number) ?? null,
+            missing: (r.missing as string[]) ?? [],
+            detGap: (r.detGap as string[]) ?? [],
+            llmFilled: (r.llmFilled as string[]) ?? [],
+          })),
+        )
+        console.log(`[corpus] parse_log: ${rows.length} записей`)
+      }
+    } catch {
+      console.log("[corpus] parse_log.jsonl не найден — пропуск")
+    }
 
     const emailMap = new Map<string, string>() // dataset emailId → db uuid
     const attMap = new Map<string, string>()

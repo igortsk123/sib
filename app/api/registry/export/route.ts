@@ -33,45 +33,59 @@ export async function GET(req: Request) {
     { header: "Пациент", key: "patient", width: 28 },
     { header: "Дата рождения", key: "birthDate", width: 14 },
     { header: "Страховая", key: "insurer", width: 18 },
-    { header: "Полис", key: "policy", width: 18 },
-    { header: "№ ГП", key: "letterNumber", width: 16 },
+    { header: "Полис", key: "policy", width: 20 },
     { header: "№ договора", key: "contractNumber", width: 22 },
+    { header: "№ ГП", key: "letterNumber", width: 16 },
+    { header: "№ обращения", key: "caseNumber", width: 16 },
     { header: "Тип", key: "docType", width: 18 },
     { header: "Статус", key: "status", width: 14 },
-    { header: "Источник", key: "source", width: 12 },
     { header: "Дата письма", key: "letterDate", width: 14 },
+    { header: "Срок действия письма", key: "validUntil", width: 18 },
     { header: "Период обслуживания", key: "coverage", width: 22 },
-    { header: "Ограничение", key: "restriction", width: 34 },
-    { header: "Требует проверки", key: "review", width: 16 },
-    { header: "Что проверить", key: "reviewNote", width: 26 },
-    { header: "Ссылка для проверки", key: "link", width: 22 },
+    { header: "Ограничение (лимит/условия)", key: "restriction", width: 40 },
+    { header: "Услуги", key: "services", width: 34 },
+    { header: "Источник", key: "source", width: 12 },
+    { header: "Метод распознавания", key: "method", width: 18 },
+    { header: "Карточка (всё в одном месте)", key: "link", width: 26 },
   ]
-  ws.getRow(1).font = { bold: true }
+  const head = ws.getRow(1)
+  head.font = { bold: true, color: { argb: "FFFFFFFF" } }
+  head.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF1F4E79" } }
+  head.alignment = { vertical: "middle" }
+  ws.views = [{ state: "frozen", ySplit: 1 }] // шапка зафиксирована при прокрутке
+  ws.autoFilter = { from: "A1", to: "Q1" } // фильтры по колонкам для анализа
+
+  const METHOD_LABELS: Record<string, string> = {
+    deterministic: "Парсер",
+    "deterministic+llm": "Парсер+LLM",
+    llm: "LLM",
+    llm_vision: "LLM (скан)",
+  }
 
   for (const r of rows) {
+    const services = Array.isArray(r.services)
+      ? (r.services as unknown[]).filter(Boolean).map(String).join(", ")
+      : ""
     const row = ws.addRow({
       patient: r.patient ?? "",
       birthDate: r.birthDate ?? "",
       insurer: r.insurer ?? "",
       policy: r.policy ?? "",
-      letterNumber: r.letterNumber ?? "",
       contractNumber: r.contractNumber ?? "",
+      letterNumber: r.letterNumber ?? "",
+      caseNumber: r.caseNumber ?? "",
       docType: docTypeLabel(r.docType, r.status),
       status: STATUS_LABELS[r.status] ?? r.status,
-      source: SOURCE_LABELS[r.source ?? ""] ?? r.source ?? "",
       letterDate: r.letterDate ?? "",
+      validUntil: r.validUntil ?? "",
       coverage: r.coverageFrom || r.coverageTo ? `${r.coverageFrom ?? "…"} — ${r.coverageTo ?? "…"}` : "",
       restriction: [r.amountLimit, r.conditions].filter(Boolean).join("; "),
-      review: r.needsReview ? "ДА — проверить" : "ок",
-      reviewNote: r.needsReview ? (r.reviewNote ?? "сверить с оригиналом") : "",
-      link: { text: "Открыть оригинал", hyperlink: `${appUrl}/registry/${r.id}` },
+      services,
+      source: SOURCE_LABELS[r.source ?? ""] ?? r.source ?? "",
+      method: METHOD_LABELS[r.method ?? ""] ?? r.method ?? "",
+      link: { text: "Открыть карточку", hyperlink: `${appUrl}/registry/${r.id}` },
     })
-    // подсветить строки на проверку (мягкий жёлтый фон)
-    if (r.needsReview) {
-      row.eachCell((c) => {
-        c.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFFFF4D6" } }
-      })
-    }
+    row.alignment = { vertical: "top", wrapText: true }
     const linkCell = row.getCell("link")
     linkCell.font = { color: { argb: "FF1A56DB" }, underline: true }
   }

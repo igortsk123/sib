@@ -4,6 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
+  Activity,
   Building2,
   FileText,
   LogOut,
@@ -36,17 +37,20 @@ type NavItem = { href: string; label: string; icon: LucideIcon; primary?: boolea
 function navFor(role: NavRole): NavItem[] {
   const insurers: NavItem = { href: "/insurers", label: "Страховые", icon: ShieldCheck }
   const registry: NavItem = { href: "/registry", label: "Реестр ГП", icon: FileText, primary: true }
+  const parselog: NavItem = { href: "/parse-log", label: "Журнал разбора", icon: Activity }
   if (role === "platform")
     return [
       { href: "/admin/clinics", label: "Клиники", icon: Building2, primary: true },
       { ...registry, primary: true },
       { ...insurers, primary: true },
+      parselog,
     ]
   if (role === "owner")
     return [
       { ...registry, primary: true },
       { href: "/staff", label: "Сотрудники", icon: Users, primary: true },
       { ...insurers, primary: true },
+      parselog,
     ]
   return [
     { ...registry, primary: true },
