@@ -46,7 +46,9 @@ type LetterRec = {
 }
 type Dataset = { emails: EmailRec[]; letters: LetterRec[] }
 
-const VALID_STATUS = new Set(["approved", "denied", "partial", "need_info", "need_approval", "unknown"])
+const VALID_STATUS = new Set([
+  "approved", "denied", "detach", "enroll", "partial", "need_info", "need_approval", "unknown",
+])
 
 // ФИО к виду «Фамилия Имя Отчество» (нормализуем только полностью ВЕРХНИЙ регистр).
 function titleCaseFio(s: string | null): string | null {

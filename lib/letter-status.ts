@@ -2,6 +2,8 @@
 export const STATUS_LABELS: Record<string, string> = {
   approved: "Согласовано",
   denied: "Отказ",
+  detach: "Открепить",
+  enroll: "Прикрепить",
   partial: "Частично",
   need_info: "Требуется инфо",
   need_approval: "Треб. согласование",
