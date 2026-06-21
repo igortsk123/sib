@@ -2,8 +2,10 @@ import { readFileSync } from "node:fs"
 import { drizzle } from "drizzle-orm/postgres-js"
 import postgres from "postgres"
 
+import { eq } from "drizzle-orm"
+
 import * as schema from "@/lib/db/schema"
-import { attachment, emailMessage, guaranteeLetter, insuranceCompany } from "@/lib/db/schema"
+import { attachment, emailMessage, guaranteeLetter, insuranceCompany, organization } from "@/lib/db/schema"
 
 // ─────────────────────────────────────────────────────────────────────
 // Сид демо-реестра из корпуса. Структура датасета: { emails, letters }.
@@ -80,6 +82,14 @@ async function main() {
     const insurers = await db.select({ id: insuranceCompany.id, name: insuranceCompany.name }).from(insuranceCompany)
     const insurerByName = new Map(insurers.map((i) => [i.name, i.id]))
 
+    // Привязка корпуса к клинике (домен писем — cl-sib.ru). Найти/создать.
+    const orgName = process.env.CORPUS_ORG_NAME || "Клиника Сибирская"
+    let orgRows = await db.select({ id: organization.id }).from(organization).where(eq(organization.name, orgName)).limit(1)
+    if (!orgRows[0]) {
+      orgRows = await db.insert(organization).values({ name: orgName }).returning({ id: organization.id })
+    }
+    const orgId = orgRows[0].id
+
     await db.delete(guaranteeLetter)
     await db.delete(attachment)
     await db.delete(emailMessage)
@@ -90,6 +100,7 @@ async function main() {
       const [em] = await db
         .insert(emailMessage)
         .values({
+          organizationId: orgId,
           mailbox: e.mailbox,
           receivedAt: e.receivedAt ? new Date(e.receivedAt) : null,
           isForwarded: true,
@@ -127,6 +138,7 @@ async function main() {
         .filter((x): x is string => Boolean(x))
       const firstAtt = (l.attIds ?? []).map((x) => attMap.get(x)).find(Boolean) ?? null
       await db.insert(guaranteeLetter).values({
+        organizationId: orgId,
         emailMessageId: emId,
         sourceEmailIds: sourceIds,
         attachmentId: firstAtt,

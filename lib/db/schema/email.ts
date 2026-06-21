@@ -13,6 +13,7 @@ export const emailMessage = pgTable(
   "email_message",
   {
     id: uuid("id").primaryKey().defaultRandom(),
+    organizationId: uuid("organization_id"), // клиника-владелец (мультитенант-скоуп)
     mailbox: text("mailbox").notNull(), // ящик-получатель (4 в проде)
     messageId: text("message_id"), // RFC Message-ID (дедуп)
     fromAddr: text("from_addr"),
@@ -38,6 +39,7 @@ export const emailMessage = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
+    index("email_org_idx").on(t.organizationId),
     index("email_mailbox_idx").on(t.mailbox),
     index("email_message_id_idx").on(t.messageId),
     index("email_status_idx").on(t.status),

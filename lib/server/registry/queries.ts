@@ -4,10 +4,13 @@ import { and, desc, eq, ilike, inArray, or, sql } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { attachment, emailMessage, guaranteeLetter, insuranceCompany } from "@/lib/db/schema"
 
-export type RegistryFilter = { q?: string; insurerId?: string; status?: string }
+export type RegistryFilter = { q?: string; insurerId?: string; status?: string; orgId?: string | null }
 
 function whereClause(f: RegistryFilter) {
   const conds = []
+  // Скоуп по клинике: реальный id → фильтр; "__none__" → ничего; null → все клиники (админ).
+  if (f.orgId === "__none__") conds.push(sql`false`)
+  else if (f.orgId) conds.push(eq(guaranteeLetter.organizationId, f.orgId))
   if (f.q && f.q.trim()) {
     const like = `%${f.q.trim()}%`
     conds.push(
@@ -49,8 +52,14 @@ export async function searchLetters(f: RegistryFilter, limit = 500) {
     .limit(limit)
 }
 
-export async function countLetters() {
-  const r = await db().select({ n: sql<number>`count(*)::int` }).from(guaranteeLetter)
+export async function countLetters(orgId?: string | null) {
+  const where =
+    orgId === "__none__"
+      ? sql`false`
+      : orgId
+        ? eq(guaranteeLetter.organizationId, orgId)
+        : undefined
+  const r = await db().select({ n: sql<number>`count(*)::int` }).from(guaranteeLetter).where(where)
   return r[0]?.n ?? 0
 }
 

@@ -2,10 +2,12 @@ import Link from "next/link"
 import { redirect } from "next/navigation"
 import { AlertTriangle, Download, Inbox, Search } from "lucide-react"
 
-import { getCurrentUser } from "@/lib/server/auth/session"
+import { resolveRegistryScope } from "@/lib/server/scope"
+import { listClinics } from "@/lib/server/clinics/queries"
 import { countLetters, searchLetters } from "@/lib/server/registry/queries"
 import { STATUS_LABELS, SOURCE_LABELS } from "@/lib/letter-status"
 import { PageHeader } from "@/components/admin/page-header"
+import { ClinicSelector } from "@/components/admin/clinic-selector"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -17,10 +19,12 @@ export default async function RegistryPage({
 }: {
   searchParams: Promise<{ q?: string }>
 }) {
-  if (!(await getCurrentUser())) redirect("/login")
+  const scope = await resolveRegistryScope()
+  if (!scope.user) redirect("/login")
   const { q } = await searchParams
-  const total = await countLetters()
-  const rows = await searchLetters({ q })
+  const total = await countLetters(scope.orgId)
+  const rows = await searchLetters({ q, orgId: scope.orgId })
+  const clinics = scope.isAdmin ? (await listClinics()).map((c) => ({ id: c.id, name: c.name })) : []
 
   return (
     <>
@@ -28,11 +32,14 @@ export default async function RegistryPage({
         title="Реестр гарантийных писем"
         description={`Всего записей: ${total}. Поиск по пациенту, полису, № ГП, страховой.`}
         action={
-          <Button asChild variant="outline" className="gap-2">
-            <a href={`/api/registry/export${q ? `?q=${encodeURIComponent(q)}` : ""}`}>
-              <Download className="size-4" /> Выгрузить в Excel
-            </a>
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            {scope.isAdmin && <ClinicSelector clinics={clinics} current={scope.orgId} />}
+            <Button asChild variant="outline" className="gap-2">
+              <a href={`/api/registry/export${q ? `?q=${encodeURIComponent(q)}` : ""}`}>
+                <Download className="size-4" /> Выгрузить в Excel
+              </a>
+            </Button>
+          </div>
         }
       />
 

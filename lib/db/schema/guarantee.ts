@@ -17,6 +17,7 @@ export const guaranteeLetter = pgTable(
   "guarantee_letter",
   {
     id: uuid("id").primaryKey().defaultRandom(),
+    organizationId: uuid("organization_id"), // клиника-владелец (мультитенант-скоуп реестра)
     emailMessageId: uuid("email_message_id")
       .notNull()
       .references(() => emailMessage.id, { onDelete: "cascade" }),
@@ -58,6 +59,7 @@ export const guaranteeLetter = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
+    index("gl_org_idx").on(t.organizationId),
     index("gl_email_idx").on(t.emailMessageId),
     index("gl_insurer_idx").on(t.insuranceCompanyId),
     index("gl_policy_idx").on(t.policyNumber),

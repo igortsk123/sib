@@ -3,15 +3,17 @@ import ExcelJS from "exceljs"
 import { env } from "@/lib/env"
 import { searchLetters } from "@/lib/server/registry/queries"
 import { requireUser } from "@/lib/server/auth/guards"
+import { resolveRegistryScope } from "@/lib/server/scope"
 import { STATUS_LABELS, SOURCE_LABELS } from "@/lib/letter-status"
 
-// Выгрузка реестра ГП в Excel (бриф §10). Только по сессии (ПДн). Отдельная колонка
-// «Требует проверки» + кликабельная ссылка на карточку для сверки глазами.
+// Выгрузка реестра ГП в Excel (бриф §10). Только по сессии (ПДн), в скоупе клиники.
+// Отдельная колонка «Требует проверки» + кликабельная ссылка на карточку для сверки.
 export async function GET(req: Request) {
   const auth = await requireUser()
   if (!auth.ok) return new Response("Unauthorized", { status: 401 })
+  const scope = await resolveRegistryScope()
   const q = new URL(req.url).searchParams.get("q") ?? undefined
-  const rows = await searchLetters({ q }, 5000)
+  const rows = await searchLetters({ q, orgId: scope.orgId }, 5000)
   const appUrl = env.APP_URL.replace(/\/+$/, "")
 
   const wb = new ExcelJS.Workbook()

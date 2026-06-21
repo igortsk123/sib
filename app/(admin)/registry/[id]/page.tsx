@@ -2,7 +2,7 @@ import Link from "next/link"
 import { notFound, redirect } from "next/navigation"
 import { AlertTriangle, ChevronLeft, FileText, Paperclip } from "lucide-react"
 
-import { getCurrentUser } from "@/lib/server/auth/session"
+import { resolveRegistryScope } from "@/lib/server/scope"
 import { getLetter } from "@/lib/server/registry/queries"
 import { STATUS_LABELS, SOURCE_LABELS } from "@/lib/letter-status"
 import { PageHeader } from "@/components/admin/page-header"
@@ -20,11 +20,15 @@ function Field({ label, value }: { label: string; value: React.ReactNode }) {
 }
 
 export default async function LetterCardPage({ params }: { params: Promise<{ id: string }> }) {
-  if (!(await getCurrentUser())) redirect("/login")
+  const scope = await resolveRegistryScope()
+  if (!scope.user) redirect("/login")
   const { id } = await params
   const data = await getLetter(id)
   if (!data) notFound()
   const l = data.letter
+  // Скоуп: сотрудник клиники / админ с выбранной клиникой видит только свою.
+  if (scope.orgId === "__none__") notFound()
+  if (scope.orgId && l.organizationId !== scope.orgId) notFound()
 
   return (
     <>
