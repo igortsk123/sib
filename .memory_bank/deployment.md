@@ -32,11 +32,17 @@ status: working
   `pnpm db:migrate` (одноразовый контейнер) → swap `sib-frontend` → **smoke `GET /api/health`** →
   при не-200 за ~60с **rollback на sib:prev**. GitHub Actions НЕ используем (таймера достаточно).
 - Гейт сборки красный → старый контейнер не трогаем. Миграции **expand-only** (откат образа безопасен).
+- **Самовосстановление:** идемпотентность по `/opt/sib-deployed.commit` (пишется ТОЛЬКО после успешного
+  smoke), а не по git HEAD. Провал сборки (напр. сетевой сбой) → state-файл не обновлён → след. тик
+  таймера повторяет, пока не соберётся. Сборка устойчива к флапам сети: ретраи `npm`/`pnpm` + **тёплый
+  build-cache** (между деплоями кэш не трогаем — базовый образ/pnpm/пакеты не тянутся заново).
 
 ## Очистка диска (чтобы не разрасталось)
-- После каждого деплоя: `docker image prune -f` (висячие) + `docker builder prune -a -f` (build-cache).
-- Еженедельно (вс 04:20) cron `/usr/local/bin/sib-docker-cleanup.sh` — то же, безопасно для общего
-  сервера (**без `-a` на образах** — чужие проекты не трогаем). Лог `/var/log/sib-docker-cleanup.log`.
+- **После каждого деплоя:** только `docker image prune -f` (висячие образы). Build-cache НЕ трогаем —
+  тёплый кэш = быстрый и устойчивый ребилд.
+- **Еженедельно** (вс 04:20) cron `/usr/local/bin/sib-docker-cleanup.sh`: `image prune -f` +
+  `builder prune -a -f` (глубокая чистка кэша). Безопасно для общего сервера (**без `-a` на образах** —
+  чужие проекты не трогаем). Лог `/var/log/sib-docker-cleanup.log`.
 
 ## Health
 - `GET /api/health` → `{ok, service:"sib", db, commit, uptimeSec}`; 200 если БД доступна, иначе 503.
