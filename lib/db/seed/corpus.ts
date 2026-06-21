@@ -51,7 +51,7 @@ type LetterRec = {
 type Dataset = { emails: EmailRec[]; letters: LetterRec[] }
 
 const VALID_STATUS = new Set([
-  "approved", "denied", "detach", "enroll", "partial", "need_info", "need_approval", "unknown",
+  "approved", "denied", "detach", "enroll", "annul", "partial", "need_info", "need_approval", "unknown",
 ])
 
 // ФИО к виду «Фамилия Имя Отчество» (нормализуем только полностью ВЕРХНИЙ регистр).

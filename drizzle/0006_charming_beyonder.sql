@@ -1,0 +1,1 @@
+ALTER TYPE "public"."approval_status" ADD VALUE 'annul' BEFORE 'partial';

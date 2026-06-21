@@ -4,7 +4,7 @@ import { AlertTriangle, ChevronLeft, FileText, Paperclip } from "lucide-react"
 
 import { resolveRegistryScope } from "@/lib/server/scope"
 import { getLetter } from "@/lib/server/registry/queries"
-import { STATUS_LABELS, SOURCE_LABELS } from "@/lib/letter-status"
+import { STATUS_LABELS, SOURCE_LABELS, docTypeLabel } from "@/lib/letter-status"
 import { PageHeader } from "@/components/admin/page-header"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -67,6 +67,7 @@ export default async function LetterCardPage({ params }: { params: Promise<{ id:
             <Field label="№ обращения" value={l.caseNumber} />
             <Field label="№ ГП" value={l.letterNumber} />
             <Field label="№ договора" value={l.contractNumber} />
+            <Field label="Тип" value={docTypeLabel(l.approvalStatus)} />
             <Field label="Страховая" value={data.insurer} />
             <Field label="Дата письма" value={l.letterDate} />
             <Field

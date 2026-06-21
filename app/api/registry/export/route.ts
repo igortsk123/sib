@@ -4,7 +4,7 @@ import { env } from "@/lib/env"
 import { searchLetters } from "@/lib/server/registry/queries"
 import { requireUser } from "@/lib/server/auth/guards"
 import { resolveRegistryScope } from "@/lib/server/scope"
-import { STATUS_LABELS, SOURCE_LABELS } from "@/lib/letter-status"
+import { STATUS_LABELS, SOURCE_LABELS, docTypeLabel } from "@/lib/letter-status"
 
 // Выгрузка реестра ГП в Excel (бриф §10). Только по сессии (ПДн), в скоупе клиники.
 // Отдельная колонка «Требует проверки» + кликабельная ссылка на карточку для сверки.
@@ -36,6 +36,7 @@ export async function GET(req: Request) {
     { header: "Полис", key: "policy", width: 18 },
     { header: "№ ГП", key: "letterNumber", width: 16 },
     { header: "№ договора", key: "contractNumber", width: 22 },
+    { header: "Тип", key: "docType", width: 18 },
     { header: "Статус", key: "status", width: 14 },
     { header: "Источник", key: "source", width: 12 },
     { header: "Дата письма", key: "letterDate", width: 14 },
@@ -55,6 +56,7 @@ export async function GET(req: Request) {
       policy: r.policy ?? "",
       letterNumber: r.letterNumber ?? "",
       contractNumber: r.contractNumber ?? "",
+      docType: docTypeLabel(r.status),
       status: STATUS_LABELS[r.status] ?? r.status,
       source: SOURCE_LABELS[r.source ?? ""] ?? r.source ?? "",
       letterDate: r.letterDate ?? "",
