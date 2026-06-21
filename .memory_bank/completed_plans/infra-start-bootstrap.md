@@ -1,10 +1,10 @@
 ---
 workstream: infra
 slug: infra-start-bootstrap
-status: in_progress
+status: completed
 created: 2026-06-21
 updated: 2026-06-21
-completed:
+completed: 2026-06-21
 ---
 
 ## Цель
@@ -118,9 +118,27 @@ sib в рантайме НЕ зависит от sup2: своё репо, **св
 
 ## Лог выполнения
 - 2026-06-21 — план создан (draft).
+- 2026-06-21 — деплой: каркас собран, зелёный гейт, push в GitHub, прод поднят, память обновлена → completed.
 
 ## Completion summary
-[Заполняется при completed]
+Выполнено полностью. Стартовая инфраструктура sib развёрнута и **проверена эмпирически**:
+- **Каркас** (тулчейн sup2 + UI WFM): Next 16/React 19/TS строгий/Tailwind 4/shadcn(radix,new-york)/
+  Drizzle/Zod/vitest/exceljs; токены WFM `globals.css` + примитивы ui; ленивый db-клиент; `/api/health`;
+  Dockerfile с гейтом typecheck+test+build. **Локальный гейт зелёный** (typecheck+lint+test+build).
+- **GitHub:** приватный `igortsk123/sib`, deploy-ключ `sib_deploy`/алиас `github-sib`, push в `main`.
+- **Прод** на 193.160.208.41 (изолировано от sup2): `sib-net`, `sib-db`(:5434), `/opt/sib`, `/opt/sib.env`,
+  `sib-deploy.sh` + systemd-таймер (~2 мин), контейнер `sib-frontend`(:3006), nginx `sib.docon.pro` + TLS.
+  **https://sib.docon.pro/api/health = 200**, http→https 301, оба контейнера `restart unless-stopped`.
+- **Авто-очистка диска:** image+builder prune после деплоя + еженедельный cron (безопасно для общего сервера).
+- **Память:** ADR D8 (инфра/CI), D9 (UI-базлайн); обновлены `deployment.md`, `_secrets/ACCESS.md`, `project-state.md`.
+
+**Отклонения от исходного плана (зафиксированы):** (1) GitHub Actions не заводили — авто-деплой только
+через systemd-таймер (проще, без секретов на сервер); (2) UI-базлайн = стандартный shadcn radix из WFM,
+а не base-nova sup2 (D9 — независимость + прямой перенос компонентов); (3) репо создал владелец вручную,
+авторизация — deploy-ключ (без gh/PAT).
 
 ## Follow-up work
 - [ ] Первый прикладной вертикальный срез (IMAP-забор тестового письма → парсинг → запись → реестр).
+- [ ] Бэкап `sib-db` + restore-drill (при первых реальных данных).
+- [ ] Перенести почтовые/OpenAI/Inngest env в `/opt/sib.env` по мере срезов.
+- [ ] Перенести в sib развязанные составные компоненты WFM (filter-bar, data-table-shell, kpi-card…) под админку.
