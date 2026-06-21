@@ -31,12 +31,16 @@ export async function GET(req: Request) {
   const ws = wb.addWorksheet("Реестр ГП")
   ws.columns = [
     { header: "Пациент", key: "patient", width: 28 },
+    { header: "Дата рождения", key: "birthDate", width: 14 },
     { header: "Страховая", key: "insurer", width: 18 },
     { header: "Полис", key: "policy", width: 18 },
     { header: "№ ГП", key: "letterNumber", width: 16 },
+    { header: "№ договора", key: "contractNumber", width: 22 },
     { header: "Статус", key: "status", width: 14 },
     { header: "Источник", key: "source", width: 12 },
     { header: "Дата письма", key: "letterDate", width: 14 },
+    { header: "Период обслуживания", key: "coverage", width: 22 },
+    { header: "Ограничение", key: "restriction", width: 34 },
     { header: "Требует проверки", key: "review", width: 16 },
     { header: "Что проверить", key: "reviewNote", width: 26 },
     { header: "Ссылка для проверки", key: "link", width: 22 },
@@ -46,12 +50,16 @@ export async function GET(req: Request) {
   for (const r of rows) {
     const row = ws.addRow({
       patient: r.patient ?? "",
+      birthDate: r.birthDate ?? "",
       insurer: r.insurer ?? "",
       policy: r.policy ?? "",
       letterNumber: r.letterNumber ?? "",
+      contractNumber: r.contractNumber ?? "",
       status: STATUS_LABELS[r.status] ?? r.status,
       source: SOURCE_LABELS[r.source ?? ""] ?? r.source ?? "",
       letterDate: r.letterDate ?? "",
+      coverage: r.coverageFrom || r.coverageTo ? `${r.coverageFrom ?? "…"} — ${r.coverageTo ?? "…"}` : "",
+      restriction: [r.amountLimit, r.conditions].filter(Boolean).join("; "),
       review: r.needsReview ? "ДА — проверить" : "ок",
       reviewNote: r.needsReview ? (r.reviewNote ?? "сверить с оригиналом") : "",
       link: { text: "Открыть оригинал", hyperlink: `${appUrl}/registry/${r.id}` },

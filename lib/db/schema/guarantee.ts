@@ -36,12 +36,17 @@ export const guaranteeLetter = pgTable(
     // Документ / согласование (бриф §7.2–7.4)
     letterNumber: text("letter_number"), // № гарантийного письма (№ ГП)
     caseNumber: text("case_number"), // № обращения/направления
+    contractNumber: text("contract_number"), // № договора страхования (напр. F514Z/045/7393S/24)
     approvalStatus: approvalStatusEnum("approval_status").notNull().default("unknown"),
     services: jsonb("services").$type<unknown[]>().notNull().default([]),
     letterDate: date("letter_date"),
+    // Период обслуживания/действия полиса «с/по» (Альфа date_from/date_to, ВСК полис с-по).
+    // Иногда задана только дата «по» (открытого начала нет). validUntil — отдельно (валидность ГП).
+    coverageFrom: date("coverage_from"),
+    coverageTo: date("coverage_to"),
     validUntil: date("valid_until"),
-    amountLimit: text("amount_limit"),
-    conditions: text("conditions"),
+    amountLimit: text("amount_limit"), // ограничение-сумма (Астро-Волга «в пределах суммы»)
+    conditions: text("conditions"), // ограничение-условия (Балта «Покрываем… ВАЖНО…», манипуляции)
     insurerComment: text("insurer_comment"),
     clinicComment: text("clinic_comment"),
 

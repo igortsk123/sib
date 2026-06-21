@@ -66,10 +66,16 @@ export default async function LetterCardPage({ params }: { params: Promise<{ id:
             <Field label="Полис" value={l.policyNumber} />
             <Field label="№ обращения" value={l.caseNumber} />
             <Field label="№ ГП" value={l.letterNumber} />
+            <Field label="№ договора" value={l.contractNumber} />
             <Field label="Страховая" value={data.insurer} />
             <Field label="Дата письма" value={l.letterDate} />
+            <Field
+              label="Период обслуживания"
+              value={l.coverageFrom || l.coverageTo ? `${l.coverageFrom ?? "…"} — ${l.coverageTo ?? "…"}` : null}
+            />
             <Field label="Действует до" value={l.validUntil} />
             <Field label="Лимит" value={l.amountLimit} />
+            <Field label="Ограничение" value={l.conditions} />
             <Field
               label="Услуги"
               value={Array.isArray(l.services) && l.services.length ? l.services.filter(Boolean).join(", ") : "—"}
