@@ -54,6 +54,17 @@ function titleCaseFio(s: string | null): string | null {
   return t.toLowerCase().replace(/(^|[\s\-])(\p{L})/gu, (_, sep: string, ch: string) => sep + ch.toUpperCase())
 }
 
+// Дата: принимаем только YYYY-MM-DD; DD.MM.YYYY конвертируем; Excel-серийные/прочее → null
+// (защита от падения seed на «35234.0» из бинарного .xls).
+function safeDate(v: string | null | undefined): string | null {
+  if (!v) return null
+  const s = String(v).trim()
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s
+  const m = /^(\d{2})[.\-/](\d{2})[.\-/](\d{4})$/.exec(s)
+  if (m) return `${m[3]}-${m[2]}-${m[1]}`
+  return null
+}
+
 async function main() {
   const url = process.env.DATABASE_URL
   if (!url) {
@@ -122,13 +133,13 @@ async function main() {
         insuranceCompanyId: insurerByName.get(data.emails.find((e) => e.emailId === l.emailId)?.insurer ?? "") ?? null,
         rowIndex: l.rowIndex,
         patientFullName: titleCaseFio(l.patientFullName),
-        patientBirthDate: l.patientBirthDate ?? null,
+        patientBirthDate: safeDate(l.patientBirthDate),
         policyNumber: l.policyNumber,
         letterNumber: l.letterNumber,
         caseNumber: l.caseNumber ?? null,
         approvalStatus: (VALID_STATUS.has(l.approvalStatus) ? l.approvalStatus : "unknown") as never,
-        letterDate: l.letterDate,
-        validUntil: l.validUntil ?? null,
+        letterDate: safeDate(l.letterDate),
+        validUntil: safeDate(l.validUntil),
         amountLimit: l.amountLimit ?? null,
         services: (l.services ?? []).filter(Boolean),
         source: l.source,
