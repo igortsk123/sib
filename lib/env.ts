@@ -16,10 +16,14 @@ const schema = z.object({
   YANDEX_OAUTH_CLIENT_SECRET: z.string().optional(),
   YANDEX_OAUTH_REFRESH_TOKEN: z.string().optional(),
 
-  // OpenAI (через RU-прокси) — распознавание сложных случаев.
-  OPENAI_BASE_URL: z.string().optional(),
+  // OpenAI (через RU-прокси) — извлечение полей ГП. Прямой запрос из РФ → 403 ⇒ прокси обязателен (ADR D10).
+  OPENAI_BASE_URL: z.string().optional(), // напр. http://188.253.22.90:8089/gpt
   OPENAI_API_KEY: z.string().optional(),
-  OPENAI_MODEL: z.string().optional(),
+  OPENAI_MODEL: z.string().default("gpt-5.4-mini"),
+
+  // Inngest — durable-задачи/ретраи (IMAP, OCR, LLM, распаковка).
+  INNGEST_EVENT_KEY: z.string().optional(),
+  INNGEST_SIGNING_KEY: z.string().optional(),
 
   NEXT_PUBLIC_APP_URL: z.string().optional(),
 })

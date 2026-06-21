@@ -25,3 +25,6 @@ coverage/
 # next types (generated)
 next-env.d.ts
 .vercel
+
+# локальный разбор почты (ПДн — НИКОГДА в git)
+.mail-intake/

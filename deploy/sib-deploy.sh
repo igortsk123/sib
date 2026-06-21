@@ -34,6 +34,10 @@ docker build --build-arg GIT_COMMIT="$SHORT" -t sib:new "$REPO"
 # Миграции (одноразовый контейнер). Провал прерывает по set -e — старый контейнер жив.
 docker run --rm --network sib-net --env-file /opt/sib.env sib:new pnpm db:migrate
 
+# Сид реестра страховых (идемпотентно, нефатально — не роняем деплой при сбое сида).
+docker run --rm --network sib-net --env-file /opt/sib.env sib:new pnpm db:seed \
+  || echo "[$(date -Is)] WARN: db:seed не прошёл (нефатально, повторится на след. деплое)"
+
 # Свап на новый образ
 docker tag sib:new sib:latest
 docker rm -f sib-frontend 2>/dev/null || true
