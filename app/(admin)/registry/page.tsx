@@ -4,7 +4,7 @@ import { AlertTriangle, Download, Inbox, Search } from "lucide-react"
 
 import { resolveRegistryScope } from "@/lib/server/scope"
 import { listClinics } from "@/lib/server/clinics/queries"
-import { countLetters, searchLetters } from "@/lib/server/registry/queries"
+import { countLetters, listInsurerOptions, searchLetters } from "@/lib/server/registry/queries"
 import { STATUS_LABELS, SOURCE_LABELS } from "@/lib/letter-status"
 import { PageHeader } from "@/components/admin/page-header"
 import { ClinicSelector } from "@/components/admin/clinic-selector"
@@ -12,30 +12,47 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+
+const STATUS_OPTIONS = ["approved", "denied", "detach", "enroll"]
+const SOURCE_OPTIONS = ["body", "pdf", "xlsx", "xls", "rtf", "doc", "archive"]
 
 export default async function RegistryPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>
+  searchParams: Promise<{ q?: string; insurer?: string; status?: string; source?: string; from?: string; to?: string }>
 }) {
   const scope = await resolveRegistryScope()
   if (!scope.user) redirect("/login")
-  const { q } = await searchParams
+  const sp = await searchParams
+  const f = {
+    q: sp.q,
+    insurerId: sp.insurer,
+    status: sp.status,
+    source: sp.source,
+    dateFrom: sp.from,
+    dateTo: sp.to,
+    orgId: scope.orgId,
+  }
   const total = await countLetters(scope.orgId)
-  const rows = await searchLetters({ q, orgId: scope.orgId })
+  const rows = await searchLetters(f)
+  const insurers = await listInsurerOptions()
   const clinics = scope.isAdmin ? (await listClinics()).map((c) => ({ id: c.id, name: c.name })) : []
+  const exportQs = new URLSearchParams(
+    Object.fromEntries(Object.entries(sp).filter(([, v]) => v)),
+  ).toString()
 
   return (
     <>
       <PageHeader
         title="Реестр гарантийных писем"
-        description={`Всего записей: ${total}. Поиск по пациенту, полису, № ГП, страховой.`}
+        description={`Найдено: ${rows.length} из ${total}.`}
         action={
           <div className="flex flex-wrap items-center gap-2">
             {scope.isAdmin && <ClinicSelector clinics={clinics} current={scope.orgId} />}
             <Button asChild variant="outline" className="gap-2">
-              <a href={`/api/registry/export${q ? `?q=${encodeURIComponent(q)}` : ""}`}>
+              <a href={`/api/registry/export${exportQs ? `?${exportQs}` : ""}`}>
                 <Download className="size-4" /> Выгрузить в Excel
               </a>
             </Button>
@@ -43,18 +60,52 @@ export default async function RegistryPage({
         }
       />
 
-      <form className="mb-4 flex gap-2" action="/registry" method="get">
-        <div className="relative flex-1">
+      <form className="mb-4 flex flex-col gap-3 rounded-lg border border-border bg-card p-3" action="/registry" method="get">
+        <div className="relative">
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input name="q" defaultValue={q ?? ""} placeholder="ФИО пациента, полис, № ГП, страховая…" className="pl-9" />
+          <Input name="q" defaultValue={sp.q ?? ""} placeholder="Поиск: ФИО пациента, полис, № ГП…" className="pl-9" />
         </div>
-        <Button type="submit">Найти</Button>
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
+          <div className="flex flex-col gap-1">
+            <Label className="text-xs text-muted-foreground">Страховая</Label>
+            <select name="insurer" defaultValue={sp.insurer ?? ""} className="h-9 rounded-md border border-input bg-background px-2 text-sm">
+              <option value="">Все</option>
+              {insurers.map((i) => (<option key={i.id} value={i.id}>{i.name}</option>))}
+            </select>
+          </div>
+          <div className="flex flex-col gap-1">
+            <Label className="text-xs text-muted-foreground">Статус</Label>
+            <select name="status" defaultValue={sp.status ?? ""} className="h-9 rounded-md border border-input bg-background px-2 text-sm">
+              <option value="">Все</option>
+              {STATUS_OPTIONS.map((s) => (<option key={s} value={s}>{STATUS_LABELS[s]}</option>))}
+            </select>
+          </div>
+          <div className="flex flex-col gap-1">
+            <Label className="text-xs text-muted-foreground">Источник</Label>
+            <select name="source" defaultValue={sp.source ?? ""} className="h-9 rounded-md border border-input bg-background px-2 text-sm">
+              <option value="">Все</option>
+              {SOURCE_OPTIONS.map((s) => (<option key={s} value={s}>{SOURCE_LABELS[s] ?? s}</option>))}
+            </select>
+          </div>
+          <div className="flex flex-col gap-1">
+            <Label className="text-xs text-muted-foreground">Дата с</Label>
+            <Input type="date" name="from" defaultValue={sp.from ?? ""} className="h-9" />
+          </div>
+          <div className="flex flex-col gap-1">
+            <Label className="text-xs text-muted-foreground">Дата по</Label>
+            <Input type="date" name="to" defaultValue={sp.to ?? ""} className="h-9" />
+          </div>
+        </div>
+        <div className="flex gap-2">
+          <Button type="submit">Применить</Button>
+          <Button asChild variant="ghost"><Link href="/registry">Сбросить</Link></Button>
+        </div>
       </form>
 
       {rows.length === 0 ? (
         <Card className="flex flex-col items-center gap-3 p-12 text-center">
           <Inbox className="size-10 text-muted-foreground" aria-hidden />
-          <div className="text-sm font-medium">{q ? "Ничего не найдено" : "Реестр пуст"}</div>
+          <div className="text-sm font-medium">{sp.q ? "Ничего не найдено" : "Реестр пуст"}</div>
         </Card>
       ) : (
         <Card className="overflow-x-auto p-0">

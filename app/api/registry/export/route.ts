@@ -12,8 +12,19 @@ export async function GET(req: Request) {
   const auth = await requireUser()
   if (!auth.ok) return new Response("Unauthorized", { status: 401 })
   const scope = await resolveRegistryScope()
-  const q = new URL(req.url).searchParams.get("q") ?? undefined
-  const rows = await searchLetters({ q, orgId: scope.orgId }, 5000)
+  const p = new URL(req.url).searchParams
+  const rows = await searchLetters(
+    {
+      q: p.get("q") ?? undefined,
+      insurerId: p.get("insurer") ?? undefined,
+      status: p.get("status") ?? undefined,
+      source: p.get("source") ?? undefined,
+      dateFrom: p.get("from") ?? undefined,
+      dateTo: p.get("to") ?? undefined,
+      orgId: scope.orgId,
+    },
+    5000,
+  )
   const appUrl = env.APP_URL.replace(/\/+$/, "")
 
   const wb = new ExcelJS.Workbook()
