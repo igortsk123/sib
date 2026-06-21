@@ -12,3 +12,4 @@
 | slug | Название | Завершён |
 |------|----------|----------|
 | [infra-start-bootstrap](infra-start-bootstrap.md) | Старт-инфра: GitHub + CI/CD + прод-контейнер sib.docon.pro | 2026-06-21 |
+| [admin-panel](admin-panel.md) | Админ-панель: Telegram-вход + мультитенантность + адаптив | 2026-06-21 |

@@ -146,3 +146,21 @@ OpenAI уходит необходимый текст письма (внешни
 письме — отвергнуто (LLM захлебнётся в base64/пересылке и наделает ошибок; сначала детерминированно очищаем).
 **Влияет на:** `core/recognition.md`, `domain/insurer-recognition.md`, `core/data-model.md` (InsuranceCompany.domains),
 `plans/recognition-roadmap.md`, `_secrets/ACCESS.md` (OpenAI), `.claude/rules/guardrails.md` (PII в логах LLM).
+
+## [2026-06-21] D11. Вход через Telegram + мультитенантность (порт sup2)
+**Контекст:** владельцу нужна админка для показа результата клинике (IMAP отложен): вход как в sup2 (отдельный
+бот `doconpro_bot`), платформенный админ заводит клиники, владелец клиники — сотрудников.
+**Решение:**
+- **Вход:** телефон → код в Telegram-боте → сессия (cookie `sib_session`, 30 дн). Хостер режет Telegram →
+  **long-poll через прокси** `TELEGRAM_API_BASE` (тот же, что sup2: `tg.claude-access.ru`), старт из
+  `instrumentation.ts`. Таблицы `session/login_attempt/telegram_contact`. Тест-вход (фикс. телефон+код) для демо.
+- **Мультитенантность:** `organization`(клиника) + `membership`(user↔клиника+роль) — паттерн sup2. `app_user`
+  переведён на **телефон** (ключ входа) + `is_platform_admin` (платформенный админ — глобально, вне клиники).
+  Роль в клинике — `membership.role` (owner/dms/doctor/registry/registry_senior). Bootstrap первого
+  платформенного админа по `BOOTSTRAP_ADMIN_PHONE`.
+- **RBAC:** гарды на каждый server action (`requireUser`/`requirePlatformAdmin`/`requireClinicOwner`) — не
+  только на отрисовку (server action = публичный POST).
+- **UI:** адаптивная оболочка (сайдбар+топбар+мобильная нижняя навигация) в стиле WFM на портированных токенах.
+**Почему:** проверенный паттерн sup2; мультитенант через membership гибче, чем org на пользователе.
+**Схема — гипотеза, данных нет:** миграции пересозданы одним файлом, схема sib-db сброшена (без потерь).
+**Влияет на:** `core/roles-and-access.md`, `core/data-model.md`, `_secrets/ACCESS.md` (бот/прокси), `instrumentation.ts`, `plans/admin-panel.md`.
