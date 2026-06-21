@@ -1,0 +1,27 @@
+# secrets / env
+.env
+.env.*
+!.env.example
+.memory_bank/_secrets/
+
+# deps / build
+node_modules/
+.next/
+out/
+dist/
+build/
+coverage/
+*.tsbuildinfo
+
+# logs / tmp
+*.log
+.DS_Store
+
+# local mail/attachment scratch (PII — никогда не коммитим)
+/storage/
+/uploads/
+/tmp-mail/
+
+# next types (generated)
+next-env.d.ts
+.vercel

@@ -1,0 +1,19 @@
+{
+  "//": "ОПЦИОНАЛЬНО. Скопируй блок hooks в .claude/settings.json целевого проекта, чтобы при",
+  "//2": "завершении ответа Claude запускался memory-audit и впрыскивал отчёт о консистентности.",
+  "//3": "Это НЕ авто-сейв контента (его делает агент по memory-discipline), а авто-проверка ссылок,",
+  "//4": "orphan и stale-сводок. Флаг --check не переписывает INDEX, только репортит.",
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node tools/memory-audit.mjs --check ."
+          }
+        ]
+      }
+    ]
+  }
+}

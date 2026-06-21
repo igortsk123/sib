@@ -1,0 +1,322 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  /* ═══════════════════════════════════════════════════════════════════
+     PRIMITIVE COLOR PALETTE (OKLCH)
+     Source: WFM Mobile WfmColors.kt / WFMColors.swift
+     Converted from HEX with perceptually-uniform conversion
+     ═══════════════════════════════════════════════════════════════════ */
+
+  /* Brand (Violet) - Primary brand color #6738DD */
+  --color-brand-0: oklch(0.98 0.015 295);   /* #F8F5FF */
+  --color-brand-100: oklch(0.94 0.045 295); /* #EFE8FF */
+  --color-brand-200: oklch(0.76 0.12 295);  /* #B398F9 */
+  --color-brand-300: oklch(0.65 0.17 295);  /* #9570F2 */
+  --color-brand-400: oklch(0.55 0.21 292);  /* #7C50E9 */
+  --color-brand-500: oklch(0.45 0.24 292);  /* #6738DD - Main brand anchor */
+  --color-brand-600: oklch(0.40 0.22 292);  /* #5627CD */
+  --color-brand-700: oklch(0.35 0.19 292);  /* #471BB8 */
+  --color-brand-800: oklch(0.30 0.17 292);  /* #3B13A0 */
+  --color-brand-900: oklch(0.25 0.14 292);  /* #300E87 */
+
+  /* Neutral (Gray) - Slight violet tint */
+  --color-neutral-0: oklch(1.0 0 0);           /* #FFFFFF */
+  --color-neutral-100: oklch(0.97 0.005 286);  /* #F5F5FC */
+  --color-neutral-200: oklch(0.95 0.008 286);  /* #EEEEF8 */
+  --color-neutral-300: oklch(0.92 0.01 286);   /* #E5E5F1 */
+  --color-neutral-400: oklch(0.89 0.012 286);  /* #DADAE7 */
+  --color-neutral-500: oklch(0.68 0.02 286);   /* #9898AE */
+  --color-neutral-600: oklch(0.60 0.02 286);   /* #808095 */
+  --color-neutral-700: oklch(0.55 0.018 286);  /* #737385 */
+  --color-neutral-800: oklch(0.48 0.015 286);  /* #5E5E6D */
+  --color-neutral-900: oklch(0.32 0.01 286);   /* #373742 */
+
+  /* Red (Destructive) */
+  --color-red-50: oklch(0.97 0.015 15);   /* #FDEDEE */
+  --color-red-100: oklch(0.89 0.05 15);   /* #F8C7CB */
+  --color-red-200: oklch(0.82 0.09 15);   /* #F3A1A7 */
+  --color-red-300: oklch(0.74 0.13 15);   /* #EE7B84 */
+  --color-red-400: oklch(0.64 0.18 18);   /* #E8505B */
+  --color-red-500: oklch(0.58 0.21 20);   /* #E4303D - anchor */
+  --color-red-600: oklch(0.50 0.19 20);   /* #CE1B28 */
+  --color-red-700: oklch(0.43 0.16 20);   /* #A81621 */
+  --color-red-800: oklch(0.36 0.13 20);   /* #821119 */
+  --color-red-900: oklch(0.22 0.07 20);   /* #36070B */
+
+  /* Green (Success) */
+  --color-green-50: oklch(0.96 0.025 145);  /* #EEF7ED */
+  --color-green-100: oklch(0.92 0.055 145); /* #D5ECD2 */
+  --color-green-200: oklch(0.88 0.085 145); /* #BCE0B7 */
+  --color-green-300: oklch(0.84 0.11 145);  /* #A3D49C */
+  --color-green-400: oklch(0.80 0.14 145);  /* #8AC881 */
+  --color-green-500: oklch(0.77 0.155 145); /* #7CC272 - anchor */
+  --color-green-600: oklch(0.70 0.16 145);  /* #59B04C */
+  --color-green-700: oklch(0.62 0.145 145); /* #4B9540 */
+  --color-green-800: oklch(0.54 0.125 145); /* #3D7A35 */
+  --color-green-900: oklch(0.38 0.09 145);  /* #22441D */
+
+  /* Blue (Info) */
+  --color-blue-50: oklch(1.0 0 0);           /* #FFFFFF */
+  --color-blue-100: oklch(0.96 0.025 240);   /* #EAF7FB */
+  --color-blue-200: oklch(0.82 0.08 255);    /* #AAC3FA */
+  --color-blue-300: oklch(0.74 0.12 255);    /* #80A6F8 */
+  --color-blue-400: oklch(0.65 0.16 255);    /* #5588F5 */
+  --color-blue-500: oklch(0.56 0.19 258);    /* #326FF3 - anchor */
+  --color-blue-600: oklch(0.48 0.18 258);    /* #0D51E3 */
+  --color-blue-700: oklch(0.42 0.155 258);   /* #0B42B9 */
+  --color-blue-800: oklch(0.35 0.13 258);    /* #08338F */
+  --color-blue-900: oklch(0.24 0.09 258);    /* #031C50 */
+
+  /* Yellow (Warning) */
+  --color-yellow-50: oklch(0.98 0.04 90);   /* #FFF7E3 */
+  --color-yellow-100: oklch(0.97 0.055 90); /* #FEF5E2 */
+  --color-yellow-200: oklch(0.95 0.09 90);  /* #FFEBC0 */
+  --color-yellow-300: oklch(0.89 0.15 85);  /* #FFD06A */
+  --color-yellow-400: oklch(0.86 0.17 80);  /* #FFC33F */
+  --color-yellow-500: oklch(0.82 0.18 75);  /* #FFB514 - anchor */
+  --color-yellow-600: oklch(0.80 0.18 70);  /* #FEAE00 */
+  --color-yellow-700: oklch(0.55 0.14 55);  /* #A65E01 */
+  --color-yellow-800: oklch(0.48 0.12 50);  /* #934700 */
+  --color-yellow-900: oklch(0.32 0.07 55);  /* #3D2A00 */
+
+  /* Pink (Accent) */
+  --color-pink-50: oklch(0.97 0.02 330);   /* #FAF0FA */
+  --color-pink-100: oklch(0.92 0.055 330); /* #EFD0EF */
+  --color-pink-200: oklch(0.84 0.095 330); /* #E4AFE4 */
+  --color-pink-300: oklch(0.76 0.13 330);  /* #DA8FDA */
+  --color-pink-400: oklch(0.68 0.16 330);  /* #CF6FCF */
+  --color-pink-500: oklch(0.60 0.185 330); /* #C44FC4 - anchor */
+  --color-pink-600: oklch(0.52 0.17 330);  /* #AE3AAE */
+  --color-pink-700: oklch(0.45 0.145 330); /* #8E2F8E */
+  --color-pink-800: oklch(0.38 0.115 330); /* #6E256E */
+  --color-pink-900: oklch(0.24 0.065 330); /* #2E0F2E */
+
+  /* Orange (Accent) */
+  --color-orange-50: oklch(0.97 0.03 55);  /* #FFF3EB */
+  --color-orange-100: oklch(0.92 0.07 55); /* #FFD9C0 */
+  --color-orange-200: oklch(0.87 0.11 55); /* #FFC095 */
+  --color-orange-300: oklch(0.81 0.14 55); /* #FFA66A */
+  --color-orange-400: oklch(0.75 0.17 45); /* #FF8C3F */
+  --color-orange-500: oklch(0.68 0.20 40); /* #FF7314 - anchor */
+  --color-orange-600: oklch(0.54 0.17 40); /* #BE4C00 */
+  --color-orange-700: oklch(0.46 0.14 40); /* #933B00 */
+  --color-orange-800: oklch(0.38 0.11 40); /* #682A00 */
+  --color-orange-900: oklch(0.28 0.08 40); /* #3D1900 */
+
+  /* ═══════════════════════════════════════════════════════════════════
+     SEMANTIC SHADCN TOKENS (Light theme - :root)
+     ═══════════════════════════════════════════════════════════════════ */
+
+  /* Background - subtle gray, not pure white */
+  --color-background: var(--color-neutral-100);
+  --color-foreground: var(--color-neutral-900);
+
+  /* Card - 1 tone lighter than background */
+  --color-card: var(--color-neutral-0);
+  --color-card-foreground: var(--color-neutral-900);
+
+  /* Popover */
+  --color-popover: var(--color-neutral-0);
+  --color-popover-foreground: var(--color-neutral-900);
+
+  /* Primary - Brand violet #6738DD */
+  --color-primary: var(--color-brand-500);
+  --color-primary-foreground: var(--color-neutral-0);
+
+  /* Secondary */
+  --color-secondary: var(--color-neutral-200);
+  --color-secondary-foreground: var(--color-neutral-800);
+
+  /* Muted */
+  --color-muted: var(--color-neutral-200);
+  --color-muted-foreground: var(--color-neutral-600);
+
+  /* Accent */
+  --color-accent: var(--color-brand-100);
+  --color-accent-foreground: var(--color-brand-700);
+
+  /* Destructive */
+  --color-destructive: var(--color-red-500);
+  --color-destructive-foreground: var(--color-neutral-0);
+
+  /* Success */
+  --color-success: var(--color-green-500);
+  --color-success-foreground: var(--color-neutral-0);
+
+  /* Warning */
+  --color-warning: var(--color-yellow-500);
+  --color-warning-foreground: var(--color-yellow-900);
+
+  /* Info */
+  --color-info: var(--color-blue-500);
+  --color-info-foreground: var(--color-neutral-0);
+
+  /* Border / Input / Ring */
+  --color-border: var(--color-neutral-300);
+  --color-input: var(--color-neutral-300);
+  --color-ring: var(--color-brand-500);
+
+  /* ═══════════════════════════════════════════════════════════════════
+     SIDEBAR TOKENS (shadcn Sidebar)
+     ═══════════════════════════════════════════════════════════════════ */
+
+  --color-sidebar: var(--color-neutral-0);
+  --color-sidebar-foreground: var(--color-neutral-800);
+  --color-sidebar-primary: var(--color-brand-500);
+  --color-sidebar-primary-foreground: var(--color-neutral-0);
+  --color-sidebar-accent: var(--color-brand-100);
+  --color-sidebar-accent-foreground: var(--color-brand-700);
+  --color-sidebar-border: var(--color-neutral-200);
+  --color-sidebar-ring: var(--color-brand-500);
+
+  /* ═══════════════════════════════════════════════════════════════════
+     CHART TOKENS (Recharts)
+     ═══════════════════════════════════════════════════════════════════ */
+
+  --color-chart-1: var(--color-brand-500);
+  --color-chart-2: var(--color-blue-500);
+  --color-chart-3: var(--color-green-500);
+  --color-chart-4: var(--color-yellow-500);
+  --color-chart-5: var(--color-pink-500);
+
+  /* ═══════════════════════════════════════════════════════════════════
+     BADGE COLOR SCHEMES (6 palettes)
+     Mobile parity: deterministic mapping workType.id % 6 →
+     [VIOLET, BLUE, YELLOW, PINK, ORANGE, GREEN]
+     ═══════════════════════════════════════════════════════════════════ */
+
+  /* Violet Badge */
+  --color-badge-violet-bg-bright: var(--color-brand-500);
+  --color-badge-violet-bg-light: var(--color-brand-100);
+  --color-badge-violet-text-bright: var(--color-neutral-0);
+  --color-badge-violet-text-light: var(--color-brand-700);
+
+  /* Blue Badge */
+  --color-badge-blue-bg-bright: var(--color-blue-500);
+  --color-badge-blue-bg-light: var(--color-blue-100);
+  --color-badge-blue-text-bright: var(--color-neutral-0);
+  --color-badge-blue-text-light: var(--color-blue-700);
+
+  /* Yellow Badge */
+  --color-badge-yellow-bg-bright: var(--color-yellow-500);
+  --color-badge-yellow-bg-light: var(--color-yellow-100);
+  --color-badge-yellow-text-bright: var(--color-yellow-900);
+  --color-badge-yellow-text-light: var(--color-yellow-700);
+
+  /* Pink Badge */
+  --color-badge-pink-bg-bright: var(--color-pink-500);
+  --color-badge-pink-bg-light: var(--color-pink-100);
+  --color-badge-pink-text-bright: var(--color-neutral-0);
+  --color-badge-pink-text-light: var(--color-pink-700);
+
+  /* Orange Badge */
+  --color-badge-orange-bg-bright: var(--color-orange-500);
+  --color-badge-orange-bg-light: var(--color-orange-100);
+  --color-badge-orange-text-bright: var(--color-neutral-0);
+  --color-badge-orange-text-light: var(--color-orange-700);
+
+  /* Green Badge */
+  --color-badge-green-bg-bright: var(--color-green-500);
+  --color-badge-green-bg-light: var(--color-green-100);
+  --color-badge-green-text-bright: var(--color-neutral-0);
+  --color-badge-green-text-light: var(--color-green-700);
+
+  /* ═══════════════════════════════════════════════════════════════════
+     RADIUS SCALE (Mobile parity: XL = 16px for main cards)
+     ═══════════════════════════════════════════════════════════════════ */
+
+  --radius: 1rem;                       /* 16px - main cards (XL mobile) */
+  --radius-sm: calc(var(--radius) - 12px); /* 4px - input chips */
+  --radius-md: calc(var(--radius) - 8px);  /* 8px - buttons, small cards */
+  --radius-lg: calc(var(--radius) - 4px);  /* 12px - alerts */
+  --radius-xl: var(--radius);              /* 16px - cards */
+
+  /* ═══════════════════════════════════════════════════════════════════
+     TYPOGRAPHY (Inter via next/font/google)
+     ═══════════════════════════════════════════════════════════════════ */
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+}
+
+/* ═════════════════════════════════════════════════════════════════════
+   PERCEIVED-PERF ANIMATIONS — fade-in для контента после скелетонов.
+   Используется через `animate-in fade-in` (300ms ease-out).
+   Минимальный shim вместо tailwindcss-animate: shadcn ui-компоненты
+   уже опираются на класс `animate-in fade-in-0`, плюс мы добавляем
+   нашу собственную утилиту `fade-in` для перехода skeleton → content.
+   prefers-reduced-motion полностью отключает анимацию.
+   ═════════════════════════════════════════════════════════════════════ */
+@layer utilities {
+  .animate-in {
+    animation: wfm-enter 300ms ease-out both;
+  }
+  .fade-in,
+  .fade-in-0 {
+    --tw-enter-opacity: 0;
+  }
+}
+
+@keyframes wfm-enter {
+  from {
+    opacity: var(--tw-enter-opacity, 1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-in {
+    animation: none;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════
+     RESPONSIVE BASE FONT-SIZE — адаптация под размер экрана.
+     На больших мониторах (2K/4K) физический pixel меньше → нужен крупнее
+     базовый шрифт чтобы UI не выглядел crammed. Все text-* / rem токены
+     scale-ятся пропорционально без правки макета.
+     Источник: рекомендации UHD UI design (18-20px на high-DPI).
+     ═══════════════════════════════════════════════════════════════════ */
+  :root {
+    --font-base: 16px;             /* laptops до 1535px */
+  }
+  @media (min-width: 1536px) {
+    :root { --font-base: 17px; }   /* 2xl breakpoint, large desktop */
+  }
+  @media (min-width: 1920px) {
+    :root { --font-base: 18px; }   /* 2K monitors */
+  }
+  @media (min-width: 2560px) {
+    :root { --font-base: 19px; }   /* 2K wide / 4K с 100% scaling */
+  }
+
+  html {
+    font-size: var(--font-base);
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════
+     FONT SCALE — пользовательский переключатель (data-font-scale на <html>).
+     Множитель к --font-base, поэтому работает на любом breakpoint'е.
+     WCAG 2.1 SC 1.4.4 (resize text до 200%).
+     ═══════════════════════════════════════════════════════════════════ */
+  html[data-font-scale="L"] {
+    font-size: calc(var(--font-base) * 1.1);  /* +10% */
+  }
+  html[data-font-scale="XL"] {
+    font-size: calc(var(--font-base) * 1.2);  /* +20% */
+  }
+  html[data-font-scale="XXL"] {
+    font-size: calc(var(--font-base) * 1.3);  /* +30% */
+  }
+}

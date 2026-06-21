@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+# Канонная копия серверного авто-деплоя sib (живёт в /usr/local/bin/sib-deploy.sh на проде,
+# запускается systemd-таймером sib-deploy.timer каждые ~2 мин). В образ НЕ попадает (.dockerignore).
+# Поток: tag prev → docker build (typecheck+test гейт в Dockerfile) → db:migrate → swap →
+#        smoke /api/health → rollback на sib:prev при провале. Изолирован от sup2 (своя сеть/БД/порт).
+set -euo pipefail
+exec 9>/var/lock/sib-deploy.lock
+flock -n 9 || { echo "deploy already running, skip"; exit 0; }
+
+REPO=/opt/sib
+cd "$REPO"
+git fetch --quiet origin main
+LOCAL=$(git rev-parse HEAD); REMOTE=$(git rev-parse origin/main)
+if [ "$LOCAL" = "$REMOTE" ] && [ "${1:-}" != "--force" ]; then exit 0; fi
+SHORT=$(git rev-parse --short origin/main)
+echo "[$(date -Is)] deploying $REMOTE"
+git reset --hard origin/main
+
+run_fe() {
+  docker run -d --name sib-frontend --network sib-net --env-file /opt/sib.env \
+    --restart unless-stopped -p 127.0.0.1:3006:3000 "$1"
+}
+
+# Образ для отката
+docker tag sib:latest sib:prev 2>/dev/null || true
+
+# Сборка (typecheck+test+build внутри Dockerfile — гейт). Падение здесь = старый контейнер не трогаем.
+docker build --build-arg GIT_COMMIT="$SHORT" -t sib:new "$REPO"
+
+# Миграции (одноразовый контейнер). Провал прерывает по set -e — старый контейнер жив.
+docker run --rm --network sib-net --env-file /opt/sib.env sib:new pnpm db:migrate
+
+# Свап на новый образ
+docker tag sib:new sib:latest
+docker rm -f sib-frontend 2>/dev/null || true
+run_fe sib:latest
+
+# Smoke: /api/health должен ответить 200 в течение ~60с
+ok=0
+for i in $(seq 1 20); do
+  code=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:3006/api/health || echo 000)
+  [ "$code" = "200" ] && { ok=1; break; }
+  sleep 3
+done
+
+if [ "$ok" != "1" ]; then
+  echo "[$(date -Is)] SMOKE FAILED ($SHORT) — ROLLBACK to sib:prev"
+  docker rm -f sib-frontend 2>/dev/null || true
+  docker tag sib:prev sib:latest 2>/dev/null || true
+  run_fe sib:latest
+  exit 1
+fi
+
+docker image prune -f >/dev/null 2>&1 || true
+echo "[$(date -Is)] deployed $REMOTE OK (commit $SHORT)"
