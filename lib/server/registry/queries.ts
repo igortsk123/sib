@@ -49,6 +49,7 @@ export async function searchLetters(f: RegistryFilter, limit = 500) {
       policy: guaranteeLetter.policyNumber,
       letterNumber: guaranteeLetter.letterNumber,
       contractNumber: guaranteeLetter.contractNumber,
+      docType: guaranteeLetter.docType,
       status: guaranteeLetter.approvalStatus,
       letterDate: guaranteeLetter.letterDate,
       coverageFrom: guaranteeLetter.coverageFrom,

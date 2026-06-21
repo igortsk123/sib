@@ -56,7 +56,7 @@ export async function GET(req: Request) {
       policy: r.policy ?? "",
       letterNumber: r.letterNumber ?? "",
       contractNumber: r.contractNumber ?? "",
-      docType: docTypeLabel(r.status),
+      docType: docTypeLabel(r.docType, r.status),
       status: STATUS_LABELS[r.status] ?? r.status,
       source: SOURCE_LABELS[r.source ?? ""] ?? r.source ?? "",
       letterDate: r.letterDate ?? "",

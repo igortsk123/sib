@@ -11,9 +11,23 @@ export const STATUS_LABELS: Record<string, string> = {
   unknown: "—",
 }
 
-// «Тип» записи (что это за документ) — выводится из статуса. Определяет смысл даты «до»:
-// гарантийное → дата окончания письма; прикрепление → дата, когда откреплять.
-export function docTypeLabel(status: string | null | undefined): string {
+export const DOC_TYPE_LABELS: Record<string, string> = {
+  guarantee: "Гарантийное письмо",
+  enroll: "Прикрепление",
+  detach: "Открепление",
+  annul: "Аннулирование ГП",
+  referral: "Направление",
+  denial: "Отказ",
+  info_request: "Запрос информации",
+  archive_password: "Пароль к архиву",
+  service: "Служебное",
+  other: "Прочее",
+}
+
+// «Тип» записи (что за документ). Берём сохранённый docType; если его нет — выводим из статуса
+// (прикрепление/открепление/аннулирование, иначе гарантийное письмо). Определяет смысл даты «до».
+export function docTypeLabel(docType: string | null | undefined, status?: string | null): string {
+  if (docType && DOC_TYPE_LABELS[docType]) return DOC_TYPE_LABELS[docType]
   switch (status) {
     case "enroll":
       return "Прикрепление"

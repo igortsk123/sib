@@ -50,6 +50,13 @@
       "when": 1782065072139,
       "tag": "0006_charming_beyonder",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1782065772369,
+      "tag": "0007_first_maddog",
+      "breakpoints": true
     }
   ]
 }
