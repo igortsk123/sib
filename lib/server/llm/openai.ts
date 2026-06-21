@@ -62,8 +62,10 @@ export async function chatComplete(
       body: JSON.stringify({
         model: env.OPENAI_MODEL,
         messages,
-        temperature: opts?.temperature ?? 0.2,
-        ...(opts?.maxTokens ? { max_tokens: opts.maxTokens } : {}),
+        // gpt-5.4-mini не принимает temperature/max_tokens → шлём только если заданы явно;
+        // лимит — через max_completion_tokens.
+        ...(opts?.temperature != null ? { temperature: opts.temperature } : {}),
+        ...(opts?.maxTokens ? { max_completion_tokens: opts.maxTokens } : {}),
         ...(responseFormat ? { response_format: responseFormat } : {}),
       }),
       signal: ctrl.signal,

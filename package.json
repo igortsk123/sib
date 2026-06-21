@@ -12,6 +12,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "tsx lib/db/seed/run.ts",
+    "db:seed:corpus": "tsx lib/db/seed/corpus.ts",
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {

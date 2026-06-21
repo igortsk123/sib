@@ -1,4 +1,4 @@
-import { date, index, integer, jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core"
+import { boolean, date, index, integer, jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core"
 
 import { attachment } from "./attachment"
 import { emailMessage } from "./email"
@@ -43,7 +43,11 @@ export const guaranteeLetter = pgTable(
 
     // Распознавание / проверка
     source: text("source"), // body|pdf|xlsx|xls|rtf|archive
+    method: text("method"), // как извлечено: deterministic|llm|llm_vision
     confidence: jsonb("confidence").$type<Record<string, number>>().notNull().default({}),
+    // Низкая уверенность → человеку: перепроверить перед переносом в систему клиники.
+    needsReview: boolean("needs_review").notNull().default(false),
+    reviewNote: text("review_note"), // причина пометки (какие поля сомнительны)
     reviewStatus: reviewStatusEnum("review_status").notNull().default("auto"),
     reviewedBy: uuid("reviewed_by"),
     reviewedAt: timestamp("reviewed_at", { withTimezone: true }),

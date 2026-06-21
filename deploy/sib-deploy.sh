@@ -22,7 +22,7 @@ git reset --hard origin/main
 
 run_fe() {
   docker run -d --name sib-frontend --network sib-net --env-file /opt/sib.env \
-    --restart unless-stopped -p 127.0.0.1:3006:3000 "$1"
+    --restart unless-stopped -v /opt/sib-storage:/app/storage -p 127.0.0.1:3006:3000 "$1"
 }
 
 # Образ для отката
