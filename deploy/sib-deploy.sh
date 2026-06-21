@@ -51,5 +51,10 @@ if [ "$ok" != "1" ]; then
   exit 1
 fi
 
+# Очистка, чтобы диск не разрастался. БЕЗОПАСНО для общего сервера:
+#  - image prune -f (БЕЗ -a): только висячие/untagged слои, чужие образы не трогает;
+#  - builder prune -a -f: весь build-cache (только кэш, не образы — пересоберётся).
+# Откатный образ sib:prev сохраняется (один), sib:new переиспользует тег при след. деплое.
 docker image prune -f >/dev/null 2>&1 || true
+docker builder prune -a -f >/dev/null 2>&1 || true
 echo "[$(date -Is)] deployed $REMOTE OK (commit $SHORT)"
