@@ -97,6 +97,27 @@ export async function extractGold(templateId: string): Promise<Result<null>> {
   return ok(null)
 }
 
+// Редактировать письмо-образец шаблона (тема + тело).
+export async function updateDocTemplateSample(input: {
+  id: string
+  subject: string
+  text: string
+}): Promise<Result<null>> {
+  const auth = await requirePlatformAdmin()
+  if (!auth.ok) return err(auth.error)
+  await db()
+    .update(docTemplate)
+    .set({
+      sampleSubject: input.subject.trim() || null,
+      sampleText: input.text.trim().slice(0, 20000) || null,
+      updatedAt: new Date(),
+    })
+    .where(eq(docTemplate.id, input.id))
+  const rows = await db().select({ ic: docTemplate.insuranceCompanyId }).from(docTemplate).where(eq(docTemplate.id, input.id)).limit(1)
+  if (rows[0]) revalidatePath(`/insurers/${rows[0].ic}`)
+  return ok(null)
+}
+
 export async function deleteDocTemplate(templateId: string): Promise<Result<null>> {
   const auth = await requirePlatformAdmin()
   if (!auth.ok) return err(auth.error)

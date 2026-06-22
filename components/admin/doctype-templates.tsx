@@ -1,11 +1,11 @@
 "use client"
 
 import { useRef, useState, useTransition } from "react"
-import { AlertTriangle, Plus, Sparkles, Trash2 } from "lucide-react"
+import { Plus, Trash2 } from "lucide-react"
 
 import { DOC_TYPE_LABELS, METHOD_LABELS } from "@/lib/letter-status"
 import { FIELD_HINTS } from "@/lib/review-hints"
-import { addDocTemplate, deleteDocTemplate, extractGold } from "@/lib/server/templates/actions"
+import { addDocTemplate, deleteDocTemplate, updateDocTemplateSample } from "@/lib/server/templates/actions"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -19,9 +19,7 @@ export type TemplateRow = {
   sampleStoragePath: string | null
   sampleFilename: string | null
   sampleSubject: string | null
-  hasText: boolean
-  goldJson: Record<string, unknown> | null
-  drift: number
+  sampleText: string | null
   records: number // записей этого типа (журнал разбора)
   methods: Record<string, number> // чем разобрано (Парсер/Парсер+ИИ/ИИ)
   gaps: Record<string, number> // что добирал ИИ (поля)
@@ -112,7 +110,6 @@ export function DocTypeTemplates({ insurerId, templates }: { insurerId: string; 
 
 function TemplateCard({ t }: { t: TemplateRow }) {
   const [pending, start] = useTransition()
-  const [error, setError] = useState("")
   const st = STATUS[t.status] ?? STATUS.new
 
   return (
@@ -120,38 +117,20 @@ function TemplateCard({ t }: { t: TemplateRow }) {
       <div className="flex flex-wrap items-center gap-2">
         <span className="font-medium">{DOC_TYPE_LABELS[t.docType] ?? t.docType}</span>
         <Badge variant={st.variant}>{st.label}</Badge>
-        {t.drift > 0 && (
-          <Badge variant="outline" className="gap-1 text-warning">
-            <AlertTriangle className="size-3" /> {t.drift} на разбор
-          </Badge>
-        )}
         {t.sampleStoragePath && (
           <a href={`/api/original/template/${t.id}`} className="text-xs text-primary underline" target="_blank" rel="noreferrer">
             файл{t.sampleFilename ? `: ${t.sampleFilename}` : ""}
           </a>
         )}
-        {t.hasText && <span className="text-xs text-muted-foreground">есть текст письма</span>}
-        <div className="ml-auto flex gap-2">
-          <Button
-            size="sm" variant="outline" className="gap-1" disabled={pending}
-            onClick={() => { setError(""); start(async () => { const r = await extractGold(t.id); if (!r.ok) setError(r.error) }) }}
-          >
-            <Sparkles className="size-3.5" /> {pending ? "…" : "Эталон LLM"}
-          </Button>
-          <Button
-            size="sm" variant="ghost" disabled={pending}
-            onClick={() => { if (confirm("Удалить тип?")) start(async () => { await deleteDocTemplate(t.id) }) }}
-          >
-            <Trash2 className="size-3.5" />
-          </Button>
-        </div>
+        <Button
+          size="sm" variant="ghost" className="ml-auto" disabled={pending}
+          onClick={() => { if (confirm("Удалить тип?")) start(async () => { await deleteDocTemplate(t.id) }) }}
+          title="Удалить тип"
+        >
+          <Trash2 className="size-3.5" />
+        </Button>
       </div>
-      {t.sampleSubject && (
-        <p className="mt-2 text-xs text-muted-foreground">
-          <span className="font-medium">Тема образца:</span> {t.sampleSubject}
-        </p>
-      )}
-      {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
+      <SampleEditor id={t.id} subject={t.sampleSubject} text={t.sampleText} />
 
       {/* Журнал разбора этого шаблона (в контексте типа документа) */}
       <div className="mt-3 rounded-md border border-border bg-muted/40 p-3 text-xs">
@@ -179,12 +158,50 @@ function TemplateCard({ t }: { t: TemplateRow }) {
           <div className="mt-1 text-muted-foreground">Пока нет разобранных записей этого типа.</div>
         )}
       </div>
-
-      {t.goldJson && (
-        <pre className="mt-3 max-h-64 overflow-auto rounded-md bg-muted p-3 text-xs">
-          {JSON.stringify(t.goldJson, null, 2)}
-        </pre>
-      )}
     </Card>
+  )
+}
+
+// Редактор письма-образца шаблона: тема + тело, с сохранением.
+function SampleEditor({ id, subject, text }: { id: string; subject: string | null; text: string | null }) {
+  const [subj, setSubj] = useState(subject ?? "")
+  const [body, setBody] = useState(text ?? "")
+  const [pending, start] = useTransition()
+  const [saved, setSaved] = useState(false)
+  const [error, setError] = useState("")
+  return (
+    <details className="mt-2 text-xs">
+      <summary className="cursor-pointer text-primary">Письмо-образец (тема и тело) — посмотреть / редактировать</summary>
+      <div className="mt-2 flex flex-col gap-2">
+        <Label className="text-muted-foreground">Тема</Label>
+        <Input value={subj} onChange={(e) => { setSubj(e.target.value); setSaved(false) }} placeholder="Тема письма" />
+        <Label className="text-muted-foreground">Тело письма</Label>
+        <textarea
+          value={body}
+          onChange={(e) => { setBody(e.target.value); setSaved(false) }}
+          rows={8}
+          placeholder="Текст письма-образца"
+          className="min-h-32 rounded-md border border-input bg-background px-3 py-2 font-mono text-xs"
+        />
+        {error && <p className="text-destructive">{error}</p>}
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            disabled={pending}
+            onClick={() => {
+              setError("")
+              start(async () => {
+                const r = await updateDocTemplateSample({ id, subject: subj, text: body })
+                if (!r.ok) setError(r.error)
+                else setSaved(true)
+              })
+            }}
+          >
+            {pending ? "Сохранение…" : "Сохранить"}
+          </Button>
+          {saved && <span className="text-muted-foreground">сохранено</span>}
+        </div>
+      </div>
+    </details>
   )
 }

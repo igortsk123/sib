@@ -21,7 +21,6 @@ export default async function InsurerPage({ params }: { params: Promise<{ id: st
   const [templates, journal] = await Promise.all([listTemplates(id), templateJournalByType(insurer.name)])
   const rows: TemplateRow[] = templates.map((t) => {
     const j = journal[t.docType]
-    const gaps = j?.gaps ?? {}
     return {
       id: t.id,
       docType: t.docType,
@@ -29,12 +28,10 @@ export default async function InsurerPage({ params }: { params: Promise<{ id: st
       sampleStoragePath: t.sampleStoragePath,
       sampleFilename: t.sampleFilename,
       sampleSubject: t.sampleSubject,
-      hasText: Boolean(t.sampleText),
-      goldJson: t.goldJson ?? null,
+      sampleText: t.sampleText,
       records: j?.n ?? 0,
       methods: j?.methods ?? {},
-      gaps,
-      drift: Object.values(gaps).reduce((a, b) => a + b, 0),
+      gaps: j?.gaps ?? {},
     }
   })
 
