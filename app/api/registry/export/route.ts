@@ -6,7 +6,7 @@ import { requireUser } from "@/lib/server/auth/guards"
 import { resolveRegistryScope } from "@/lib/server/scope"
 import { STATUS_LABELS, SOURCE_LABELS, docTypeLabel } from "@/lib/letter-status"
 import { CARE_TYPE_LABELS } from "@/lib/care-type"
-import { ruDate } from "@/lib/format"
+import { isoFromRu, ruDate } from "@/lib/format"
 
 // Выгрузка реестра ГП в Excel (бриф §10). Только по сессии (ПДн), в скоупе клиники.
 // Отдельная колонка «Требует проверки» + кликабельная ссылка на карточку для сверки.
@@ -23,8 +23,8 @@ export async function GET(req: Request) {
       careType: p.get("careType") ?? undefined,
       source: p.get("source") ?? undefined,
       review: p.get("review") ?? undefined,
-      dateFrom: p.get("from") ?? undefined,
-      dateTo: p.get("to") ?? undefined,
+      dateFrom: isoFromRu(p.get("from")), // «дд.мм.гггг» → ISO
+      dateTo: isoFromRu(p.get("to")),
       orgId: scope.orgId,
     },
     5000,

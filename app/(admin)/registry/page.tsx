@@ -7,7 +7,7 @@ import { listClinics } from "@/lib/server/clinics/queries"
 import { countLetters, listInsurerOptions, searchLetters } from "@/lib/server/registry/queries"
 import { STATUS_LABELS, SOURCE_LABELS } from "@/lib/letter-status"
 import { CARE_TYPE_LABELS } from "@/lib/care-type"
-import { ruDate } from "@/lib/format"
+import { isoFromRu, ruDate, RU_DATE_PATTERN } from "@/lib/format"
 import { reviewMessage } from "@/lib/review-hints"
 import { PageHeader } from "@/components/admin/page-header"
 import { ClinicSelector } from "@/components/admin/clinic-selector"
@@ -38,8 +38,8 @@ export default async function RegistryPage({
     careType: sp.careType,
     source: sp.source,
     review: sp.review,
-    dateFrom: sp.from,
-    dateTo: sp.to,
+    dateFrom: isoFromRu(sp.from), // «дд.мм.гггг» → ISO для запроса
+    dateTo: isoFromRu(sp.to),
     orgId: scope.orgId,
   }
   const total = await countLetters(scope.orgId)
@@ -111,11 +111,13 @@ export default async function RegistryPage({
           </div>
           <div className="flex flex-col gap-1">
             <Label className="text-xs text-muted-foreground">Дата с</Label>
-            <Input type="date" name="from" defaultValue={sp.from ?? ""} min="2000-01-01" max="2099-12-31" className="h-9" />
+            <Input name="from" defaultValue={sp.from ?? ""} inputMode="numeric" placeholder="дд.мм.гггг"
+              pattern={RU_DATE_PATTERN} title="Формат: дд.мм.гггг" className="h-9" />
           </div>
           <div className="flex flex-col gap-1">
             <Label className="text-xs text-muted-foreground">Дата по</Label>
-            <Input type="date" name="to" defaultValue={sp.to ?? ""} min="2000-01-01" max="2099-12-31" className="h-9" />
+            <Input name="to" defaultValue={sp.to ?? ""} inputMode="numeric" placeholder="дд.мм.гггг"
+              pattern={RU_DATE_PATTERN} title="Формат: дд.мм.гггг" className="h-9" />
           </div>
         </div>
         <div className="flex gap-2">
