@@ -56,6 +56,7 @@ export const errorReportStatusEnum = pgEnum("error_report_status", [
 export const careTypeEnum = pgEnum("care_type", [
   "ambulatory", // амбулатория/поликлиника
   "dentistry", // стоматология
+  "combined", // комплексное (и амбулатория, и стоматология в одном документе)
   "other", // не определено
 ])
 

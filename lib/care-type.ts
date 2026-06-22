@@ -12,7 +12,7 @@ const AMBULATORY = [
   "кардиолог", "узи", "мрт", "кт ", "анализ", "лор", "гастроэнтер", "эндокринолог", "дерматолог",
 ]
 
-export type CareType = "ambulatory" | "dentistry" | "other"
+export type CareType = "ambulatory" | "dentistry" | "combined" | "other"
 
 export function classifyCareType(services: unknown[] | null | undefined, text?: string | null): CareType {
   const hay = [
@@ -22,13 +22,17 @@ export function classifyCareType(services: unknown[] | null | undefined, text?: 
     .join(" ")
     .toLowerCase()
   if (!hay.trim()) return "other"
-  if (DENTAL.some((k) => hay.includes(k))) return "dentistry"
-  if (AMBULATORY.some((k) => hay.includes(k))) return "ambulatory"
+  const dental = DENTAL.some((k) => hay.includes(k))
+  const amb = AMBULATORY.some((k) => hay.includes(k))
+  if (dental && amb) return "combined" // и амбулатория, и стоматология в одном документе
+  if (dental) return "dentistry"
+  if (amb) return "ambulatory"
   return "ambulatory" // по умолчанию — амбулатория (ручная правка при необходимости)
 }
 
 export const CARE_TYPE_LABELS: Record<string, string> = {
   ambulatory: "Амбулатория",
   dentistry: "Стоматология",
+  combined: "Комплексное",
   other: "—",
 }

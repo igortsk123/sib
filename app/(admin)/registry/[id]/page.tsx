@@ -6,7 +6,7 @@ import { reviewMessage } from "@/lib/review-hints"
 
 import { resolveRegistryScope } from "@/lib/server/scope"
 import { getLetter } from "@/lib/server/registry/queries"
-import { STATUS_LABELS, SOURCE_LABELS, docTypeLabel } from "@/lib/letter-status"
+import { STATUS_LABELS, SOURCE_LABELS, METHOD_LABELS, docTypeLabel } from "@/lib/letter-status"
 import { CARE_TYPE_LABELS } from "@/lib/care-type"
 import { ruDate } from "@/lib/format"
 import { ReportErrorButton } from "@/components/admin/report-error-button"
@@ -73,6 +73,7 @@ export default async function LetterCardPage({ params }: { params: Promise<{ id:
             <Field label="№ ГП" value={l.letterNumber} />
             <Field label="№ договора" value={l.contractNumber} />
             <Field label="Тип" value={docTypeLabel(l.docType, l.approvalStatus)} />
+            <Field label="Статус" value={STATUS_LABELS[l.approvalStatus] ?? l.approvalStatus} />
             <Field label="Направление" value={CARE_TYPE_LABELS[l.careType ?? ""] ?? "—"} />
             <Field label="Страховая" value={data.insurer} />
             <Field label="Дата письма" value={ruDate(l.letterDate) || null} />
@@ -98,7 +99,7 @@ export default async function LetterCardPage({ params }: { params: Promise<{ id:
             <Field label="Страховая" value={data.insurer} />
             <Field label="Источник" value={SOURCE_LABELS[l.source ?? ""] ?? l.source} />
             <Field label="Получено" value={data.sourceEmails[0]?.receivedAt ? new Date(data.sourceEmails[0].receivedAt).toLocaleString("ru") : "—"} />
-            <Field label="Метод" value={l.method === "deterministic" ? "Из таблицы" : l.method === "llm_vision" ? "LLM (скан)" : l.method === "llm" ? "LLM" : "—"} />
+            <Field label="Метод" value={METHOD_LABELS[l.method ?? ""] ?? "—"} />
             <Field label="Писем-источников" value={String(data.sourceEmails.length)} />
             <Field label="Вложений" value={String(data.attachments.length)} />
           </CardContent>
@@ -110,42 +111,27 @@ export default async function LetterCardPage({ params }: { params: Promise<{ id:
         <CardHeader>
           <CardTitle className="text-base">Источники для сверки</CardTitle>
         </CardHeader>
-        <CardContent className="flex flex-col gap-6">
+        <CardContent className="flex flex-col gap-2">
           {data.sourceEmails.map((e, i) => (
-            <div key={e.id} className="flex flex-col gap-2">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="text-sm font-medium">
-                  {e.docType === "archive_password" ? "🔑 Письмо с паролем" : i === 0 ? "✉ Письмо страховой" : "✉ Сопутствующее письмо"}
-                </span>
-                <Button asChild variant="ghost" size="sm" className="gap-2 text-muted-foreground">
-                  <a href={`/api/original/email/${e.id}?raw=1`}>Скачать .eml</a>
-                </Button>
+            <div key={e.id} className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border p-2">
+              <span className="text-sm font-medium">
+                {e.docType === "archive_password" ? "🔑 Письмо с паролем" : i === 0 ? "✉ Письмо страховой" : "✉ Сопутствующее письмо"}
+              </span>
+              <div className="flex gap-3 text-sm">
+                <a href={`/api/original/email/${e.id}`} target="_blank" rel="noreferrer" className="text-primary hover:underline">Открыть письмо</a>
+                <a href={`/api/original/email/${e.id}?raw=1`} className="text-muted-foreground hover:underline">Скачать .eml</a>
               </div>
-              <iframe
-                src={`/api/original/email/${e.id}`}
-                className="h-96 w-full rounded-md border border-border bg-white"
-                title="Письмо"
-              />
             </div>
           ))}
           {data.attachments.map((a) => (
-            <div key={a.id} className="flex flex-col gap-2">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="inline-flex items-center gap-2 text-sm font-medium">
-                  {a.ext === "pdf" ? <FileText className="size-4" /> : <Paperclip className="size-4" />}
-                  {a.filename ?? `Вложение .${a.ext}`}
-                </span>
-                <Button asChild variant="ghost" size="sm" className="gap-2 text-muted-foreground">
-                  <a href={`/api/original/attachment/${a.id}`} target="_blank" rel="noreferrer">Открыть в новой вкладке</a>
-                </Button>
-              </div>
-              {a.ext === "pdf" && (
-                <iframe
-                  src={`/api/original/attachment/${a.id}`}
-                  className="h-[600px] w-full rounded-md border border-border"
-                  title={a.filename ?? "PDF"}
-                />
-              )}
+            <div key={a.id} className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border p-2">
+              <span className="inline-flex items-center gap-2 text-sm font-medium">
+                {a.ext === "pdf" ? <FileText className="size-4" /> : <Paperclip className="size-4" />}
+                {a.filename ?? `Вложение .${a.ext}`}
+              </span>
+              <a href={`/api/original/attachment/${a.id}`} target="_blank" rel="noreferrer" className="text-sm text-primary hover:underline">
+                Скачать оригинал
+              </a>
             </div>
           ))}
         </CardContent>

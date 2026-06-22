@@ -22,7 +22,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 
 const STATUS_OPTIONS = ["approved", "denied", "detach", "enroll", "annul"]
 const SOURCE_OPTIONS = ["body", "pdf", "xlsx", "xls", "rtf", "doc", "archive"]
-const CARE_OPTIONS = ["ambulatory", "dentistry", "other"]
+const CARE_OPTIONS = ["ambulatory", "dentistry", "combined", "other"]
 
 export default async function RegistryPage({
   searchParams,

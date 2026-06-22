@@ -1,0 +1,1 @@
+ALTER TYPE "public"."care_type" ADD VALUE 'combined' BEFORE 'other';
