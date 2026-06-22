@@ -89,8 +89,15 @@ async function main() {
   const client = postgres(url, { prepare: false, max: 1 })
   const db = drizzle(client, { schema })
   try {
-    const insurers = await db.select({ id: insuranceCompany.id, name: insuranceCompany.name }).from(insuranceCompany)
-    const insurerByName = new Map(insurers.map((i) => [i.name, i.id]))
+    // матчим по name И aliases — датасет несёт короткие имена («Росгосстрах»), а name теперь официальное.
+    const insurers = await db
+      .select({ id: insuranceCompany.id, name: insuranceCompany.name, aliases: insuranceCompany.aliases })
+      .from(insuranceCompany)
+    const insurerByName = new Map<string, string>()
+    for (const i of insurers) {
+      insurerByName.set(i.name, i.id)
+      for (const a of i.aliases ?? []) if (!insurerByName.has(a)) insurerByName.set(a, i.id)
+    }
 
     // Привязка корпуса к клинике (домен писем — cl-sib.ru). Найти/создать.
     const orgName = process.env.CORPUS_ORG_NAME || "Клиника Сибирская"

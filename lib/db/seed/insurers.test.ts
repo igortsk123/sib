@@ -33,11 +33,19 @@ describe("INSURER_SEED", () => {
     }
   })
 
-  it("ключевые домены из корпуса присутствуют", () => {
-    const byName = Object.fromEntries(INSURER_SEED.map((c) => [c.name, c.domains]))
-    expect(byName["Балта"]).toContain("calltravel.eu")
-    expect(byName["Астро-Волга"]).toContain("astrovolga.ru")
-    expect(byName["Лучшее здоровье"]).toContain("luchi.ru")
-    expect(byName["СОГАЗ"]).toContain("sogaz.ru")
+  it("ключевые домены из корпуса присутствуют (поиск по алиасу — name теперь официальное)", () => {
+    const byAlias = (alias: string) =>
+      INSURER_SEED.find((c) => c.aliases?.includes(alias) || c.name === alias)?.domains ?? []
+    expect(byAlias("Балта")).toContain("calltravel.eu")
+    expect(byAlias("Астро-Волга")).toContain("astrovolga.ru")
+    expect(byAlias("Лучшее здоровье")).toContain("luchi.ru")
+    expect(byAlias("СОГАЗ")).toContain("sogaz.ru")
+  })
+
+  it("name — официальные наименования (в кавычках с орг-формой)", () => {
+    for (const c of INSURER_SEED) {
+      expect(c.name, c.name).toMatch(/[«»]/)
+      expect(c.aliases && c.aliases.length, `нет алиасов у ${c.name}`).toBeGreaterThan(0)
+    }
   })
 })
