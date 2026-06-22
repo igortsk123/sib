@@ -5,6 +5,7 @@ import { searchLetters } from "@/lib/server/registry/queries"
 import { requireUser } from "@/lib/server/auth/guards"
 import { resolveRegistryScope } from "@/lib/server/scope"
 import { STATUS_LABELS, SOURCE_LABELS, docTypeLabel } from "@/lib/letter-status"
+import { CARE_TYPE_LABELS } from "@/lib/care-type"
 
 // Выгрузка реестра ГП в Excel (бриф §10). Только по сессии (ПДн), в скоупе клиники.
 // Отдельная колонка «Требует проверки» + кликабельная ссылка на карточку для сверки.
@@ -18,7 +19,9 @@ export async function GET(req: Request) {
       q: p.get("q") ?? undefined,
       insurerId: p.get("insurer") ?? undefined,
       status: p.get("status") ?? undefined,
+      careType: p.get("careType") ?? undefined,
       source: p.get("source") ?? undefined,
+      review: p.get("review") ?? undefined,
       dateFrom: p.get("from") ?? undefined,
       dateTo: p.get("to") ?? undefined,
       orgId: scope.orgId,
@@ -38,10 +41,12 @@ export async function GET(req: Request) {
     { header: "№ ГП", key: "letterNumber", width: 16 },
     { header: "№ обращения", key: "caseNumber", width: 16 },
     { header: "Тип", key: "docType", width: 18 },
+    { header: "Направление", key: "careType", width: 14 },
     { header: "Статус", key: "status", width: 14 },
     { header: "Дата письма", key: "letterDate", width: 14 },
     { header: "Срок действия письма", key: "validUntil", width: 18 },
-    { header: "Период обслуживания", key: "coverage", width: 22 },
+    { header: "Дата начала обслуживания", key: "coverageFrom", width: 20 },
+    { header: "Дата окончания обслуживания", key: "coverageTo", width: 22 },
     { header: "Ограничение (лимит/условия)", key: "restriction", width: 40 },
     { header: "Услуги", key: "services", width: 34 },
     { header: "Источник", key: "source", width: 12 },
@@ -75,10 +80,12 @@ export async function GET(req: Request) {
       letterNumber: r.letterNumber ?? "",
       caseNumber: r.caseNumber ?? "",
       docType: docTypeLabel(r.docType, r.status),
+      careType: CARE_TYPE_LABELS[r.careType ?? ""] ?? "",
       status: STATUS_LABELS[r.status] ?? r.status,
       letterDate: r.letterDate ?? "",
       validUntil: r.validUntil ?? "",
-      coverage: r.coverageFrom || r.coverageTo ? `${r.coverageFrom ?? "…"} — ${r.coverageTo ?? "…"}` : "",
+      coverageFrom: r.coverageFrom ?? "",
+      coverageTo: r.coverageTo ?? "",
       restriction: [r.amountLimit, r.conditions].filter(Boolean).join("; "),
       services,
       source: SOURCE_LABELS[r.source ?? ""] ?? r.source ?? "",

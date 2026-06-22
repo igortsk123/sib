@@ -6,9 +6,11 @@ import { resolveRegistryScope } from "@/lib/server/scope"
 import { listClinics } from "@/lib/server/clinics/queries"
 import { countLetters, listInsurerOptions, searchLetters } from "@/lib/server/registry/queries"
 import { STATUS_LABELS, SOURCE_LABELS } from "@/lib/letter-status"
+import { CARE_TYPE_LABELS } from "@/lib/care-type"
 import { reviewFields } from "@/lib/review-hints"
 import { PageHeader } from "@/components/admin/page-header"
 import { ClinicSelector } from "@/components/admin/clinic-selector"
+import { Truncate } from "@/components/admin/truncate"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -18,11 +20,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 
 const STATUS_OPTIONS = ["approved", "denied", "detach", "enroll", "annul"]
 const SOURCE_OPTIONS = ["body", "pdf", "xlsx", "xls", "rtf", "doc", "archive"]
+const CARE_OPTIONS = ["ambulatory", "dentistry", "other"]
 
 export default async function RegistryPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; insurer?: string; status?: string; source?: string; from?: string; to?: string }>
+  searchParams: Promise<{ q?: string; insurer?: string; status?: string; careType?: string; source?: string; review?: string; from?: string; to?: string }>
 }) {
   const scope = await resolveRegistryScope()
   if (!scope.user) redirect("/login")
@@ -31,7 +34,9 @@ export default async function RegistryPage({
     q: sp.q,
     insurerId: sp.insurer,
     status: sp.status,
+    careType: sp.careType,
     source: sp.source,
+    review: sp.review,
     dateFrom: sp.from,
     dateTo: sp.to,
     orgId: scope.orgId,
@@ -66,12 +71,27 @@ export default async function RegistryPage({
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input name="q" defaultValue={sp.q ?? ""} placeholder="Поиск: ФИО пациента, полис, № ГП…" className="pl-9" />
         </div>
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-7">
+          <div className="flex flex-col gap-1">
+            <Label className="text-xs text-muted-foreground">Проверка</Label>
+            <select name="review" defaultValue={sp.review ?? ""} className="h-9 rounded-md border border-input bg-background px-2 text-sm">
+              <option value="">Все</option>
+              <option value="1">Требует проверки</option>
+              <option value="0">Без проверки</option>
+            </select>
+          </div>
           <div className="flex flex-col gap-1">
             <Label className="text-xs text-muted-foreground">Страховая</Label>
             <select name="insurer" defaultValue={sp.insurer ?? ""} className="h-9 rounded-md border border-input bg-background px-2 text-sm">
               <option value="">Все</option>
               {insurers.map((i) => (<option key={i.id} value={i.id}>{i.name}</option>))}
+            </select>
+          </div>
+          <div className="flex flex-col gap-1">
+            <Label className="text-xs text-muted-foreground">Направление</Label>
+            <select name="careType" defaultValue={sp.careType ?? ""} className="h-9 rounded-md border border-input bg-background px-2 text-sm">
+              <option value="">Все</option>
+              {CARE_OPTIONS.map((s) => (<option key={s} value={s}>{CARE_TYPE_LABELS[s]}</option>))}
             </select>
           </div>
           <div className="flex flex-col gap-1">
@@ -110,46 +130,46 @@ export default async function RegistryPage({
         </Card>
       ) : (
         <Card className="overflow-x-auto p-0">
-          <Table>
+          <Table className="w-full min-w-[760px]">
             <TableHeader>
               <TableRow>
+                <TableHead className="w-8 text-center" title="Требует проверки">⚑</TableHead>
                 <TableHead>Пациент</TableHead>
                 <TableHead>Страховая</TableHead>
+                <TableHead>Направление</TableHead>
                 <TableHead>Полис</TableHead>
                 <TableHead>№ ГП</TableHead>
                 <TableHead>Статус</TableHead>
                 <TableHead>Источник</TableHead>
                 <TableHead>Дата</TableHead>
-                <TableHead>Проверка</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {rows.map((r) => (
                 <TableRow key={r.id} className="cursor-pointer">
+                  <TableCell className="text-center">
+                    {r.needsReview && (
+                      <span title={reviewFields(r.reviewNote) || "Требует проверки перед переносом в систему"} className="inline-flex">
+                        <AlertTriangle className="size-4 text-warning" aria-label="Требует проверки" />
+                      </span>
+                    )}
+                  </TableCell>
                   <TableCell className="font-medium">
                     <Link href={`/registry/${r.id}`} className="text-primary hover:underline">
                       {r.patient ?? "— (требует проверки)"}
                     </Link>
                   </TableCell>
-                  <TableCell>{r.insurer ?? "—"}</TableCell>
+                  <TableCell><Truncate text={r.insurer ?? ""} width="max-w-[150px]" /></TableCell>
+                  <TableCell className="text-muted-foreground">{CARE_TYPE_LABELS[r.careType ?? ""] ?? "—"}</TableCell>
                   <TableCell className="font-mono text-xs">{r.policy ?? "—"}</TableCell>
                   <TableCell className="font-mono text-xs">{r.letterNumber ?? "—"}</TableCell>
                   <TableCell>
-                    <Badge variant={r.status === "approved" ? "secondary" : r.status === "denied" ? "outline" : "outline"}>
+                    <Badge variant={r.status === "approved" ? "secondary" : "outline"}>
                       {STATUS_LABELS[r.status] ?? r.status}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-muted-foreground">{SOURCE_LABELS[r.source ?? ""] ?? r.source}</TableCell>
                   <TableCell className="text-muted-foreground">{r.letterDate ?? "—"}</TableCell>
-                  <TableCell>
-                    {r.needsReview ? (
-                      <span className="inline-flex items-center gap-1 text-xs font-medium text-warning" title={reviewFields(r.reviewNote) || "Проверьте перед переносом в систему"}>
-                        <AlertTriangle className="size-3.5" /> Проверить
-                      </span>
-                    ) : (
-                      <span className="text-xs text-muted-foreground">ok</span>
-                    )}
-                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

@@ -4,7 +4,7 @@ import { boolean, date, index, integer, jsonb, pgTable, text, timestamp, uuid } 
 import { attachment } from "./attachment"
 import { emailMessage } from "./email"
 import { insuranceCompany } from "./insurer"
-import { approvalStatusEnum, docTypeEnum, reviewStatusEnum } from "./enums"
+import { approvalStatusEnum, careTypeEnum, docTypeEnum, reviewStatusEnum } from "./enums"
 
 // ─────────────────────────────────────────────────────────────────────
 // GuaranteeLetter — распознанное гарантийное письмо (бриф §13.3).
@@ -38,6 +38,7 @@ export const guaranteeLetter = pgTable(
     caseNumber: text("case_number"), // № обращения/направления
     contractNumber: text("contract_number"), // № договора страхования (напр. F514Z/045/7393S/24)
     docType: docTypeEnum("doc_type"), // тип документа: guarantee|enroll|detach|annul|referral|…
+    careType: careTypeEnum("care_type"), // направление: амбулатория|стоматология (план care-type-split)
     approvalStatus: approvalStatusEnum("approval_status").notNull().default("unknown"),
     services: jsonb("services").$type<unknown[]>().notNull().default([]),
     letterDate: date("letter_date"),

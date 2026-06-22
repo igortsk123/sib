@@ -7,6 +7,7 @@ import { reviewMessage } from "@/lib/review-hints"
 import { resolveRegistryScope } from "@/lib/server/scope"
 import { getLetter } from "@/lib/server/registry/queries"
 import { STATUS_LABELS, SOURCE_LABELS, docTypeLabel } from "@/lib/letter-status"
+import { CARE_TYPE_LABELS } from "@/lib/care-type"
 import { PageHeader } from "@/components/admin/page-header"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -69,6 +70,7 @@ export default async function LetterCardPage({ params }: { params: Promise<{ id:
             <Field label="№ ГП" value={l.letterNumber} />
             <Field label="№ договора" value={l.contractNumber} />
             <Field label="Тип" value={docTypeLabel(l.docType, l.approvalStatus)} />
+            <Field label="Направление" value={CARE_TYPE_LABELS[l.careType ?? ""] ?? "—"} />
             <Field label="Страховая" value={data.insurer} />
             <Field label="Дата письма" value={l.letterDate} />
             <Field

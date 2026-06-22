@@ -44,6 +44,14 @@ export const approvalStatusEnum = pgEnum("approval_status", [
   "unknown", // не определён
 ])
 
+// Направление обслуживания (план care-type-split): у клиники две системы — амбулатория (массового
+// импорта пациентов нет) и стоматология (есть массовая загрузка). Делим реестр фильтром по этому полю.
+export const careTypeEnum = pgEnum("care_type", [
+  "ambulatory", // амбулатория/поликлиника
+  "dentistry", // стоматология
+  "other", // не определено
+])
+
 // Статус шаблона типа документа (админка настройки распознавания, план admin-doctype-templates).
 export const docTemplateStatusEnum = pgEnum("doc_template_status", [
   "new", // загружен образец, эталон ещё не извлечён

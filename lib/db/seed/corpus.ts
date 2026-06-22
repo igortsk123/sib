@@ -6,6 +6,7 @@ import { eq } from "drizzle-orm"
 
 import * as schema from "@/lib/db/schema"
 import { attachment, emailMessage, guaranteeLetter, insuranceCompany, organization, parseLog } from "@/lib/db/schema"
+import { classifyCareType } from "@/lib/care-type"
 
 // ─────────────────────────────────────────────────────────────────────
 // Сид демо-реестра из корпуса. Структура датасета: { emails, letters }.
@@ -35,6 +36,8 @@ type LetterRec = {
   caseNumber?: string | null
   contractNumber?: string | null
   docType?: string | null
+  careType?: string | null
+  text?: string | null
   approvalStatus: string
   letterDate: string | null
   coverageFrom?: string | null
@@ -198,6 +201,7 @@ async function main() {
         caseNumber: l.caseNumber ?? null,
         contractNumber: l.contractNumber ?? null,
         docType: (l.docType && VALID_DOCTYPE.has(l.docType) ? l.docType : null) as never,
+        careType: ((l.careType as string) || classifyCareType(l.services, l.text)) as never,
         approvalStatus: (VALID_STATUS.has(l.approvalStatus) ? l.approvalStatus : "unknown") as never,
         letterDate: safeDate(l.letterDate),
         coverageFrom: safeDate(l.coverageFrom),

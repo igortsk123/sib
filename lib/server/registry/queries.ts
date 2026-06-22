@@ -8,7 +8,9 @@ export type RegistryFilter = {
   q?: string // поиск: пациент / полис / № ГП
   insurerId?: string // фильтр: страховая
   status?: string // фильтр: статус
+  careType?: string // фильтр: направление (амбулатория|стоматология)
   source?: string // фильтр: источник
+  review?: string // фильтр: проверка ("1" нужна / "0" ок / undefined все)
   dateFrom?: string // фильтр: дата письма от
   dateTo?: string // фильтр: дата письма до
   orgId?: string | null
@@ -30,10 +32,13 @@ function whereClause(f: RegistryFilter) {
       ),
     )
   }
-  // ФИЛЬТРЫ (точное совпадение): страховая / статус / источник / дата.
+  // ФИЛЬТРЫ (точное совпадение): страховая / статус / направление / источник / проверка / дата.
   if (f.insurerId) conds.push(eq(guaranteeLetter.insuranceCompanyId, f.insurerId))
   if (f.status) conds.push(eq(guaranteeLetter.approvalStatus, f.status as never))
+  if (f.careType) conds.push(eq(guaranteeLetter.careType, f.careType as never))
   if (f.source) conds.push(eq(guaranteeLetter.source, f.source))
+  if (f.review === "1") conds.push(eq(guaranteeLetter.needsReview, true))
+  else if (f.review === "0") conds.push(eq(guaranteeLetter.needsReview, false))
   if (f.dateFrom) conds.push(sql`${guaranteeLetter.letterDate} >= ${f.dateFrom}`)
   if (f.dateTo) conds.push(sql`${guaranteeLetter.letterDate} <= ${f.dateTo}`)
   return conds.length ? and(...conds) : undefined
@@ -51,6 +56,7 @@ export async function searchLetters(f: RegistryFilter, limit = 500) {
       caseNumber: guaranteeLetter.caseNumber,
       contractNumber: guaranteeLetter.contractNumber,
       docType: guaranteeLetter.docType,
+      careType: guaranteeLetter.careType,
       status: guaranteeLetter.approvalStatus,
       services: guaranteeLetter.services,
       letterDate: guaranteeLetter.letterDate,
