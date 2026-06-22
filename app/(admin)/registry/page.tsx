@@ -7,11 +7,12 @@ import { listClinics } from "@/lib/server/clinics/queries"
 import { countLetters, listInsurerOptions, searchLetters } from "@/lib/server/registry/queries"
 import { STATUS_LABELS, SOURCE_LABELS } from "@/lib/letter-status"
 import { CARE_TYPE_LABELS } from "@/lib/care-type"
-import { isoFromRu, ruDate, RU_DATE_PATTERN } from "@/lib/format"
+import { isoFromRu, ruDate } from "@/lib/format"
 import { reviewMessage } from "@/lib/review-hints"
 import { PageHeader } from "@/components/admin/page-header"
 import { ClinicSelector } from "@/components/admin/clinic-selector"
 import { Truncate } from "@/components/admin/truncate"
+import { DateMaskInput } from "@/components/admin/date-mask-input"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -111,13 +112,11 @@ export default async function RegistryPage({
           </div>
           <div className="flex flex-col gap-1">
             <Label className="text-xs text-muted-foreground">Дата с</Label>
-            <Input name="from" defaultValue={sp.from ?? ""} inputMode="numeric" placeholder="дд.мм.гггг"
-              pattern={RU_DATE_PATTERN} title="Формат: дд.мм.гггг" className="h-9" />
+            <DateMaskInput name="from" defaultValue={sp.from ?? ""} className="h-9" />
           </div>
           <div className="flex flex-col gap-1">
             <Label className="text-xs text-muted-foreground">Дата по</Label>
-            <Input name="to" defaultValue={sp.to ?? ""} inputMode="numeric" placeholder="дд.мм.гггг"
-              pattern={RU_DATE_PATTERN} title="Формат: дд.мм.гггг" className="h-9" />
+            <DateMaskInput name="to" defaultValue={sp.to ?? ""} className="h-9" />
           </div>
         </div>
         <div className="flex gap-2">

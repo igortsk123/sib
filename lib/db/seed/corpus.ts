@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs"
 import { drizzle } from "drizzle-orm/postgres-js"
 import postgres from "postgres"
 
-import { eq } from "drizzle-orm"
+import { eq, sql } from "drizzle-orm"
 
 import * as schema from "@/lib/db/schema"
 import { attachment, docTemplate, emailMessage, guaranteeLetter, insuranceCompany, organization, parseLog } from "@/lib/db/schema"
@@ -97,9 +97,17 @@ async function main() {
       .select({ id: insuranceCompany.id, name: insuranceCompany.name, aliases: insuranceCompany.aliases })
       .from(insuranceCompany)
     const insurerByName = new Map<string, string>()
+    const idToName = new Map<string, string>() // id → ОФИЦИАЛЬНОЕ имя (для parse_log: журнал ищет по нему)
     for (const i of insurers) {
       insurerByName.set(i.name, i.id)
+      idToName.set(i.id, i.name)
       for (const a of i.aliases ?? []) if (!insurerByName.has(a)) insurerByName.set(a, i.id)
+    }
+    // короткое имя (из jsonl/датасета) → официальное имя страховой
+    const officialName = (short?: string | null) => {
+      if (!short) return null
+      const id = insurerByName.get(short)
+      return (id && idToName.get(id)) || short
     }
 
     // Привязка корпуса к клинике (домен писем — cl-sib.ru). Найти/создать.
@@ -128,7 +136,7 @@ async function main() {
       if (rows.length) {
         await db.insert(parseLog).values(
           rows.map((r) => ({
-            insurer: (r.insurer as string) ?? null,
+            insurer: officialName(r.insurer as string), // официальное имя (журнал ищет по нему)
             docType: (r.docType as string) ?? dtByKey.get(`${r.emailId}|${r.rowIndex ?? ""}`) ?? null,
             source: (r.source as string) ?? null,
             method: (r.method as string) ?? null,
@@ -180,7 +188,11 @@ async function main() {
     }
 
     let n = 0
-    const tplPairs = new Set<string>() // «insurerId::docType» — предзаполнение шаблонов по факту корпуса
+    // attId → {ext, filename} для привязки файла-образца к шаблону.
+    const attInfo = new Map<string, { ext: string; filename: string | null }>()
+    for (const e of data.emails) for (const a of e.attachments) attInfo.set(a.attId, { ext: a.ext, filename: a.filename })
+    // «insurerId::docType» → представитель (текст + файл) для предзаполнения шаблона (что гнать через LLM).
+    const tplRep = new Map<string, { text: string | null; storagePath: string | null; filename: string | null }>()
     for (const l of data.letters) {
       const emId = emailMap.get(l.emailId)
       if (!emId) continue
@@ -190,7 +202,19 @@ async function main() {
       const firstAtt = (l.attIds ?? []).map((x) => attMap.get(x)).find(Boolean) ?? null
       const insurerId = insurerByName.get(data.emails.find((e) => e.emailId === l.emailId)?.insurer ?? "") ?? null
       const dt = l.docType && VALID_DOCTYPE.has(l.docType) ? l.docType : null
-      if (insurerId && dt) tplPairs.add(`${insurerId}::${dt}`)
+      if (insurerId && dt) {
+        const key = `${insurerId}::${dt}`
+        const cur = tplRep.get(key)
+        if (!cur || (!cur.text && l.text)) {
+          const att0 = (l.attIds ?? [])[0]
+          const info = att0 ? attInfo.get(att0) : undefined
+          tplRep.set(key, {
+            text: (l.text as string) || null,
+            storagePath: info ? `attachments/${att0}.${info.ext}` : null,
+            filename: info?.filename ?? null,
+          })
+        }
+      }
       await db.insert(guaranteeLetter).values({
         organizationId: orgId,
         emailMessageId: emId,
@@ -225,18 +249,31 @@ async function main() {
     }
     console.log(`[corpus] готово: писем ${data.emails.length}, записей ГП ${n}`)
 
-    // Предзаполнение шаблонов: у каждой страховой — её уникальные типы документов (по факту корпуса).
-    // Идемпотентно (unique insurer+docType); статус parser_ready (авто; эталон LLM грузится вручную позже).
-    let tplN = 0
-    for (const key of tplPairs) {
+    // Предзаполнение шаблонов: у каждой страховой — её типы документов (по факту корпуса) + ФАЙЛ-ОБРАЗЕЦ
+    // (текст + вложение из представителя), чтобы было что прогнать через LLM. Идемпотентно (unique
+    // insurer+docType); образец дозаполняем через coalesce — НЕ затираем вручную загруженный.
+    for (const [key, rep] of tplRep) {
       const [insuranceCompanyId, docType] = key.split("::")
-      const res = await db
+      await db
         .insert(docTemplate)
-        .values({ insuranceCompanyId, docType: docType as never, status: "parser_ready" })
-        .onConflictDoNothing({ target: [docTemplate.insuranceCompanyId, docTemplate.docType] })
-      tplN += res.count ?? 0
+        .values({
+          insuranceCompanyId,
+          docType: docType as never,
+          status: "parser_ready",
+          sampleText: rep.text,
+          sampleStoragePath: rep.storagePath,
+          sampleFilename: rep.filename,
+        })
+        .onConflictDoUpdate({
+          target: [docTemplate.insuranceCompanyId, docTemplate.docType],
+          set: {
+            sampleText: sql`coalesce(${docTemplate.sampleText}, excluded.sample_text)`,
+            sampleStoragePath: sql`coalesce(${docTemplate.sampleStoragePath}, excluded.sample_storage_path)`,
+            sampleFilename: sql`coalesce(${docTemplate.sampleFilename}, excluded.sample_filename)`,
+          },
+        })
     }
-    console.log(`[corpus] шаблоны типов: создано ${tplN} (всего пар ${tplPairs.size})`)
+    console.log(`[corpus] шаблоны типов: ${tplRep.size} (с файлом-образцом)`)
   } finally {
     await client.end({ timeout: 5 })
   }
