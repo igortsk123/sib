@@ -6,6 +6,7 @@ import { resolveRegistryScope } from "@/lib/server/scope"
 import { listClinics } from "@/lib/server/clinics/queries"
 import { countLetters, listInsurerOptions, searchLetters } from "@/lib/server/registry/queries"
 import { STATUS_LABELS, SOURCE_LABELS } from "@/lib/letter-status"
+import { reviewFields } from "@/lib/review-hints"
 import { PageHeader } from "@/components/admin/page-header"
 import { ClinicSelector } from "@/components/admin/clinic-selector"
 import { Badge } from "@/components/ui/badge"
@@ -15,7 +16,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
-const STATUS_OPTIONS = ["approved", "denied", "detach", "enroll"]
+const STATUS_OPTIONS = ["approved", "denied", "detach", "enroll", "annul"]
 const SOURCE_OPTIONS = ["body", "pdf", "xlsx", "xls", "rtf", "doc", "archive"]
 
 export default async function RegistryPage({
@@ -142,7 +143,7 @@ export default async function RegistryPage({
                   <TableCell className="text-muted-foreground">{r.letterDate ?? "—"}</TableCell>
                   <TableCell>
                     {r.needsReview ? (
-                      <span className="inline-flex items-center gap-1 text-xs font-medium text-warning" title={r.reviewNote ?? "Проверьте перед переносом в систему"}>
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-warning" title={reviewFields(r.reviewNote) || "Проверьте перед переносом в систему"}>
                         <AlertTriangle className="size-3.5" /> Проверить
                       </span>
                     ) : (

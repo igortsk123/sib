@@ -21,9 +21,22 @@ review_after: ""
   признак пересылки + исходный отправитель/тема (D5), статус обработки.
 - **Attachment** — email_message_id, имя/тип/размер/hash, путь, нужен ли пароль, распакован ли,
   extracted_text, OCR_text, ошибка обработки.
-- **GuaranteeLetter** — email_message_id, attachment_id, страховая, пациент (ФИО/ДР/полис), № обращения,
-  № письма, статус согласования, дата/срок действия, услуги, лимит, условия, **confidence_score**,
-  статус проверки, кто/когда проверил.
+- **GuaranteeLetter** — email_message_id, sourceEmailIds[] (все источники: письмо ГП + письма-пароли),
+  attachment_id, organization_id (мультитенант-скоуп), rowIndex (строка Excel-реестра), страховая.
+  Пациент: `patientFullName`, `patientBirthDate`, `policyNumber`, `policySeries`. Документ: `letterNumber`
+  (№ ГП), `caseNumber` (№ обращения/направления), `contractNumber` (№ договора), `docType` (тип, enum),
+  `approvalStatus` (статус), `services`. Даты/лимиты: `letterDate`, `coverageFrom`/`coverageTo` (период
+  обслуживания), `validUntil` (срок действия письма), `amountLimit` (ограничение-сумма), `conditions`
+  (ограничения-условия), `insurerComment`/`clinicComment`. Распознавание: `source` (body/pdf/xlsx/xls/rtf/
+  archive), `method` (deterministic/deterministic+llm/llm/llm_vision), `confidence`, `needsReview`,
+  `reviewNote` (имена сомнительных полей → понятный текст через `lib/review-hints.ts`), `reviewStatus`,
+  `reviewedBy`/`reviewedAt`. Поля добавлялись по ADR D12/D13/D14/**D15** (миграции 0002–0007).
+- **ParseLog** (ADR D15, миграция 0008) — наблюдаемость гибрида: по записи `method`, `detGap` (поля, что
+  LLM нашла, а парсер НЕТ → цель донастройки), `llmFilled`, `missing`, insurer/source. Сидируется из
+  `parse_log.jsonl`. Страница `/parse-log` — ловить смену форм источником.
+- **Enums:** `approvalStatusEnum` (approved/denied/detach/enroll/**annul**/partial/need_info/need_approval/
+  unknown), `docTypeEnum` (guarantee/enroll/detach/annul/referral/denial/info_request/archive_password/service/
+  other), `reviewStatusEnum`. Подписи — `lib/letter-status.ts` (STATUS_LABELS, DOC_TYPE_LABELS).
 - **InsuranceCompany** — название + варианты написания, домены/типовые email отправителей, правила
   обработки, активность (редактируемый справочник — ~12+ компаний, §4).
 - **User** — организация, ФИО, email, роль, статус, даты (см. `core/roles-and-access.md`).

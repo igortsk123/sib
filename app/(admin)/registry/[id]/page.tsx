@@ -2,6 +2,8 @@ import Link from "next/link"
 import { notFound, redirect } from "next/navigation"
 import { AlertTriangle, ChevronLeft, FileText, Paperclip } from "lucide-react"
 
+import { reviewMessage } from "@/lib/review-hints"
+
 import { resolveRegistryScope } from "@/lib/server/scope"
 import { getLetter } from "@/lib/server/registry/queries"
 import { STATUS_LABELS, SOURCE_LABELS, docTypeLabel } from "@/lib/letter-status"
@@ -49,8 +51,7 @@ export default async function LetterCardPage({ params }: { params: Promise<{ id:
         <div className="mb-4 flex items-start gap-2 rounded-lg border border-warning/40 bg-warning/10 p-3 text-sm">
           <AlertTriangle className="mt-0.5 size-4 shrink-0 text-warning" />
           <div>
-            <span className="font-medium">Требует проверки глазами</span> — сверьте с оригиналом перед
-            переносом в систему клиники.{l.reviewNote ? ` Причина: ${l.reviewNote}.` : ""}
+            <span className="font-medium">Требует проверки глазами.</span> {reviewMessage(l.reviewNote)}
           </div>
         </div>
       )}
