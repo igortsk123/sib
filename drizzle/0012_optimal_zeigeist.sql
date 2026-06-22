@@ -1,0 +1,1 @@
+ALTER TABLE "doc_template" ADD COLUMN "sample_subject" text;

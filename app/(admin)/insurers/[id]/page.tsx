@@ -28,6 +28,8 @@ export default async function InsurerPage({ params }: { params: Promise<{ id: st
       status: t.status,
       sampleStoragePath: t.sampleStoragePath,
       sampleFilename: t.sampleFilename,
+      sampleSubject: t.sampleSubject,
+      hasText: Boolean(t.sampleText),
       goldJson: t.goldJson ?? null,
       records: j?.n ?? 0,
       methods: j?.methods ?? {},

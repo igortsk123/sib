@@ -191,8 +191,11 @@ async function main() {
     // attId → {ext, filename} для привязки файла-образца к шаблону.
     const attInfo = new Map<string, { ext: string; filename: string | null }>()
     for (const e of data.emails) for (const a of e.attachments) attInfo.set(a.attId, { ext: a.ext, filename: a.filename })
-    // «insurerId::docType» → представитель (текст + файл) для предзаполнения шаблона (что гнать через LLM).
-    const tplRep = new Map<string, { text: string | null; storagePath: string | null; filename: string | null }>()
+    // emailId → тема письма (для образца шаблона)
+    const emailSubject = new Map<string, string | null>()
+    for (const e of data.emails) emailSubject.set(e.emailId, (e as { subject?: string | null }).subject ?? null)
+    // «insurerId::docType» → представитель (тема + тело + файл) для предзаполнения шаблона (что гнать через LLM).
+    const tplRep = new Map<string, { subject: string | null; text: string | null; storagePath: string | null; filename: string | null }>()
     for (const l of data.letters) {
       const emId = emailMap.get(l.emailId)
       if (!emId) continue
@@ -209,6 +212,7 @@ async function main() {
           const att0 = (l.attIds ?? [])[0]
           const info = att0 ? attInfo.get(att0) : undefined
           tplRep.set(key, {
+            subject: emailSubject.get(l.emailId) ?? null,
             text: (l.text as string) || null,
             storagePath: info ? `attachments/${att0}.${info.ext}` : null,
             filename: info?.filename ?? null,
@@ -260,6 +264,7 @@ async function main() {
           insuranceCompanyId,
           docType: docType as never,
           status: "parser_ready",
+          sampleSubject: rep.subject,
           sampleText: rep.text,
           sampleStoragePath: rep.storagePath,
           sampleFilename: rep.filename,
@@ -267,6 +272,7 @@ async function main() {
         .onConflictDoUpdate({
           target: [docTemplate.insuranceCompanyId, docTemplate.docType],
           set: {
+            sampleSubject: sql`coalesce(${docTemplate.sampleSubject}, excluded.sample_subject)`,
             sampleText: sql`coalesce(${docTemplate.sampleText}, excluded.sample_text)`,
             sampleStoragePath: sql`coalesce(${docTemplate.sampleStoragePath}, excluded.sample_storage_path)`,
             sampleFilename: sql`coalesce(${docTemplate.sampleFilename}, excluded.sample_filename)`,

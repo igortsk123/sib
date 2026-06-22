@@ -18,7 +18,8 @@ export const docTemplate = pgTable(
     docType: docTypeEnum("doc_type").notNull(),
     sampleStoragePath: text("sample_storage_path"), // относительный путь в STORAGE_DIR (templates/<id>.<ext>)
     sampleFilename: text("sample_filename"),
-    sampleText: text("sample_text"), // текст образца (для LLM-эталона, пока нет извлечения PDF/Excel в проде)
+    sampleSubject: text("sample_subject"), // тема письма-образца (почти всегда есть)
+    sampleText: text("sample_text"), // тело письма-образца (текст; для LLM-эталона/написания парсера)
     goldJson: jsonb("gold_json").$type<Record<string, unknown>>(), // эталон LLM (gpt-5.5)
     status: docTemplateStatusEnum("status").notNull().default("new"),
     note: text("note"),

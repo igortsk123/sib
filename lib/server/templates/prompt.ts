@@ -35,6 +35,7 @@ export const GOLD_SYSTEM = [
   "отправителем страховой, контактным лицом или подписантом. Точность важнее полноты: сомневаешься — null.",
 ].join("\n")
 
-export function goldUserMessage(text: string): string {
-  return `ТЕКСТ ДОКУМЕНТА (для отладки парсинга, верни строгий JSON по структуре):\n\n${text.slice(0, 12000)}`
+export function goldUserMessage(text: string, subject?: string | null): string {
+  const subj = subject ? `ТЕМА ПИСЬМА: ${subject}\n\n` : ""
+  return `${subj}ТЕЛО ПИСЬМА / ТЕКСТ ДОКУМЕНТА (для отладки парсинга, верни строгий JSON по структуре):\n\n${text.slice(0, 12000)}`
 }

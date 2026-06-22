@@ -9,6 +9,7 @@ import { addDocTemplate, deleteDocTemplate, extractGold } from "@/lib/server/tem
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
 export type TemplateRow = {
@@ -17,6 +18,8 @@ export type TemplateRow = {
   status: string
   sampleStoragePath: string | null
   sampleFilename: string | null
+  sampleSubject: string | null
+  hasText: boolean
   goldJson: Record<string, unknown> | null
   drift: number
   records: number // записей этого типа (журнал разбора)
@@ -78,8 +81,12 @@ export function DocTypeTemplates({ insurerId, templates }: { insurerId: string; 
               </div>
             </div>
             <div className="flex flex-col gap-1">
-              <Label className="text-xs text-muted-foreground">Текст образца (для LLM-эталона; PDF/Excel — извлечение в S1)</Label>
-              <textarea name="text" rows={4} placeholder="Вставьте текст документа-образца…" className="min-h-20 rounded-md border border-input bg-background px-3 py-2 text-sm" />
+              <Label className="text-xs text-muted-foreground">Тема письма</Label>
+              <Input name="subject" placeholder="Тема письма (как в почте)" />
+            </div>
+            <div className="flex flex-col gap-1">
+              <Label className="text-xs text-muted-foreground">Текст письма (тело)</Label>
+              <textarea name="text" rows={4} placeholder="Вставьте тело письма-образца…" className="min-h-20 rounded-md border border-input bg-background px-3 py-2 text-sm" />
             </div>
             {error && <p className="text-sm text-destructive">{error}</p>}
             <div className="flex gap-2">
@@ -120,9 +127,10 @@ function TemplateCard({ t }: { t: TemplateRow }) {
         )}
         {t.sampleStoragePath && (
           <a href={`/api/original/template/${t.id}`} className="text-xs text-primary underline" target="_blank" rel="noreferrer">
-            образец{t.sampleFilename ? `: ${t.sampleFilename}` : ""}
+            файл{t.sampleFilename ? `: ${t.sampleFilename}` : ""}
           </a>
         )}
+        {t.hasText && <span className="text-xs text-muted-foreground">есть текст письма</span>}
         <div className="ml-auto flex gap-2">
           <Button
             size="sm" variant="outline" className="gap-1" disabled={pending}
@@ -138,6 +146,11 @@ function TemplateCard({ t }: { t: TemplateRow }) {
           </Button>
         </div>
       </div>
+      {t.sampleSubject && (
+        <p className="mt-2 text-xs text-muted-foreground">
+          <span className="font-medium">Тема образца:</span> {t.sampleSubject}
+        </p>
+      )}
       {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
 
       {/* Журнал разбора этого шаблона (в контексте типа документа) */}

@@ -25,6 +25,7 @@ export async function addDocTemplate(form: FormData): Promise<Result<{ id: strin
   if (!auth.ok) return err(auth.error)
   const insurerId = String(form.get("insurerId") || "")
   const docType = String(form.get("docType") || "")
+  const subject = (String(form.get("subject") || "").trim()) || null
   const text = (String(form.get("text") || "").trim()) || null
   if (!insurerId) return err("Не указана страховая")
   if (!DOC_TYPES.has(docType)) return err("Выберите тип документа")
@@ -52,6 +53,7 @@ export async function addDocTemplate(form: FormData): Promise<Result<{ id: strin
         docType: docType as never,
         sampleStoragePath: storagePath,
         sampleFilename: filename,
+        sampleSubject: subject,
         sampleText: text,
         status: "new",
       })
@@ -76,7 +78,7 @@ export async function extractGold(templateId: string): Promise<Result<null>> {
   const res = await chatComplete(
     [
       { role: "system", content: GOLD_SYSTEM },
-      { role: "user", content: goldUserMessage(tpl.sampleText) },
+      { role: "user", content: goldUserMessage(tpl.sampleText, tpl.sampleSubject) },
     ],
     { model: GOLD_MODEL, jsonMode: true, timeoutMs: 90_000 },
   )
