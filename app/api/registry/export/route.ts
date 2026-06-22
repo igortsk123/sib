@@ -6,6 +6,7 @@ import { requireUser } from "@/lib/server/auth/guards"
 import { resolveRegistryScope } from "@/lib/server/scope"
 import { STATUS_LABELS, SOURCE_LABELS, docTypeLabel } from "@/lib/letter-status"
 import { CARE_TYPE_LABELS } from "@/lib/care-type"
+import { ruDate } from "@/lib/format"
 
 // Выгрузка реестра ГП в Excel (бриф §10). Только по сессии (ПДн), в скоупе клиники.
 // Отдельная колонка «Требует проверки» + кликабельная ссылка на карточку для сверки.
@@ -73,7 +74,7 @@ export async function GET(req: Request) {
       : ""
     const row = ws.addRow({
       patient: r.patient ?? "",
-      birthDate: r.birthDate ?? "",
+      birthDate: ruDate(r.birthDate),
       insurer: r.insurer ?? "",
       policy: r.policy ?? "",
       contractNumber: r.contractNumber ?? "",
@@ -82,10 +83,10 @@ export async function GET(req: Request) {
       docType: docTypeLabel(r.docType, r.status),
       careType: CARE_TYPE_LABELS[r.careType ?? ""] ?? "",
       status: STATUS_LABELS[r.status] ?? r.status,
-      letterDate: r.letterDate ?? "",
-      validUntil: r.validUntil ?? "",
-      coverageFrom: r.coverageFrom ?? "",
-      coverageTo: r.coverageTo ?? "",
+      letterDate: ruDate(r.letterDate),
+      validUntil: ruDate(r.validUntil),
+      coverageFrom: ruDate(r.coverageFrom),
+      coverageTo: ruDate(r.coverageTo),
       restriction: [r.amountLimit, r.conditions].filter(Boolean).join("; "),
       services,
       source: SOURCE_LABELS[r.source ?? ""] ?? r.source ?? "",

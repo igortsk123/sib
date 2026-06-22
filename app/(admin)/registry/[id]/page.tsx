@@ -8,6 +8,7 @@ import { resolveRegistryScope } from "@/lib/server/scope"
 import { getLetter } from "@/lib/server/registry/queries"
 import { STATUS_LABELS, SOURCE_LABELS, docTypeLabel } from "@/lib/letter-status"
 import { CARE_TYPE_LABELS } from "@/lib/care-type"
+import { ruDate } from "@/lib/format"
 import { PageHeader } from "@/components/admin/page-header"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -64,7 +65,7 @@ export default async function LetterCardPage({ params }: { params: Promise<{ id:
           </CardHeader>
           <CardContent className="grid grid-cols-2 gap-4">
             <Field label="Пациент" value={l.patientFullName} />
-            <Field label="Дата рождения" value={l.patientBirthDate} />
+            <Field label="Дата рождения" value={ruDate(l.patientBirthDate) || null} />
             <Field label="Полис" value={l.policyNumber} />
             <Field label="№ обращения" value={l.caseNumber} />
             <Field label="№ ГП" value={l.letterNumber} />
@@ -72,12 +73,12 @@ export default async function LetterCardPage({ params }: { params: Promise<{ id:
             <Field label="Тип" value={docTypeLabel(l.docType, l.approvalStatus)} />
             <Field label="Направление" value={CARE_TYPE_LABELS[l.careType ?? ""] ?? "—"} />
             <Field label="Страховая" value={data.insurer} />
-            <Field label="Дата письма" value={l.letterDate} />
+            <Field label="Дата письма" value={ruDate(l.letterDate) || null} />
             <Field
               label="Период обслуживания"
-              value={l.coverageFrom || l.coverageTo ? `${l.coverageFrom ?? "…"} — ${l.coverageTo ?? "…"}` : null}
+              value={l.coverageFrom || l.coverageTo ? `${ruDate(l.coverageFrom) || "…"} — ${ruDate(l.coverageTo) || "…"}` : null}
             />
-            <Field label="Действует до" value={l.validUntil} />
+            <Field label="Действует до" value={ruDate(l.validUntil) || null} />
             <Field label="Лимит" value={l.amountLimit} />
             <Field label="Ограничение" value={l.conditions} />
             <Field

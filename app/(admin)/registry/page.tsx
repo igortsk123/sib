@@ -7,6 +7,7 @@ import { listClinics } from "@/lib/server/clinics/queries"
 import { countLetters, listInsurerOptions, searchLetters } from "@/lib/server/registry/queries"
 import { STATUS_LABELS, SOURCE_LABELS } from "@/lib/letter-status"
 import { CARE_TYPE_LABELS } from "@/lib/care-type"
+import { ruDate } from "@/lib/format"
 import { reviewFields } from "@/lib/review-hints"
 import { PageHeader } from "@/components/admin/page-header"
 import { ClinicSelector } from "@/components/admin/clinic-selector"
@@ -129,8 +130,9 @@ export default async function RegistryPage({
           <div className="text-sm font-medium">{sp.q ? "Ничего не найдено" : "Реестр пуст"}</div>
         </Card>
       ) : (
-        <Card className="overflow-x-auto p-0">
-          <Table className="w-full min-w-[760px]">
+        <div className="rounded-lg border border-border">
+          {/* Table сам оборачивает в overflow-x-auto контейнер — двойную обёртку Card НЕ используем (ломала скролл). */}
+          <Table className="min-w-[760px]">
             <TableHeader>
               <TableRow>
                 <TableHead className="w-8 text-center" title="Требует проверки">⚑</TableHead>
@@ -169,12 +171,12 @@ export default async function RegistryPage({
                     </Badge>
                   </TableCell>
                   <TableCell className="text-muted-foreground">{SOURCE_LABELS[r.source ?? ""] ?? r.source}</TableCell>
-                  <TableCell className="text-muted-foreground">{r.letterDate ?? "—"}</TableCell>
+                  <TableCell className="text-muted-foreground">{ruDate(r.letterDate) || "—"}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
-        </Card>
+        </div>
       )}
     </>
   )
