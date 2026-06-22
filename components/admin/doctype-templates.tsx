@@ -130,6 +130,9 @@ function TemplateCard({ t }: { t: TemplateRow }) {
           <Trash2 className="size-3.5" />
         </Button>
       </div>
+      <div className="mt-1 select-all font-mono text-[11px] text-muted-foreground/70" title="ID шаблона — пришлите его для задачи по парсингу">
+        ID: {t.id}
+      </div>
       <SampleEditor id={t.id} subject={t.sampleSubject} text={t.sampleText} />
 
       {/* Журнал разбора этого шаблона (в контексте типа документа) */}

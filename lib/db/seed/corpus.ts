@@ -191,9 +191,13 @@ async function main() {
     // attId → {ext, filename} для привязки файла-образца к шаблону.
     const attInfo = new Map<string, { ext: string; filename: string | null }>()
     for (const e of data.emails) for (const a of e.attachments) attInfo.set(a.attId, { ext: a.ext, filename: a.filename })
-    // emailId → тема письма (для образца шаблона)
+    // emailId → тема и ДОСЛОВНОЕ тело письма (для образца шаблона — «как было»)
     const emailSubject = new Map<string, string | null>()
-    for (const e of data.emails) emailSubject.set(e.emailId, (e as { subject?: string | null }).subject ?? null)
+    const emailBody = new Map<string, string | null>()
+    for (const e of data.emails) {
+      emailSubject.set(e.emailId, (e as { subject?: string | null }).subject ?? null)
+      emailBody.set(e.emailId, (e as { bodyRaw?: string | null }).bodyRaw ?? null)
+    }
     // «insurerId::docType» → представитель (тема + тело + файл) для предзаполнения шаблона (что гнать через LLM).
     const tplRep = new Map<string, { subject: string | null; text: string | null; storagePath: string | null; filename: string | null }>()
     for (const l of data.letters) {
@@ -208,12 +212,13 @@ async function main() {
       if (insurerId && dt) {
         const key = `${insurerId}::${dt}`
         const cur = tplRep.get(key)
-        if (!cur || (!cur.text && l.text)) {
+        const body = emailBody.get(l.emailId) || null
+        if (!cur || (!cur.text && body)) {
           const att0 = (l.attIds ?? [])[0]
           const info = att0 ? attInfo.get(att0) : undefined
           tplRep.set(key, {
             subject: emailSubject.get(l.emailId) ?? null,
-            text: (l.text as string) || null,
+            text: body, // ДОСЛОВНОЕ тело письма (без префикса/вложений)
             storagePath: info ? `attachments/${att0}.${info.ext}` : null,
             filename: info?.filename ?? null,
           })
