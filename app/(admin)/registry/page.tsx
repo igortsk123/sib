@@ -8,7 +8,7 @@ import { countLetters, listInsurerOptions, searchLetters } from "@/lib/server/re
 import { STATUS_LABELS, SOURCE_LABELS } from "@/lib/letter-status"
 import { CARE_TYPE_LABELS } from "@/lib/care-type"
 import { ruDate } from "@/lib/format"
-import { reviewFields } from "@/lib/review-hints"
+import { reviewMessage } from "@/lib/review-hints"
 import { PageHeader } from "@/components/admin/page-header"
 import { ClinicSelector } from "@/components/admin/clinic-selector"
 import { Truncate } from "@/components/admin/truncate"
@@ -151,7 +151,7 @@ export default async function RegistryPage({
                 <TableRow key={r.id} className="cursor-pointer">
                   <TableCell className="text-center">
                     {r.needsReview && (
-                      <span title={reviewFields(r.reviewNote) || "Требует проверки перед переносом в систему"} className="inline-flex">
+                      <span title={reviewMessage(r.reviewNote)} className="inline-flex">
                         <AlertTriangle className="size-4 text-warning" aria-label="Требует проверки" />
                       </span>
                     )}

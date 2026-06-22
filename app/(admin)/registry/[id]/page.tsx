@@ -52,9 +52,7 @@ export default async function LetterCardPage({ params }: { params: Promise<{ id:
       {l.needsReview && (
         <div className="mb-4 flex items-start gap-2 rounded-lg border border-warning/40 bg-warning/10 p-3 text-sm">
           <AlertTriangle className="mt-0.5 size-4 shrink-0 text-warning" />
-          <div>
-            <span className="font-medium">Требует проверки глазами.</span> {reviewMessage(l.reviewNote)}
-          </div>
+          <div>{reviewMessage(l.reviewNote)}</div>
         </div>
       )}
 

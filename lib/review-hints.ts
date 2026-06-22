@@ -32,9 +32,8 @@ export function reviewFields(note?: string | null): string {
     .join(", ")
 }
 
-// Полный текст пометки для карточки/тултипа.
+// Короткий текст пометки для карточки/тултипа: «Проверьте поля: …».
 export function reviewMessage(note?: string | null): string {
   const fields = reviewFields(note)
-  const base = "Сверьте с оригиналом перед переносом в систему клиники"
-  return fields ? `${base}. Проверьте поля: ${fields}.` : `${base}.`
+  return fields ? `Проверьте поля: ${fields}.` : "Требует проверки."
 }
