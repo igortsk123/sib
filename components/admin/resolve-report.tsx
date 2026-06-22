@@ -12,8 +12,16 @@ export function ResolveReport({ id, hasEmail }: { id: string; hasEmail: boolean 
 
   function resolve(status: "fixed" | "dismissed") {
     setError("")
+    // Подтверждение ДО запуска. Отмена (prompt/confirm) → НИЧЕГО не делаем (не помечаем).
+    let note: string | undefined
+    if (status === "fixed") {
+      const r = prompt("Что исправили? (необязательно). Нажмите ОК, чтобы пометить исправленным, или Отмена.")
+      if (r === null) return // отмена — не помечаем
+      note = r.trim() || undefined
+    } else {
+      if (!confirm("Отметить как «не ошибка»?")) return
+    }
     start(async () => {
-      const note = status === "fixed" ? (prompt("Что исправили? (необязательно)") ?? undefined) : undefined
       const res = await resolveReport({ id, status, note })
       if (!res.ok) setError(res.error)
     })
