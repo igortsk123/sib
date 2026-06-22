@@ -34,7 +34,15 @@ export default async function InsurersPage() {
           <TableBody>
             {companies.map((c) => (
               <TableRow key={c.id}>
-                <TableCell className="align-top font-medium">{c.name}</TableCell>
+                <TableCell className="align-top font-medium">
+                  {isAdmin ? (
+                    <a href={`/insurers/${c.id}`} className="text-primary underline-offset-2 hover:underline">
+                      {c.name}
+                    </a>
+                  ) : (
+                    c.name
+                  )}
+                </TableCell>
                 <TableCell className="text-muted-foreground">
                   {isAdmin ? (
                     <DomainsEditor id={c.id} domains={c.domains} />

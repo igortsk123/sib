@@ -11,6 +11,7 @@ export const parseLog = pgTable(
   {
     id: uuid("id").primaryKey().defaultRandom(),
     insurer: text("insurer"),
+    docType: text("doc_type"), // тип документа (для счётчика дрейфа по типу в админке шаблонов)
     source: text("source"), // body|pdf|xlsx|xls|rtf|archive
     method: text("method"), // deterministic | deterministic+llm | llm | llm_vision
     rowIndex: integer("row_index"),

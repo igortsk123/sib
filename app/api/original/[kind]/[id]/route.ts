@@ -4,7 +4,7 @@ import { eq } from "drizzle-orm"
 import { simpleParser } from "mailparser"
 
 import { db } from "@/lib/db"
-import { attachment, emailMessage } from "@/lib/db/schema"
+import { attachment, docTemplate, emailMessage } from "@/lib/db/schema"
 import { requireUser } from "@/lib/server/auth/guards"
 import { CONTENT_TYPES, resolveStoragePath } from "@/lib/storage"
 
@@ -60,6 +60,29 @@ export async function GET(
     const rows = await db().select().from(attachment).where(eq(attachment.id, id)).limit(1)
     const rel = rows[0]?.storagePath ?? null
     const filename = rows[0]?.filename ?? id
+    if (!rel) return new Response("Not found", { status: 404 })
+    const full = resolveStoragePath(rel)
+    if (!full) return new Response("Forbidden", { status: 403 })
+    let data: Buffer
+    try {
+      data = await readFile(full)
+    } catch {
+      return new Response("File missing", { status: 404 })
+    }
+    const ext = path.extname(full).slice(1).toLowerCase()
+    return new Response(new Uint8Array(data), {
+      headers: {
+        "Content-Type": CONTENT_TYPES[ext] ?? "application/octet-stream",
+        "Content-Disposition": `inline; filename*=UTF-8''${encodeURIComponent(filename)}`,
+        "Cache-Control": "private, no-store",
+      },
+    })
+  }
+
+  if (kind === "template") {
+    const rows = await db().select().from(docTemplate).where(eq(docTemplate.id, id)).limit(1)
+    const rel = rows[0]?.sampleStoragePath ?? null
+    const filename = rows[0]?.sampleFilename ?? id
     if (!rel) return new Response("Not found", { status: 404 })
     const full = resolveStoragePath(rel)
     if (!full) return new Response("Forbidden", { status: 403 })

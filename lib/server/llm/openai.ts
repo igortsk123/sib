@@ -15,6 +15,7 @@ import { err, ok, type Result } from "@/lib/result"
 export type ChatMessage = { role: "system" | "user" | "assistant"; content: string }
 
 export type ChatOpts = {
+  model?: string // переопределить модель (эталон шаблонов — gpt-5.5; рантайм — env.OPENAI_MODEL)
   temperature?: number
   jsonMode?: boolean
   // jsonSchema — жёсткая структура ответа (Structured Outputs, strict:true): API
@@ -37,8 +38,9 @@ export async function chatComplete(
     return err("LLM не настроен (нет OPENAI_API_KEY/OPENAI_BASE_URL)")
   }
   const url = `${env.OPENAI_BASE_URL!.replace(/\/+$/, "")}/chat/completions`
+  const model = opts?.model || env.OPENAI_MODEL
   log.info("openai_request", {
-    model: env.OPENAI_MODEL,
+    model,
     jsonMode: Boolean(opts?.jsonMode || opts?.jsonSchema),
     messages,
   })
@@ -60,7 +62,7 @@ export async function chatComplete(
         Authorization: `Bearer ${env.OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: env.OPENAI_MODEL,
+        model,
         messages,
         // gpt-5.4-mini не принимает temperature/max_tokens → шлём только если заданы явно;
         // лимит — через max_completion_tokens.

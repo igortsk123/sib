@@ -44,6 +44,14 @@ export const approvalStatusEnum = pgEnum("approval_status", [
   "unknown", // не определён
 ])
 
+// Статус шаблона типа документа (админка настройки распознавания, план admin-doctype-templates).
+export const docTemplateStatusEnum = pgEnum("doc_template_status", [
+  "new", // загружен образец, эталон ещё не извлечён
+  "llm_parsed", // LLM-эталон (gold JSON) извлечён
+  "parser_ready", // под тип настроен детерминированный парсер
+  "drift", // есть записи в parse_log (источник сменил форму) — нужна донастройка
+])
+
 // Статус проверки распознанной записи человеком.
 export const reviewStatusEnum = pgEnum("review_status", [
   "auto", // авто-распознано, не проверено

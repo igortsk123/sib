@@ -110,10 +110,16 @@ async function main() {
       const logPath = datasetPath.replace(/dataset\.json$/, "parse_log.jsonl")
       const lines = readFileSync(logPath, "utf-8").split("\n").filter((l) => l.trim())
       const rows = lines.map((l) => JSON.parse(l) as Record<string, unknown>)
+      // docType по (emailId|rowIndex) из датасета — для счётчика дрейфа по типу в админке шаблонов.
+      const dtByKey = new Map<string, string>()
+      for (const l of data.letters) {
+        dtByKey.set(`${l.emailId}|${l.rowIndex ?? ""}`, (l.docType as string) ?? (l.approvalStatus ?? ""))
+      }
       if (rows.length) {
         await db.insert(parseLog).values(
           rows.map((r) => ({
             insurer: (r.insurer as string) ?? null,
+            docType: (r.docType as string) ?? dtByKey.get(`${r.emailId}|${r.rowIndex ?? ""}`) ?? null,
             source: (r.source as string) ?? null,
             method: (r.method as string) ?? null,
             rowIndex: (r.rowIndex as number) ?? null,
