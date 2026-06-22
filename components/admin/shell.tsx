@@ -168,7 +168,8 @@ export function AdminShell({
 
       {/* Main */}
       <main className="px-4 py-6 pb-24 md:pl-64 md:pb-6">
-        <div className="mx-auto max-w-6xl">{children}</div>
+        {/* Широкий контейнер: реестр — 9 колонок, max-w-6xl был узок (колонка «Дата» уезжала). */}
+        <div className="mx-auto max-w-[1600px]">{children}</div>
       </main>
 
       {/* Mobile bottom nav */}
