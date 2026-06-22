@@ -4,7 +4,7 @@ import { env } from "@/lib/env"
 import { searchLetters } from "@/lib/server/registry/queries"
 import { requireUser } from "@/lib/server/auth/guards"
 import { resolveRegistryScope } from "@/lib/server/scope"
-import { STATUS_LABELS, SOURCE_LABELS, docTypeLabel } from "@/lib/letter-status"
+import { STATUS_LABELS, SOURCE_LABELS, METHOD_LABELS, docTypeLabel } from "@/lib/letter-status"
 import { CARE_TYPE_LABELS } from "@/lib/care-type"
 import { isoFromRu, ruDate } from "@/lib/format"
 
@@ -60,13 +60,6 @@ export async function GET(req: Request) {
   head.alignment = { vertical: "middle" }
   ws.views = [{ state: "frozen", ySplit: 1 }] // шапка зафиксирована при прокрутке
   ws.autoFilter = { from: "A1", to: "Q1" } // фильтры по колонкам для анализа
-
-  const METHOD_LABELS: Record<string, string> = {
-    deterministic: "Парсер",
-    "deterministic+llm": "Парсер+LLM",
-    llm: "LLM",
-    llm_vision: "LLM (скан)",
-  }
 
   for (const r of rows) {
     const services = Array.isArray(r.services)

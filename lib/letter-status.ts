@@ -48,3 +48,11 @@ export const SOURCE_LABELS: Record<string, string> = {
   rtf: "RTF",
   archive: "Архив",
 }
+
+// Как разобрана запись — понятными словами (вместо «deterministic» и т.п.).
+export const METHOD_LABELS: Record<string, string> = {
+  deterministic: "Парсер",
+  "deterministic+llm": "Парсер + ИИ",
+  llm: "ИИ",
+  llm_vision: "ИИ (скан/фото)",
+}

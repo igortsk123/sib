@@ -38,7 +38,7 @@ type NavItem = { href: string; label: string; icon: LucideIcon; primary?: boolea
 function navFor(role: NavRole): NavItem[] {
   const insurers: NavItem = { href: "/insurers", label: "Страховые", icon: ShieldCheck }
   const registry: NavItem = { href: "/registry", label: "Реестр ГП", icon: FileText, primary: true }
-  const parselog: NavItem = { href: "/parse-log", label: "Журнал разбора", icon: Activity }
+  const parselog: NavItem = { href: "/parse-log", label: "Журнал распознавания", icon: Activity }
   const reports: NavItem = { href: "/error-reports", label: "Сообщения об ошибках", icon: MessageSquareWarning }
   if (role === "platform")
     return [
