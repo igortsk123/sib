@@ -3,6 +3,8 @@ import { asc } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { insuranceCompany } from "@/lib/db/schema"
 import { getCurrentUser } from "@/lib/server/auth/session"
+import { parserGapsByInsurer } from "@/lib/server/templates/queries"
+import { FIELD_HINTS } from "@/lib/review-hints"
 import { PageHeader } from "@/components/admin/page-header"
 import { CreateInsurerDialog } from "@/components/admin/create-insurer-dialog"
 import { DomainsEditor } from "@/components/admin/domains-editor"
@@ -14,6 +16,15 @@ export default async function InsurersPage() {
   const user = await getCurrentUser()
   const isAdmin = Boolean(user?.isPlatformAdmin)
   const companies = await db().select().from(insuranceCompany).orderBy(asc(insuranceCompany.name))
+  const gaps = await parserGapsByInsurer()
+  const gapText = (name: string) => {
+    const g = gaps[name]
+    if (!g || !Object.keys(g).length) return null
+    return Object.entries(g)
+      .sort((a, b) => b[1] - a[1])
+      .map(([f, c]) => `${FIELD_HINTS[f] ?? f} ×${c}`)
+      .join(", ")
+  }
 
   return (
     <>
@@ -28,6 +39,7 @@ export default async function InsurersPage() {
             <TableRow>
               <TableHead>Страховая</TableHead>
               <TableHead>Домены отправителей</TableHead>
+              <TableHead>Не распознано парсером</TableHead>
               <TableHead>Статус</TableHead>
             </TableRow>
           </TableHeader>
@@ -55,6 +67,9 @@ export default async function InsurersPage() {
                       ))}
                     </div>
                   )}
+                </TableCell>
+                <TableCell className="align-top text-xs text-muted-foreground">
+                  {gapText(c.name) ?? <span className="text-muted-foreground/50">всё парсером</span>}
                 </TableCell>
                 <TableCell className="align-top">
                   <Badge variant={c.active ? "secondary" : "outline"}>

@@ -36,6 +36,20 @@ export async function templateJournalByType(insurerName: string): Promise<Record
   return out
 }
 
+// Пробелы парсера по СТРАХОВОЙ (для списка /insurers): какие поля и сколько раз парсер не нашёл (detGap).
+export async function parserGapsByInsurer(): Promise<Record<string, Record<string, number>>> {
+  const rows = await db().select({ insurer: parseLog.insurer, detGap: parseLog.detGap }).from(parseLog)
+  const out: Record<string, Record<string, number>> = {}
+  for (const r of rows) {
+    if (!r.insurer) continue
+    for (const f of r.detGap ?? []) {
+      out[r.insurer] ??= {}
+      out[r.insurer][f] = (out[r.insurer][f] ?? 0) + 1
+    }
+  }
+  return out
+}
+
 // Счётчик «на разбор» по типу: записи parse_log этой страховой с пробелом парсера (detGap непустой),
 // сгруппированные по типу документа. Сигнал «источник сменил форму» / парсер недонастроен.
 export async function driftCountByType(insurerName: string): Promise<Record<string, number>> {
