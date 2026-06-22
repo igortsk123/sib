@@ -11,7 +11,7 @@ export const FIELD_HINTS: Record<string, string> = {
   caseNumber: "номер обращения/направления",
   contractNumber: "номер договора страхования",
   docType: "тип документа",
-  approvalStatus: "статус (согласовано / отказ / прикрепить / открепить / аннулировать)",
+  approvalStatus: "статус",
   letterDate: "дата письма",
   coverageFrom: "дата начала обслуживания",
   coverageTo: "дата окончания обслуживания",
