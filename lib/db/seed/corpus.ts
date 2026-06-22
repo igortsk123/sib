@@ -5,7 +5,7 @@ import postgres from "postgres"
 import { eq } from "drizzle-orm"
 
 import * as schema from "@/lib/db/schema"
-import { attachment, emailMessage, guaranteeLetter, insuranceCompany, organization, parseLog } from "@/lib/db/schema"
+import { attachment, docTemplate, emailMessage, guaranteeLetter, insuranceCompany, organization, parseLog } from "@/lib/db/schema"
 import { classifyCareType } from "@/lib/care-type"
 
 // ─────────────────────────────────────────────────────────────────────
@@ -180,6 +180,7 @@ async function main() {
     }
 
     let n = 0
+    const tplPairs = new Set<string>() // «insurerId::docType» — предзаполнение шаблонов по факту корпуса
     for (const l of data.letters) {
       const emId = emailMap.get(l.emailId)
       if (!emId) continue
@@ -187,12 +188,15 @@ async function main() {
         .map((x) => emailMap.get(x))
         .filter((x): x is string => Boolean(x))
       const firstAtt = (l.attIds ?? []).map((x) => attMap.get(x)).find(Boolean) ?? null
+      const insurerId = insurerByName.get(data.emails.find((e) => e.emailId === l.emailId)?.insurer ?? "") ?? null
+      const dt = l.docType && VALID_DOCTYPE.has(l.docType) ? l.docType : null
+      if (insurerId && dt) tplPairs.add(`${insurerId}::${dt}`)
       await db.insert(guaranteeLetter).values({
         organizationId: orgId,
         emailMessageId: emId,
         sourceEmailIds: sourceIds,
         attachmentId: firstAtt,
-        insuranceCompanyId: insurerByName.get(data.emails.find((e) => e.emailId === l.emailId)?.insurer ?? "") ?? null,
+        insuranceCompanyId: insurerId,
         rowIndex: l.rowIndex,
         patientFullName: titleCaseFio(l.patientFullName),
         patientBirthDate: safeDate(l.patientBirthDate),
@@ -220,6 +224,19 @@ async function main() {
       n++
     }
     console.log(`[corpus] готово: писем ${data.emails.length}, записей ГП ${n}`)
+
+    // Предзаполнение шаблонов: у каждой страховой — её уникальные типы документов (по факту корпуса).
+    // Идемпотентно (unique insurer+docType); статус parser_ready (авто; эталон LLM грузится вручную позже).
+    let tplN = 0
+    for (const key of tplPairs) {
+      const [insuranceCompanyId, docType] = key.split("::")
+      const res = await db
+        .insert(docTemplate)
+        .values({ insuranceCompanyId, docType: docType as never, status: "parser_ready" })
+        .onConflictDoNothing({ target: [docTemplate.insuranceCompanyId, docTemplate.docType] })
+      tplN += res.count ?? 0
+    }
+    console.log(`[corpus] шаблоны типов: создано ${tplN} (всего пар ${tplPairs.size})`)
   } finally {
     await client.end({ timeout: 5 })
   }

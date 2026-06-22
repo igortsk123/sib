@@ -1,15 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { db } from "@/lib/db"
 import { parseLog } from "@/lib/db/schema"
-import { METHOD_LABELS } from "@/lib/letter-status"
 import { FIELD_HINTS } from "@/lib/review-hints"
 
 export const dynamic = "force-dynamic"
 
-// Журнал распознавания: как разобрана каждая запись и какие поля парсер не нашёл (добрал ИИ).
-// Назначение — ловить, где парсер промахивается / источник сменил форму → донастройка парсера.
+// Журнал распознавания (глобальная сводка). Детально по типам — в шаблонах страховой.
 const field = (f: string) => FIELD_HINTS[f] ?? f
-const method = (m: string) => METHOD_LABELS[m] ?? m
 
 export default async function ParseLogPage() {
   const rows = await db().select().from(parseLog)
@@ -18,31 +15,13 @@ export default async function ParseLogPage() {
   const byMethod: Record<string, number> = {}
   for (const r of rows) byMethod[r.method ?? "?"] = (byMethod[r.method ?? "?"] ?? 0) + 1
 
-  type Agg = { n: number; gaps: Record<string, number>; methods: Record<string, number> }
-  const ins: Record<string, Agg> = {}
   const globalGaps: Record<string, number> = {}
   for (const r of rows) {
-    const k = r.insurer ?? "—"
-    ins[k] ??= { n: 0, gaps: {}, methods: {} }
-    ins[k].n++
-    const m = r.method ?? "?"
-    ins[k].methods[m] = (ins[k].methods[m] ?? 0) + 1
     for (const f of [...(r.detGap ?? []), ...(r.llmFilled ?? [])]) {
-      ins[k].gaps[f] = (ins[k].gaps[f] ?? 0) + 1
       globalGaps[f] = (globalGaps[f] ?? 0) + 1
     }
   }
   const topGlobal = Object.entries(globalGaps).sort((a, b) => b[1] - a[1])
-  const fmtGaps = (g: Record<string, number>) =>
-    Object.entries(g)
-      .sort((a, b) => b[1] - a[1])
-      .map(([f, c]) => `${field(f)} ×${c}`)
-      .join(", ") || "—"
-  const fmtMethods = (m: Record<string, number>) =>
-    Object.entries(m)
-      .sort((a, b) => b[1] - a[1])
-      .map(([k, c]) => `${method(k)}: ${c}`)
-      .join("  ·  ")
 
   return (
     <div className="flex flex-col gap-6">
@@ -119,32 +98,9 @@ export default async function ParseLogPage() {
       </Card>
 
       <Card>
-        <CardHeader>
-          <CardTitle className="text-base">По страховым</CardTitle>
-        </CardHeader>
-        <CardContent className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b text-left text-muted-foreground">
-                <th className="py-2 pr-4 font-medium">Страховая</th>
-                <th className="py-2 pr-4 font-medium">Записей</th>
-                <th className="py-2 pr-4 font-medium">Чем разобрано</th>
-                <th className="py-2 font-medium">Что добирал ИИ</th>
-              </tr>
-            </thead>
-            <tbody>
-              {Object.entries(ins)
-                .sort((a, b) => b[1].n - a[1].n)
-                .map(([name, a]) => (
-                  <tr key={name} className="border-b align-top last:border-0">
-                    <td className="py-2 pr-4 font-medium text-foreground">{name}</td>
-                    <td className="py-2 pr-4">{a.n}</td>
-                    <td className="py-2 pr-4 text-muted-foreground">{fmtMethods(a.methods)}</td>
-                    <td className="py-2 text-muted-foreground">{fmtGaps(a.gaps)}</td>
-                  </tr>
-                ))}
-            </tbody>
-          </table>
+        <CardContent className="pt-6 text-sm text-muted-foreground">
+          Детально по типам документов — внутри шаблонов страховой: <span className="font-medium text-foreground">Страховые</span> →
+          выбрать страховую → раздел <span className="font-medium text-foreground">«Типы документов»</span> → журнал разбора по каждому шаблону.
         </CardContent>
       </Card>
     </div>

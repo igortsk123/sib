@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation"
 import { ChevronLeft } from "lucide-react"
 
 import { getCurrentUser } from "@/lib/server/auth/session"
-import { driftCountByType, getInsurer, listTemplates } from "@/lib/server/templates/queries"
+import { getInsurer, listTemplates, templateJournalByType } from "@/lib/server/templates/queries"
 import { PageHeader } from "@/components/admin/page-header"
 import { DocTypeTemplates, type TemplateRow } from "@/components/admin/doctype-templates"
 import { Badge } from "@/components/ui/badge"
@@ -18,16 +18,23 @@ export default async function InsurerPage({ params }: { params: Promise<{ id: st
   const insurer = await getInsurer(id)
   if (!insurer) notFound()
 
-  const [templates, drift] = await Promise.all([listTemplates(id), driftCountByType(insurer.name)])
-  const rows: TemplateRow[] = templates.map((t) => ({
-    id: t.id,
-    docType: t.docType,
-    status: t.status,
-    sampleStoragePath: t.sampleStoragePath,
-    sampleFilename: t.sampleFilename,
-    goldJson: t.goldJson ?? null,
-    drift: drift[t.docType] ?? 0,
-  }))
+  const [templates, journal] = await Promise.all([listTemplates(id), templateJournalByType(insurer.name)])
+  const rows: TemplateRow[] = templates.map((t) => {
+    const j = journal[t.docType]
+    const gaps = j?.gaps ?? {}
+    return {
+      id: t.id,
+      docType: t.docType,
+      status: t.status,
+      sampleStoragePath: t.sampleStoragePath,
+      sampleFilename: t.sampleFilename,
+      goldJson: t.goldJson ?? null,
+      records: j?.n ?? 0,
+      methods: j?.methods ?? {},
+      gaps,
+      drift: Object.values(gaps).reduce((a, b) => a + b, 0),
+    }
+  })
 
   return (
     <>

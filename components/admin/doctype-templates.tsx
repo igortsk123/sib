@@ -3,7 +3,8 @@
 import { useRef, useState, useTransition } from "react"
 import { AlertTriangle, Plus, Sparkles, Trash2 } from "lucide-react"
 
-import { DOC_TYPE_LABELS } from "@/lib/letter-status"
+import { DOC_TYPE_LABELS, METHOD_LABELS } from "@/lib/letter-status"
+import { FIELD_HINTS } from "@/lib/review-hints"
 import { addDocTemplate, deleteDocTemplate, extractGold } from "@/lib/server/templates/actions"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -18,6 +19,9 @@ export type TemplateRow = {
   sampleFilename: string | null
   goldJson: Record<string, unknown> | null
   drift: number
+  records: number // записей этого типа (журнал разбора)
+  methods: Record<string, number> // чем разобрано (Парсер/Парсер+ИИ/ИИ)
+  gaps: Record<string, number> // что добирал ИИ (поля)
 }
 
 const STATUS: Record<string, { label: string; variant: "secondary" | "outline" | "destructive" }> = {
@@ -135,6 +139,34 @@ function TemplateCard({ t }: { t: TemplateRow }) {
         </div>
       </div>
       {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
+
+      {/* Журнал разбора этого шаблона (в контексте типа документа) */}
+      <div className="mt-3 rounded-md border border-border bg-muted/40 p-3 text-xs">
+        <div className="font-medium text-foreground">Журнал разбора</div>
+        {t.records > 0 ? (
+          <div className="mt-1 flex flex-col gap-1 text-muted-foreground">
+            <div>
+              Записей: <span className="font-medium text-foreground">{t.records}</span> · чем разобрано:{" "}
+              {Object.entries(t.methods)
+                .sort((a, b) => b[1] - a[1])
+                .map(([m, c]) => `${METHOD_LABELS[m] ?? m}: ${c}`)
+                .join("  ·  ")}
+            </div>
+            <div>
+              Что добирал ИИ:{" "}
+              {Object.keys(t.gaps).length
+                ? Object.entries(t.gaps)
+                    .sort((a, b) => b[1] - a[1])
+                    .map(([f, c]) => `${FIELD_HINTS[f] ?? f} ×${c}`)
+                    .join(", ")
+                : "— (парсер находит всё сам)"}
+            </div>
+          </div>
+        ) : (
+          <div className="mt-1 text-muted-foreground">Пока нет разобранных записей этого типа.</div>
+        )}
+      </div>
+
       {t.goldJson && (
         <pre className="mt-3 max-h-64 overflow-auto rounded-md bg-muted p-3 text-xs">
           {JSON.stringify(t.goldJson, null, 2)}
