@@ -35,6 +35,7 @@ export function AddStaffDialog({ organizationId }: { organizationId: string }) {
   const [open, setOpen] = useState(false)
   const [phone, setPhone] = useState("")
   const [name, setName] = useState("")
+  const [email, setEmail] = useState("")
   const [role, setRole] = useState<Role>("dms")
   const [error, setError] = useState("")
   const [pending, start] = useTransition()
@@ -43,11 +44,12 @@ export function AddStaffDialog({ organizationId }: { organizationId: string }) {
     e.preventDefault()
     setError("")
     start(async () => {
-      const res = await addStaff({ organizationId, phone, name: name || undefined, role })
+      const res = await addStaff({ organizationId, phone, name: name || undefined, email: email || undefined, role })
       if (!res.ok) return setError(res.error)
       setOpen(false)
       setPhone("")
       setName("")
+      setEmail("")
       setRole("dms")
     })
   }
@@ -71,6 +73,11 @@ export function AddStaffDialog({ organizationId }: { organizationId: string }) {
           <div className="flex flex-col gap-2">
             <Label htmlFor="sname">Имя (необязательно)</Label>
             <Input id="sname" value={name} onChange={(e) => setName(e.target.value)} />
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="semail">Почта (необязательно)</Label>
+            <Input id="semail" type="email" placeholder="name@clinic.ru" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <p className="text-xs text-muted-foreground">На неё придут уведомления (накопилось много писем, есть срочные, исправления).</p>
           </div>
           <div className="flex flex-col gap-2">
             <Label>Роль</Label>

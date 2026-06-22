@@ -17,6 +17,7 @@ export async function addStaff(input: {
   organizationId: string
   phone: string
   name?: string
+  email?: string
   role: StaffRole
 }): Promise<Result<{ userId: string }>> {
   const auth = await requireClinicOwner(input.organizationId)
@@ -24,13 +25,18 @@ export async function addStaff(input: {
   if (!STAFF_ROLES.includes(input.role)) return err("Недопустимая роль")
   const phone = normalizePhone(input.phone)
   if (!phone) return err("Некорректный телефон")
+  const email = (input.email ?? "").trim() || null
+  if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return err("Некорректная почта")
 
   const existing = await db().select().from(appUser).where(eq(appUser.phone, phone)).limit(1)
   let user = existing[0]
   if (!user) {
-    ;[user] = await db().insert(appUser).values({ phone, name: input.name }).returning()
-  } else if (input.name && !user.name) {
-    await db().update(appUser).set({ name: input.name }).where(eq(appUser.id, user.id))
+    ;[user] = await db().insert(appUser).values({ phone, name: input.name, email }).returning()
+  } else {
+    const patch: { name?: string; email?: string } = {}
+    if (input.name && !user.name) patch.name = input.name
+    if (email && user.email !== email) patch.email = email
+    if (Object.keys(patch).length) await db().update(appUser).set(patch).where(eq(appUser.id, user.id))
   }
 
   await db()

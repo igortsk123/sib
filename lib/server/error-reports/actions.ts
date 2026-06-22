@@ -15,18 +15,17 @@ const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/
 export async function reportError(input: {
   letterId: string
   message: string
-  email?: string
 }): Promise<Result<null>> {
   const auth = await requireUser()
   if (!auth.ok) return err(auth.error)
   const message = (input.message ?? "").trim()
   if (message.length < 3) return err("Опишите, в чём ошибка")
-  const email = (input.email ?? "").trim()
-  if (email && !EMAIL_RE.test(email)) return err("Некорректная почта")
+  // Email НЕ спрашиваем — берём из аккаунта пользователя (если указан). На него придёт уведомление об исправлении.
+  const email = (auth.user.email ?? "").trim()
   await db().insert(errorReport).values({
     letterId: input.letterId,
     message: message.slice(0, 2000),
-    reporterEmail: email || null,
+    reporterEmail: email && EMAIL_RE.test(email) ? email : null,
     reportedBy: auth.user.id,
   })
   revalidatePath(`/registry/${input.letterId}`)

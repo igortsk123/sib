@@ -5,7 +5,6 @@ import { MessageSquareWarning } from "lucide-react"
 
 import { reportError } from "@/lib/server/error-reports/actions"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
   Dialog,
@@ -20,7 +19,6 @@ import {
 export function ReportErrorButton({ letterId }: { letterId: string }) {
   const [open, setOpen] = useState(false)
   const [message, setMessage] = useState("")
-  const [email, setEmail] = useState("")
   const [error, setError] = useState("")
   const [done, setDone] = useState(false)
   const [pending, start] = useTransition()
@@ -29,11 +27,10 @@ export function ReportErrorButton({ letterId }: { letterId: string }) {
     e.preventDefault()
     setError("")
     start(async () => {
-      const res = await reportError({ letterId, message, email: email || undefined })
+      const res = await reportError({ letterId, message })
       if (!res.ok) return setError(res.error)
       setDone(true)
       setMessage("")
-      setEmail("")
     })
   }
 
@@ -78,10 +75,7 @@ export function ReportErrorButton({ letterId }: { letterId: string }) {
                 className="min-h-24 rounded-md border border-input bg-background px-3 py-2 text-sm"
               />
             </div>
-            <div className="flex flex-col gap-1">
-              <Label className="text-xs text-muted-foreground">Ваша почта (необязательно — сообщим, когда исправим)</Label>
-              <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@clinic.ru" />
-            </div>
+            <p className="text-xs text-muted-foreground">Если в вашем профиле указана почта — мы сообщим на неё, когда исправим.</p>
             {error && <p className="text-sm text-destructive">{error}</p>}
             <DialogFooter>
               <Button type="submit" disabled={pending}>
