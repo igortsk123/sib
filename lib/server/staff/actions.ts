@@ -5,9 +5,35 @@ import { revalidatePath } from "next/cache"
 
 import { db } from "@/lib/db"
 import { appUser, membership } from "@/lib/db/schema"
-import { requireClinicOwner } from "@/lib/server/auth/guards"
+import { requireClinicOwner, requirePlatformAdmin } from "@/lib/server/auth/guards"
 import { normalizePhone } from "@/lib/server/auth/phone"
 import { err, ok, type Result } from "@/lib/result"
+
+// Изменить почту сотрудника (платформенный админ ИЛИ владелец этой клиники). Почта необязательна.
+export async function setStaffEmail(input: {
+  organizationId: string
+  userId: string
+  email: string
+}): Promise<Result<null>> {
+  const admin = await requirePlatformAdmin()
+  if (!admin.ok) {
+    const owner = await requireClinicOwner(input.organizationId)
+    if (!owner.ok) return err(owner.error)
+  }
+  const email = (input.email ?? "").trim() || null
+  if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return err("Некорректная почта")
+  // сотрудник должен состоять в этой клинике
+  const m = await db()
+    .select({ id: membership.userId })
+    .from(membership)
+    .where(and(eq(membership.userId, input.userId), eq(membership.organizationId, input.organizationId)))
+    .limit(1)
+  if (!m[0]) return err("Сотрудник не найден в этой клинике")
+  await db().update(appUser).set({ email }).where(eq(appUser.id, input.userId))
+  revalidatePath("/staff")
+  revalidatePath(`/admin/clinics/${input.organizationId}`)
+  return ok(null)
+}
 
 type StaffRole = "dms" | "doctor" | "registry" | "registry_senior"
 const STAFF_ROLES: StaffRole[] = ["dms", "doctor", "registry", "registry_senior"]

@@ -11,6 +11,7 @@ export async function listStaff(organizationId: string) {
       userId: appUser.id,
       name: appUser.name,
       phone: appUser.phone,
+      email: appUser.email,
       role: membership.role,
       status: membership.status,
     })

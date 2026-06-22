@@ -6,6 +6,7 @@ import { listStaff } from "@/lib/server/staff/queries"
 import { ROLE_LABELS } from "@/lib/roles"
 import { PageHeader } from "@/components/admin/page-header"
 import { AddStaffDialog } from "@/components/admin/add-staff-dialog"
+import { StaffEmailCell } from "@/components/admin/staff-email-cell"
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -42,6 +43,7 @@ export default async function StaffPage() {
               <TableRow>
                 <TableHead>Сотрудник</TableHead>
                 <TableHead>Телефон</TableHead>
+                <TableHead>Почта</TableHead>
                 <TableHead>Роль</TableHead>
                 <TableHead>Статус</TableHead>
               </TableRow>
@@ -51,6 +53,9 @@ export default async function StaffPage() {
                 <TableRow key={s.userId}>
                   <TableCell className="font-medium">{s.name ?? "—"}</TableCell>
                   <TableCell>{s.phone}</TableCell>
+                  <TableCell>
+                    <StaffEmailCell organizationId={owned.organizationId} userId={s.userId} email={s.email} />
+                  </TableCell>
                   <TableCell>{ROLE_LABELS[s.role]}</TableCell>
                   <TableCell>
                     <Badge variant={s.status === "active" ? "secondary" : "outline"}>
