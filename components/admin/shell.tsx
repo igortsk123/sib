@@ -9,6 +9,7 @@ import {
   FileText,
   LogOut,
   Menu,
+  MessageSquareWarning,
   ShieldCheck,
   Users,
   type LucideIcon,
@@ -38,12 +39,14 @@ function navFor(role: NavRole): NavItem[] {
   const insurers: NavItem = { href: "/insurers", label: "Страховые", icon: ShieldCheck }
   const registry: NavItem = { href: "/registry", label: "Реестр ГП", icon: FileText, primary: true }
   const parselog: NavItem = { href: "/parse-log", label: "Журнал разбора", icon: Activity }
+  const reports: NavItem = { href: "/error-reports", label: "Сообщения об ошибках", icon: MessageSquareWarning }
   if (role === "platform")
     return [
       { href: "/admin/clinics", label: "Клиники", icon: Building2, primary: true },
       { ...registry, primary: true },
       { ...insurers, primary: true },
       parselog,
+      reports,
     ]
   if (role === "owner")
     return [

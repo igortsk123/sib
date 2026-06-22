@@ -9,6 +9,7 @@ import { getLetter } from "@/lib/server/registry/queries"
 import { STATUS_LABELS, SOURCE_LABELS, docTypeLabel } from "@/lib/letter-status"
 import { CARE_TYPE_LABELS } from "@/lib/care-type"
 import { ruDate } from "@/lib/format"
+import { ReportErrorButton } from "@/components/admin/report-error-button"
 import { PageHeader } from "@/components/admin/page-header"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -43,9 +44,12 @@ export default async function LetterCardPage({ params }: { params: Promise<{ id:
         title={l.patientFullName ?? "Гарантийное письмо"}
         description={`${data.insurer ?? "Страховая не определена"} · ${SOURCE_LABELS[l.source ?? ""] ?? l.source ?? ""}`}
         action={
-          <Badge variant={l.approvalStatus === "approved" ? "secondary" : "outline"} className="text-sm">
-            {STATUS_LABELS[l.approvalStatus] ?? l.approvalStatus}
-          </Badge>
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant={l.approvalStatus === "approved" ? "secondary" : "outline"} className="text-sm">
+              {STATUS_LABELS[l.approvalStatus] ?? l.approvalStatus}
+            </Badge>
+            <ReportErrorButton letterId={l.id} />
+          </div>
         }
       />
 

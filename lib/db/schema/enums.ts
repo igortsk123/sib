@@ -44,6 +44,13 @@ export const approvalStatusEnum = pgEnum("approval_status", [
   "unknown", // не определён
 ])
 
+// Статус пользовательского репорта об ошибке в записи (кнопка «Сообщить об ошибке» в карточке).
+export const errorReportStatusEnum = pgEnum("error_report_status", [
+  "open", // новый, не разобран
+  "fixed", // исправлено (автору отправляется уведомление, если указал почту)
+  "dismissed", // отклонён (не ошибка)
+])
+
 // Направление обслуживания (план care-type-split): у клиники две системы — амбулатория (массового
 // импорта пациентов нет) и стоматология (есть массовая загрузка). Делим реестр фильтром по этому полю.
 export const careTypeEnum = pgEnum("care_type", [
