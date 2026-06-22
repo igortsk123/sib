@@ -275,12 +275,14 @@ async function main() {
           sampleFilename: rep.filename,
         })
         .onConflictDoUpdate({
+          // Авто-образец из корпуса — перезаписываем (excluded.*), чтобы применить дословное тело.
+          // TODO(prod): не затирать вручную отредактированный образец (нужен флаг sample_manual).
           target: [docTemplate.insuranceCompanyId, docTemplate.docType],
           set: {
-            sampleSubject: sql`coalesce(${docTemplate.sampleSubject}, excluded.sample_subject)`,
-            sampleText: sql`coalesce(${docTemplate.sampleText}, excluded.sample_text)`,
-            sampleStoragePath: sql`coalesce(${docTemplate.sampleStoragePath}, excluded.sample_storage_path)`,
-            sampleFilename: sql`coalesce(${docTemplate.sampleFilename}, excluded.sample_filename)`,
+            sampleSubject: sql`excluded.sample_subject`,
+            sampleText: sql`excluded.sample_text`,
+            sampleStoragePath: sql`excluded.sample_storage_path`,
+            sampleFilename: sql`excluded.sample_filename`,
           },
         })
     }
