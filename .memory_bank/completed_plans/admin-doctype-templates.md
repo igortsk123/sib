@@ -1,10 +1,10 @@
 ---
 workstream: admin-recognition
 slug: admin-doctype-templates
-status: draft
+status: completed
 created: 2026-06-22
 updated: 2026-06-22
-completed:
+completed: 2026-06-22
 ---
 
 ## Цель
@@ -56,3 +56,9 @@ RBAC: не-платформенный админ не видит. Секреты
 
 ## Вне scope MVP
 Авто-генерация regex из эталона; live-переразбор входящих; извлечение текста PDF/Excel в проде (→ S1).
+
+## Итог (деплой 995bdee, 2026-06-22)
+MVP готов: таблица doc_template (миграция 0009), /insurers/[id] с секцией «Типы документов» (загрузка
+образца+текст, «Эталон LLM» gpt-5.5 → gold_json, счётчик дрейфа по типу из parse_log с doc_type),
+RBAC платформенного админа, раздача образца /api/original/template/[id]. Гейт зелёный.
+v2 (после S1): авто-сборка парсера из эталона, live-переразбор входящих, извлечение текста PDF/Excel в проде.
