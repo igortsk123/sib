@@ -111,11 +111,11 @@ export default async function RegistryPage({
           </div>
           <div className="flex flex-col gap-1">
             <Label className="text-xs text-muted-foreground">Дата с</Label>
-            <Input type="date" name="from" defaultValue={sp.from ?? ""} className="h-9" />
+            <Input type="date" name="from" defaultValue={sp.from ?? ""} min="2000-01-01" max="2099-12-31" className="h-9" />
           </div>
           <div className="flex flex-col gap-1">
             <Label className="text-xs text-muted-foreground">Дата по</Label>
-            <Input type="date" name="to" defaultValue={sp.to ?? ""} className="h-9" />
+            <Input type="date" name="to" defaultValue={sp.to ?? ""} min="2000-01-01" max="2099-12-31" className="h-9" />
           </div>
         </div>
         <div className="flex gap-2">
