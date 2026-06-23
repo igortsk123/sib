@@ -60,6 +60,7 @@ const VALID_STATUS = new Set([
 const VALID_DOCTYPE = new Set([
   "guarantee", "enroll", "detach", "annul", "referral", "denial", "info_request", "archive_password", "service", "other",
 ])
+const VALID_CARETYPE = new Set(["ambulatory", "dentistry", "combined", "other"])
 
 // ФИО к виду «Фамилия Имя Отчество» (нормализуем только полностью ВЕРХНИЙ регистр).
 function titleCaseFio(s: string | null): string | null {
@@ -238,7 +239,7 @@ async function main() {
         caseNumber: l.caseNumber ?? null,
         contractNumber: l.contractNumber ?? null,
         docType: (l.docType && VALID_DOCTYPE.has(l.docType) ? l.docType : null) as never,
-        careType: ((l.careType as string) || classifyCareType(l.services, l.text)) as never,
+        careType: ((VALID_CARETYPE.has(l.careType as string) ? (l.careType as string) : null) || classifyCareType(l.services, l.text)) as never,
         approvalStatus: (VALID_STATUS.has(l.approvalStatus) ? l.approvalStatus : "unknown") as never,
         letterDate: safeDate(l.letterDate),
         coverageFrom: safeDate(l.coverageFrom),
