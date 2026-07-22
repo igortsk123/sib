@@ -29,7 +29,8 @@
       "Bash(echo \"залито: $\\(ssh root@193.160.208.41 'ls /opt/sib-storage/emails/*.eml 2>/dev/null | wc -l'\\) .eml, $\\(ssh root@193.160.208.41 'ls /opt/sib-storage/attachments/ 2>/dev/null | wc -l'\\) вложений\")",
       "Bash(python3 -c \"import json;print\\(len\\(json.load\\(open\\('.mail-intake/live/dataset/dataset.json'\\)\\)['letters']\\),'записей,',len\\(json.load\\(open\\('.mail-intake/live/dataset/dataset.json'\\)\\)['emails']\\),'писем'\\)\")",
       "Bash(echo \"локально live dataset: $\\(python3 -c \"import json;print\\(len\\(json.load\\(open\\('.mail-intake/live/dataset/dataset.json'\\)\\)['letters']\\),'записей,',len\\(json.load\\(open\\('.mail-intake/live/dataset/dataset.json'\\)\\)['emails']\\),'писем'\\)\"\\)\")",
-      "Bash(ssh -o ConnectTimeout=25 root@193.160.208.41 \"python3 -c \\\\\"import json;d=json.load\\(open\\('/opt/sib-storage/_seed/dataset.json'\\)\\);print\\('на сервере:',len\\(d['letters']\\),'записей,',len\\(d['emails']\\),'писем'\\)\\\\\"; docker run --rm --network sib-net --env-file /opt/sib.env -v /opt/sib-storage:/app/storage -e DATASET_PATH=/app/storage/_seed/dataset.json sib:latest pnpm db:seed:corpus 2>&1 | tail -5\")"
+      "Bash(ssh -o ConnectTimeout=25 root@193.160.208.41 \"python3 -c \\\\\"import json;d=json.load\\(open\\('/opt/sib-storage/_seed/dataset.json'\\)\\);print\\('на сервере:',len\\(d['letters']\\),'записей,',len\\(d['emails']\\),'писем'\\)\\\\\"; docker run --rm --network sib-net --env-file /opt/sib.env -v /opt/sib-storage:/app/storage -e DATASET_PATH=/app/storage/_seed/dataset.json sib:latest pnpm db:seed:corpus 2>&1 | tail -5\")",
+      "Bash(git commit -q -m 'AUTOPILOT включён: agent-workflow/CLAUDE/project-state/guides — автономно план→выполнение→деплой *)"
     ],
     "ask": [
       "Bash(rm -rf /)",

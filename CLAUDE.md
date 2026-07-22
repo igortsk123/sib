@@ -19,7 +19,8 @@
 3. `.memory_bank/project-state.md` — где проект сейчас.
 
 ## Критично — инженерная конституция (`.claude/rules/engineering-principles.md`)
-- **План first, code second** (`.claude/rules/agent-workflow.md`). Без явного «деплой» код не пишем.
+- **Режим AUTOPILOT** (`.claude/rules/agent-workflow.md`): работаем автономно — план→выполнение→деплой без
+  ожидания команды «деплой». Обязательны: зелёный гейт, память+audit, эскалация только по `human-decisions`, guardrails.
 - **Самопроверяемость:** владелец НЕ ревьюит построчно. «Готово» = зелёный гейт (typecheck+lint+
   unit+integration+e2e+build) + e2e на затронутый поток. Срезы вертикальные UI→БД, с тестами.
 - **Гипотезы, не аксиомы:** контракт/схема — допущение; расхождение → отклонись и запиши ADR в `decisions.md`.
