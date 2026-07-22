@@ -64,6 +64,11 @@ export default async function RegistryPage({
                 <Download className="size-4" /> Выгрузить в Excel
               </a>
             </Button>
+            <Button asChild variant="outline" className="gap-2" title="Все записи со стоматологией (стоматология + комплексное) — для массовой загрузки в стомат-систему">
+              <a href="/api/registry/export?careTypeIn=dentistry,combined">
+                <Download className="size-4" /> Стоматология (загрузка)
+              </a>
+            </Button>
           </div>
         }
       />

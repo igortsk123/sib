@@ -9,6 +9,7 @@ export type RegistryFilter = {
   insurerId?: string // фильтр: страховая
   status?: string // фильтр: статус
   careType?: string // фильтр: направление (амбулатория|стоматология)
+  careTypeIn?: string[] // фильтр-множество направлений (стомат-выгрузка: dentistry+combined)
   source?: string // фильтр: источник
   review?: string // фильтр: проверка ("1" нужна / "0" ок / undefined все)
   dateFrom?: string // фильтр: дата письма от
@@ -36,6 +37,7 @@ function whereClause(f: RegistryFilter) {
   if (f.insurerId) conds.push(eq(guaranteeLetter.insuranceCompanyId, f.insurerId))
   if (f.status) conds.push(eq(guaranteeLetter.approvalStatus, f.status as never))
   if (f.careType) conds.push(eq(guaranteeLetter.careType, f.careType as never))
+  if (f.careTypeIn?.length) conds.push(inArray(guaranteeLetter.careType, f.careTypeIn as never[]))
   if (f.source) conds.push(eq(guaranteeLetter.source, f.source))
   if (f.review === "1") conds.push(eq(guaranteeLetter.needsReview, true))
   else if (f.review === "0") conds.push(eq(guaranteeLetter.needsReview, false))

@@ -21,6 +21,7 @@ export async function GET(req: Request) {
       insurerId: p.get("insurer") ?? undefined,
       status: p.get("status") ?? undefined,
       careType: p.get("careType") ?? undefined,
+      careTypeIn: p.get("careTypeIn")?.split(",").map((s) => s.trim()).filter(Boolean),
       source: p.get("source") ?? undefined,
       review: p.get("review") ?? undefined,
       dateFrom: isoFromRu(p.get("from")), // «дд.мм.гггг» → ISO
@@ -93,10 +94,12 @@ export async function GET(req: Request) {
 
   const buf = await wb.xlsx.writeBuffer()
   const stamp = new Date().toISOString().slice(0, 10)
+  const isDental = (p.get("careTypeIn") ?? "").includes("dentistry") || p.get("careType") === "dentistry"
+  const fname = isDental ? `reestr-stomatologiya-${stamp}.xlsx` : `reestr-gp-${stamp}.xlsx`
   return new Response(buf, {
     headers: {
       "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      "Content-Disposition": `attachment; filename="reestr-gp-${stamp}.xlsx"`,
+      "Content-Disposition": `attachment; filename="${fname}"`,
       "Cache-Control": "no-store",
     },
   })
