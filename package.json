@@ -13,6 +13,7 @@
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "tsx lib/db/seed/run.ts",
     "db:seed:corpus": "tsx lib/db/seed/corpus.ts",
+    "db:ingest": "tsx lib/db/seed/ingest.ts",
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
