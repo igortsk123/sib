@@ -51,6 +51,13 @@ review_after: ""
   контексте шаблона (чем разобрано / что добирал ИИ), `parse_log` (ловить смену форм источником),
   «Сообщить об ошибке» (`error_report` + `/error-reports`). Правка почты сотрудника инлайн.
 - 🛠 **Инцидент диска решён**: build cache 17GB→100% диск; деплой-скрипт теперь держит кэш ≤3GB.
+- ✅ **S1 — ЖИВОЙ АВТО-ПРИЁМ работает** (2026-07-22): systemd-таймер `sib-intake.timer` на сервере каждые
+  **3 мин**: `fetch_live.py inc` (инкрементально по UID, курсор `live/state.json`, READ-ONLY) → `extract`+`enrich`
+  (poppler + xlrd/striprtf/olefile + LLM на сервере) → файлы в `/opt/sib-storage` → `docker exec … npm run db:ingest`
+  (upsert без wipe, дедуп по rawSha256, self-healing: новый тип/шаблон → авто-создание `doc_template(status=new)` +
+  `needsReview` + алерт в `error_report`). Раннер — `/opt/sib-intake/{run.sh,.mail-intake/*.py,.env.local(600)}`,
+  units `/etc/systemd/system/sib-intake.{service,timer}`, лог `/opt/sib-intake/intake.log`. Валидирован на реальных
+  письмах (3 новых вставлено, 28 дедупнуто). Код в репо: `lib/db/seed/{ingest,shared}.ts`, `db:ingest`.
 - ✅ **Полный бэкофилл 2026 в проде** (2026-07-22): оба ящика read-only → fetch по доменам страховых →
   **2249 писем → 9660 записей ГП**, 2507 вложений, 52 шаблона типов, журнал разбора 9660 строк. Покрытие на
   реальных данных: **ФИО 9621/9660 (99.6%), полис 9561/9660 (99%)**, к проверке 417. careType: ambulatory 3271,

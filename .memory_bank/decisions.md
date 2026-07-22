@@ -249,3 +249,23 @@ ZIP→unzip паролем из соседнего письма. PNG в пись
 **Влияет на:** `lib/db/schema/guarantee.ts` (+поля), `enums.ts` (docType/reviewStatus/annul), `parse-log.ts`
 (миграции 0005–0008), `app/(admin)/parse-log`, `components/admin/shell.tsx` (nav), `api/registry/export`,
 `lib/server/registry/queries.ts`, `lib/review-hints.ts`, `lib/letter-status.ts`, `.mail-intake/{extract_dataset,enrich}.py`.
+
+## [2026-07-22] D16. S1 — живой авто-приём: серверный python-раннер + инкрементальный upsert (не порт в Node)
+**Контекст:** боевые ящики подключены (read-only, app-пароли). Нужен непрерывный приём: письмо пришло →
+скачалось → распозналось парсерами → в реестр. Рабочая распознавалка — оффлайн python (`.mail-intake/*.py`),
+её тулзам (poppler, xlrd/striprtf/olefile, LLM) нужен рантайм; батч-сид (`corpus.ts`) делает full wipe+reinsert.
+**Решение (проверенные гипотезы):**
+- **НЕ переписываем распознавание в Node.** Reuse рабочего python как **серверного раннера** на systemd-таймере
+  (3 мин): `fetch_live.py inc` → `extract`+`enrich` → `db:ingest`. Порт в Node = дублирование + дрейф (отклонили).
+- **Инкрементальность по UID**, не по дате: курсор `live/state.json` `{box: lastUid}`, `UID last+1:*` (read-only,
+  BODY.PEEK). Бутстрап = текущий максимум (приём только НОВЫХ; история — бэкофиллом). Гэпов/дублей нет.
+- **Отдельный `ingest.ts` (upsert, БЕЗ wipe)** vs `corpus.ts` (wipe): живой приём не должен стирать реестр и ручные
+  правки. Дедуп по `rawSha256` письма (не по Message-ID — устойчивее). Общие нормализаторы вынесены в `shared.ts`
+  (один источник для corpus/ingest, без дублирования). `parse_log` — вставка чанками (лимит параметров PG 65535).
+- **Self-healing:** письмо известного домена, но НОВОГО типа/шаблона → запись всё равно в реестре, `doc_template`
+  авто-создаётся (`status=new`, note), запись форсит `needsReview`, админу — `error_report(open)` на первой записи.
+- **Инфра:** poppler-utils + pip(xlrd,striprtf,olefile) на хосте (LibreOffice НЕ нужен — xlsx pure-python zipfile).
+  Раннер `/opt/sib-intake/`, creds `.env.local`(600), units `sib-intake.{service,timer}`, лог `intake.log`(ротация 5MB).
+**Валидация:** реальный цикл — fetch 31 → extract 61 → enrich (LLM 11) → ingest 3 новых + 28 дедуп; таймер авто-сработал (success).
+**Влияет на:** `lib/db/seed/{ingest,shared,corpus}.ts`, `package.json` (`db:ingest`), `.mail-intake/fetch_live.py`
+(режим `inc`/`--bootstrap`), сервер `/opt/sib-intake/*` + systemd. Read-only почты (guardrails) соблюдён.
