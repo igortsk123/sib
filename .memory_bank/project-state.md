@@ -73,8 +73,11 @@ review_after: ""
   не помечать `\Deleted`, не EXPUNGE, не перемещать/менять письма. IMAP SELECT — только `readonly=True`.
 - ⏭ **Дальше:** IMAP-забор прод-пайплайна (роадмап S1 — тулзы pdftotext/striprtf/xlrd/olefile/libreoffice
   в Docker; read-only); правка полей в карточке; per-insurer механические шаблоны; vision на реальные сканы.
-- ⏭ **SMTP-отправка** (app-пароль, `smtp.yandex.ru:465`) — теперь можно реально; уведомления репортов/алертов.
-  Нужен тест-отправка (outward-facing) — согласовать адрес. Пока письма логируются как pending (`notifyErrorFixed`).
+- ✅ **Стоматологический bulk-экспорт** (2026-07-22): кнопка «Стоматология (загрузка)» в реестре →
+  `careTypeIn=dentistry,combined` (все с зубным покрытием, 6136 записей) → `reestr-stomatologiya-<дата>.xlsx`
+  для массовой загрузки в стомат-систему. Фильтр-множество `careTypeIn` в `queries.ts`/export.
+- 🚫 **SMTP-отправка — решение владельца (2026-07-22): пока НЕ слать с боевых ящиков** (правило read-only).
+  Уведомления/алерты остаются в логе как pending (`notifyErrorFixed`). Отдельный SMTP-адрес — по решению позже.
 
 ## Ключевые решения (зафиксировано — полные ADR в `decisions.md`)
 - D1 — стек Next.js/TS/Drizzle/Inngest. D2 — Яндекс IMAP-доступ подтверждён. D3 — конституция
