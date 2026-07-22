@@ -2,13 +2,13 @@
 tier: 1
 topic: roles-and-access
 scope: Роли, права доступа (RBAC), ПДн и безопасность
-tier2: domain/product-spec.md
-updated: 2026-06-21
+tier2: ../domain/product-spec.md
+updated: 2026-07-22
 importance: high
 source: domain/product-spec.md §8,16
 status: working
 source_of_truth: supporting
-last_verified: 2026-06-21
+last_verified: 2026-07-22
 review_after: ""
 ---
 

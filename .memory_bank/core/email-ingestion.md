@@ -2,13 +2,13 @@
 tier: 1
 topic: email-ingestion
 scope: Забор писем — IMAP/Яндекс, двойная пересылка, дедупликация
-tier2: domain/product-spec.md
-updated: 2026-06-21
+tier2: ../domain/insurer-recognition.md
+updated: 2026-07-22
 importance: high
 source: domain/product-spec.md §3,5,12
 status: working
 source_of_truth: supporting
-last_verified: 2026-06-21
+last_verified: 2026-07-22
 review_after: ""
 ---
 

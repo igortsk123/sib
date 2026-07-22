@@ -1,16 +1,30 @@
 {
-  "//": "ОПЦИОНАЛЬНО. Скопируй блок hooks в .claude/settings.json целевого проекта, чтобы при",
-  "//2": "завершении ответа Claude запускался memory-audit и впрыскивал отчёт о консистентности.",
-  "//3": "Это НЕ авто-сейв контента (его делает агент по memory-discipline), а авто-проверка ссылок,",
-  "//4": "orphan и stale-сводок. Флаг --check не переписывает INDEX, только репортит.",
+  "//": "ОПЦИОНАЛЬНО (для режима default; в пресетах important/autopilot хуки уже включены).",
+  "//2": "Скопируй блок hooks в .claude/settings.json или settings.local.json целевого проекта.",
+  "//3": "Stop: НАПОМИНАНИЕ про /memory-check при незафиксированной работе (session-reminder)",
+  "//4": "+ структурная проверка (memory-audit --check, INDEX не переписывает, только репортит).",
+  "//5": "SessionStart: баннер свежести памяти (session-freshness) — молчит, когда всё чисто.",
+  "//6": "Это НЕ авто-сейв контента (его делает агент по memory-discipline), а напоминание+детекция.",
+  "//7": "Без Node хуки мягко деградируют: Stop печатает shell-напоминание при git-изменениях.",
   "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if command -v node >/dev/null 2>&1 && [ -f tools/session-freshness.mjs ]; then node tools/session-freshness.mjs . || true; fi"
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "matcher": "",
         "hooks": [
           {
             "type": "command",
-            "command": "node tools/memory-audit.mjs --check ."
+            "command": "if command -v node >/dev/null 2>&1 && [ -f tools/session-reminder.mjs ]; then node tools/session-reminder.mjs . || true; node tools/memory-audit.mjs --check . || true; elif [ -n \"$(git status --porcelain 2>/dev/null | grep -v '^.. \\.memory_bank/')\" ]; then echo 'Внимание: изменения сессии не зафиксированы в памяти — перед /clear запусти /memory-check (.memory_bank/)'; fi"
           }
         ]
       }

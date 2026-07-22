@@ -1,9 +1,9 @@
 ---
 workstream: recognition
 slug: recognition-roadmap
-status: in_progress
+status: partial
 created: 2026-06-21
-updated: 2026-06-21
+updated: 2026-07-22
 completed:
 ---
 
@@ -125,6 +125,10 @@ Phase 0 → S1 (+ S1-тест адаптер для фикстур) → S2 → S
 - 2026-06-21 — **Phase 0 готов** (деплой `fa5d6e2`): 7 таблиц (1—N GuaranteeLetter), реестр 13 страховых
   засеян, LLM-клиент (gpt-5.4-mini, Structured Outputs) + Inngest (`/api/inngest`) подключены, обёртки
   (Result/log). Гейт зелёный (13 unit). Проверено на проде: миграции+сид применены, health 200. **Дальше — S1.**
+- 2026-07-22 — статус `draft/in_progress` → **`partial`**: это зонтичный роадмап-карта, а не один
+  исполняемый срез. Реализованные срезы вынесены отдельными планами (`completed_plans/registry-demo.md`
+  — LLM-извлечение/реестр/оригиналы/Excel/пометки; активные `plans/*` — careType, self-healing,
+  per-template-journal). Карта остаётся в `plans/` как справочник для будущих срезов. (Свод при HEAL v1.3.0.)
 
 ## Follow-up work
 - [ ] Дополнять реестр доменов/вариантов по мере новых писем и при подключении 4 рабочих ящиков.

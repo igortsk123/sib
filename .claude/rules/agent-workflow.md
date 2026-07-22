@@ -20,9 +20,12 @@ alwaysApply: true
 1. Прочитать план из `plans/<slug>.md`, сменить статус на `in_progress`.
 2. Перечислить файлы к изменению — не трогать остальные.
 3. Выполнить. Запустить lint/build/тесты — исправить ошибки.
-4. Обновить Memory Bank если поменялась архитектура (`memory-discipline.md`).
-5. Полностью готово → `completed` + дата + completion summary → перенести в `completed_plans/`,
-   обновить `plans/README.md`. Частично → `partial`, остаётся в `plans/`.
+4. Обновить Memory Bank если поменялась архитектура (`memory-discipline.md`), затем запустить
+   `/memory-check` (захват → уровни → связи+INDEX → чистота); audit «чисто».
+5. Полностью готово → `completed` + дата + completion summary → перенести в `completed_plans/`
+   (реестры пересоберёт аудит). Частично → `partial`, остаётся в `plans/`.
+
+**Гейт:** план НЕ может стать `completed`, пока `/memory-check` не выполнен и audit не «чисто».
 
 ## Статусы плана
 | Статус | Значение |

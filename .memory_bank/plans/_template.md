@@ -1,6 +1,7 @@
 ---
 workstream: [область/воркстрим]
 slug: [kebab-case-slug]
+title: [Человекочитаемое название — идёт в реестр plans/README]
 status: draft
 created: YYYY-MM-DD
 updated: YYYY-MM-DD

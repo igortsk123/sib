@@ -7,6 +7,8 @@ draft → in_progress → completed → перенос в completed_plans/
         cancelled → остаётся здесь
 ```
 Только `completed` переносятся в `completed_plans/`. `partial`/`cancelled` остаются здесь.
+**Гейт:** план не становится `completed`, пока не выполнен `/memory-check` и audit не «чисто»
+(см. `.claude/rules/agent-workflow.md`).
 
 ## Статусы
 | Статус | Описание |
@@ -19,8 +21,17 @@ draft → in_progress → completed → перенос в completed_plans/
 
 ## Реестр активных планов
 
-| slug | Название | status | created |
-|------|----------|--------|---------|
-| _(пусто — добавляется при создании плана)_ | | | |
+<!-- GENERATED:plans-registry START -->
+<!-- Таблицу регенерирует tools/memory-audit.mjs из frontmatter. Не редактируй вручную. -->
 
-> Шаблон нового плана — `_template.md`.
+| slug | Название | status | created | updated |
+|------|----------|--------|---------|---------|
+| self-healing-recognition | — | draft | 2026-06-22 | 2026-06-22 |
+| per-template-parse-journal | — | draft | 2026-06-22 | 2026-06-22 |
+| care-type-split-ambulatory-dentistry | — | draft | 2026-06-22 | 2026-06-22 |
+| recognition-roadmap | — | partial | 2026-06-21 | 2026-07-22 |
+<!-- GENERATED:plans-registry END -->
+
+> Шаблон нового плана — `_template.md`. Реестр регенерирует аудит — руками не правим.
+> Audit также ловит зомби: `in_progress` без движения (PLAN-STUCK) и `completed`,
+> забытый в этой папке (PLAN-MISPLACED).

@@ -2,7 +2,7 @@
 tier: 2
 topic: insurer-recognition
 scope: Эмпирика тестового корпуса — структура пересылки и реестр сигналов различения страховых
-tier1: core/recognition.md
+tier1: ../core/email-ingestion.md
 updated: 2026-06-21
 importance: high
 source: _intake (тестовый ящик palmarius.ru@yandex.ru, контейнер от igortsk@mail.ru, 2026-06-21)

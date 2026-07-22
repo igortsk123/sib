@@ -2,50 +2,46 @@
 tier: 1
 topic: data-model
 scope: Модель данных — сущности и ключевые поля
-tier2: domain/product-spec.md
-updated: 2026-06-21
+tier2: ../domain/product-spec.md
+updated: 2026-07-22
 importance: high
-source: domain/product-spec.md §7,13
+source: domain/product-spec.md §22 (факт кода), §7,§13
 status: working
 source_of_truth: supporting
-last_verified: 2026-06-21
+last_verified: 2026-07-22
 review_after: ""
 ---
 
 # Модель данных — Tier 1 сводка
 
-> Гипотеза первой схемы (Drizzle). Точные поля уточняются на реальных письмах → ADR при расхождении.
+> Реальная схема Drizzle (`lib/db/schema/*`, 15 файлов). **Все поля/enum-значения — §22.**
+> Схема — гипотеза v0, уточняется на письмах → ADR.
 
-## Сущности (§13)
-- **EmailMessage** — ящик, Message-ID, From/To/Cc, Subject, дата получения, исходная дата, тело text/html,
-  признак пересылки + исходный отправитель/тема (D5), статус обработки.
-- **Attachment** — email_message_id, имя/тип/размер/hash, путь, нужен ли пароль, распакован ли,
-  extracted_text, OCR_text, ошибка обработки.
-- **GuaranteeLetter** — email_message_id, sourceEmailIds[] (все источники: письмо ГП + письма-пароли),
-  attachment_id, organization_id (мультитенант-скоуп), rowIndex (строка Excel-реестра), страховая.
-  Пациент: `patientFullName`, `patientBirthDate`, `policyNumber`, `policySeries`. Документ: `letterNumber`
-  (№ ГП), `caseNumber` (№ обращения/направления), `contractNumber` (№ договора), `docType` (тип, enum),
-  `approvalStatus` (статус), `services`. Даты/лимиты: `letterDate`, `coverageFrom`/`coverageTo` (период
-  обслуживания), `validUntil` (срок действия письма), `amountLimit` (ограничение-сумма), `conditions`
-  (ограничения-условия), `insurerComment`/`clinicComment`. Распознавание: `source` (body/pdf/xlsx/xls/rtf/
-  archive), `method` (deterministic/deterministic+llm/llm/llm_vision), `confidence`, `needsReview`,
-  `reviewNote` (имена сомнительных полей → понятный текст через `lib/review-hints.ts`), `reviewStatus`,
-  `reviewedBy`/`reviewedAt`. Поля добавлялись по ADR D12/D13/D14/**D15** (миграции 0002–0007).
-- **ParseLog** (ADR D15, миграция 0008) — наблюдаемость гибрида: по записи `method`, `detGap` (поля, что
-  LLM нашла, а парсер НЕТ → цель донастройки), `llmFilled`, `missing`, insurer/source. Сидируется из
-  `parse_log.jsonl`. Страница `/parse-log` — ловить смену форм источником.
-- **Enums:** `approvalStatusEnum` (approved/denied/detach/enroll/**annul**/partial/need_info/need_approval/
-  unknown), `docTypeEnum` (guarantee/enroll/detach/annul/referral/denial/info_request/archive_password/service/
-  other), `reviewStatusEnum`. Подписи — `lib/letter-status.ts` (STATUS_LABELS, DOC_TYPE_LABELS).
-- **InsuranceCompany** — название + варианты написания, домены/типовые email отправителей, правила
-  обработки, активность (редактируемый справочник — ~12+ компаний, §4).
-- **User** — организация, ФИО, email, роль, статус, даты (см. `core/roles-and-access.md`).
-- **AuditLog** — пользователь, действие, объект, старое/новое значение, время, IP/устройство (ADR D4).
+## Сущности (сверено с кодом)
+- **EmailMessage** (`email_message`) — письмо + `isForwarded`/`originalFrom/Subject` (двойная
+  пересылка D5) + `rawStoragePath`/`rawSha256` (инвариант ссылки на `.eml`), status, docType.
+- **Attachment** (`attachment`) — FK email: `sha256`, `storagePath`, `needsPassword`, `isScanned`
+  (скан→OCR), `extractedText`/`ocrText`.
+- **GuaranteeLetter** (`guarantee_letter`) — запись реестра. `EmailMessage 1—N GuaranteeLetter`
+  (D10): Excel-реестр = много записей из письма, `rowIndex` — строка. Поля: пациент; документ
+  (`letterNumber`/`caseNumber`/`contractNumber`/`docType`/`careType`/`approvalStatus`/`services`);
+  даты/лимиты; распознавание (`source`/`method`/`confidence`/`needsReview`/`reviewStatus`).
+- **ProcessingQueue** (`processing_queue`) — очередь ручной проверки: `reason`, `correlationKey`
+  (архив↔пароль, D10).
+- **ParseLog** (`parse_log`, D15) — наблюдаемость гибрида: `method`/`detGap`/`llmFilled`/`missing`
+  (`/parse-log`). **DocTemplate** (`doc_template`, D15) — образец типа × страховая → `goldJson`.
+  **ErrorReport** (`error_report`) — «Сообщить об ошибке» в карточке.
+- **InsuranceCompany** (`insurance_company`) — справочник (~12+): `domains` — ключ идентификации
+  отправителя (D10); aliases/typicalEmails/`rules`.
+- **Мультитенант + auth:** `organization`/`app_user`/`membership`; `session`/`login_attempt`/
+  `telegram_contact` (вход телефон→код Telegram). **AuditLog** (`audit_log`, D4).
+
+Enums (`enums.ts`, значения — §22): email_status, doc_type, approval_status (incl. `annul`),
+care_type, review_status, queue_*, doc_template_status, user_role. Хелперы:
+`lib/letter-status.ts`, `lib/review-hints.ts`, `lib/care-type.ts`.
 
 ## Принципы
-- Хранить и **оригиналы**, и извлечённые поля (проверяемость распознавания).
-- Каждое распознанное поле — со значением уверенности + ссылкой на фрагмент-источник.
-- Связи: EmailMessage 1—N Attachment; GuaranteeLetter ←→ EmailMessage/Attachment; дубли — пометка (D6).
-- Файлы вложений (ПДн) — вне БД, в защищённом хранилище; в БД путь/hash (`.claude/rules/guardrails.md`).
+- Хранить **оригиналы** + извлечённое; поле — с `confidence` + ссылкой; дубли — пометка (D6).
+  Файлы (ПДн) вне БД — путь/hash. Связь: EmailMessage 1—N Attachment / 1—N GuaranteeLetter.
 
-**Tier 2:** `domain/product-spec.md` §7 (поля), §13 (сущности).
+**Tier 2:** `domain/product-spec.md` §22 (все поля/enum), §7 (поля), §13 (сущности брифа).

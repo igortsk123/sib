@@ -2,7 +2,7 @@
 tier: 2
 topic: product-spec
 scope: Полная спека продукта (идея v0.1) — гипотезы, проверяются на реальных письмах
-tier1: product_brief.md
+tier1: ../product_brief.md
 updated: 2026-06-21
 importance: high
 source: _intake/_processed/brief/dms-garantiynye-pisma.md (Google Drive, v0.1)
@@ -903,3 +903,113 @@ MVP должен доказать, что продукт способен усп
 8. пример итогового Excel-реестра, который клиника хочет получить.
 
 После этого можно составить детальное ТЗ на MVP, описать поля базы данных, сценарии интерфейса, структуру Excel-экспорта и правила обработки по каждой страховой компании.
+
+---
+
+## 22. Реализация — факт кода (сверено 2026-07-22)
+
+Разделы 1–21 — идея v0.1 (гипотеза). Ниже — что реально в коде (`/home/pakar/igor/sib`), куда
+вынесены детали из Tier 1 сводок `core/architecture.md` и `core/data-model.md`.
+
+### 22.1. Стек (сверено с `package.json`)
+- **Next 16.2.6 (App Router) + React 19 + TypeScript 5.7** — UI + server actions/route handlers.
+- **Tailwind v4 + radix-ui** (+ `class-variance-authority`, `tailwind-merge`, `lucide-react`,
+  `sonner`, `next-themes`) — компоненты в стиле shadcn (копируются, отдельного пакета shadcn нет).
+- **PostgreSQL** (`postgres` 3.4.9) **+ Drizzle ORM** 0.45 (`drizzle-kit` для миграций).
+  `drizzle-zod` в зависимостях НЕТ — схемы валидируются ручными Zod-схемами на границах.
+- **Inngest 3.45** — durable-задачи/ретраи (IMAP, вложения, OCR, LLM, распаковка). **Статус:
+  каркас** — `lib/inngest/functions.ts` содержит только `ping`; прикладные шаги — по срезам S1+.
+- **OpenAI через RU-прокси** — `lib/server/llm/openai.ts`: тонкий клиент на `fetch` (SDK-пакета нет).
+  Прямой запрос из РФ → 403 ⇒ `OPENAI_BASE_URL` (прокси) обязателен. Модель `OPENAI_MODEL`
+  (default `gpt-5.4-mini`; эталон шаблонов — gpt-5.5). Structured Outputs strict.
+- **Zod 4** — валидация env (`lib/env.ts`) и внешних данных.
+- **exceljs** — Excel-реестры (импорт/экспорт).
+- **Auth:** телефон → код в Telegram (порт sup2, бот `doconpro_bot` через прокси
+  `TELEGRAM_API_BASE`, long-poll). Таблицы `session`/`login_attempt`/`telegram_contact`.
+  Cookie `sib_session`. Bootstrap платформенного админа по телефону; тест-вход (фикс. телефон+код).
+- **Хранилище оригиналов (ПДн):** `lib/storage.ts` — `STORAGE_DIR` (`/app/storage` в проде,
+  `./storage` локально), в БД — относительный путь + sha256, защита от path traversal.
+- **Слои `lib/server/`:** `auth`, `clinics`, `error-reports`, `insurers`, `llm`, `mail` (notify),
+  `registry`, `staff`, `templates` + `scope.ts` (мультитенант-скоуп).
+- **Маршруты:** `app/(admin)/` — `admin`, `registry`, `insurers`, `staff`, `parse-log`,
+  `error-reports`; `app/(auth)/login`; `app/api/` — `health`, `inngest`, `original`, `registry`.
+
+### 22.2. Реальная схема БД (`lib/db/schema/*`, 15 файлов)
+Таблицы: `organization`, `app_user`, `membership`, `session`/`login_attempt`/`telegram_contact`
+(auth), `insurance_company`, `email_message`, `attachment`, `guarantee_letter`,
+`processing_queue`, `audit_log`, `parse_log`, `doc_template`, `error_report`.
+
+**guarantee_letter** (полный список полей — вынесен сюда из Tier 1):
+- скоуп/связи: `organizationId`, `emailMessageId` (FK, N писем→N записей, ADR D10),
+  `sourceEmailIds[]` (письмо + письма-пароли), `attachmentId`, `insuranceCompanyId`, `rowIndex`
+  (строка Excel-реестра — одно письмо-реестр даёт много записей: РЕСО 17–32, Альфа 2–11).
+- пациент: `patientFullName`, `patientBirthDate`, `policyNumber`, `policySeries`.
+- документ: `letterNumber` (№ ГП), `caseNumber` (№ обращения), `contractNumber` (№ договора),
+  `docType`, `careType` (амбулатория/стоматология — план care-type-split), `approvalStatus`,
+  `services` (jsonb).
+- даты/лимиты: `letterDate`, `coverageFrom`/`coverageTo` (период полиса), `validUntil` (срок ГП),
+  `amountLimit`, `conditions`, `insurerComment`, `clinicComment`.
+- распознавание: `source` (body|pdf|xlsx|xls|rtf|archive), `method` (deterministic|llm|llm_vision),
+  `confidence` (jsonb {field:0..1}), `needsReview`, `reviewNote`, `reviewStatus`,
+  `reviewedBy`/`reviewedAt`.
+
+**email_message:** mailbox, messageId, from/to/cc, subject, receivedAt, originalDate, bodyText/Html,
+isForwarded + originalFrom/originalSubject (двойная пересылка D5), rawStoragePath/rawSha256 (инвариант
+ссылки на оригинал), insuranceCompanyId, status, docType, isPossibleDuplicate, meta(jsonb).
+
+**attachment:** filename, contentType, `ext`, size, sha256, storagePath, needsPassword, isExtracted,
+`isScanned` (PDF-скан→OCR), extractedText, ocrText, extractError.
+
+**processing_queue** (очередь ручной проверки, бриф §9.4): reason (`queueReasonEnum`), status,
+assignedTo, notes, `correlationKey` (связка архив↔пароль). **doc_template** (план
+admin-doctype-templates, ADR D15): образец типа документа × страховая → `goldJson` (LLM-эталон),
+status (new|llm_parsed|parser_ready|drift). **error_report** («Сообщить об ошибке» в карточке):
+message, reporterEmail, status (open|fixed|dismissed), уведомление автору при исправлении.
+**parse_log** (ADR D15): наблюдаемость гибрида — `method`, `detGap` (LLM нашла, парсер нет),
+`llmFilled`, `missing`, insurer/docType/source.
+
+**Enums** (`enums.ts`): `emailStatusEnum` (received|parsing|parsed|manual_review|error|irrelevant),
+`docTypeEnum` (guarantee|enroll|detach|annul|referral|denial|info_request|archive_password|service|
+other), `approvalStatusEnum` (approved|denied|detach|enroll|annul|partial|need_info|need_approval|
+unknown), `careTypeEnum` (ambulatory|dentistry|combined|other), `reviewStatusEnum` (auto|confirmed|
+edited|rejected), `queueReasonEnum`, `queueStatusEnum`, `docTemplateStatusEnum`, `errorReportStatusEnum`,
+`userRoleEnum` (owner|dms|doctor|registry|registry_senior), `userStatusEnum`, `orgStatusEnum`,
+`membershipStatusEnum`. Подписи — `lib/letter-status.ts`; hints очереди — `lib/review-hints.ts`;
+классификация направления — `lib/care-type.ts`.
+
+## 23. Перенос из брифа (детали, ужатые в Tier-1; сверено 2026-07-22)
+
+Раздел собирает подробности, вынесенные из `product_brief.md` и `core/human-decisions.md` при их
+сжатии до <3 KB. Tier-1 сводки держат заголовки, полный текст — здесь.
+
+### 23.1. Критерии успеха тестового этапа (из product_brief)
+Система на тестовом наборе должна: забрать письма с тестового ящика; корректно обработать двойную
+пересылку (клиника→разработчик→тестовый ящик); определить страховую по домену/тексту; извлечь данные
+из тела письма, PDF и Word; отработать ≥1 сценарий «архив+пароль»; создать записи в БД; дать поиск по
+ФИО и полису; позволить проверить/исправить поля вручную; сформировать Excel-реестр; сохранить ссылку
+на оригинал; пометить спорные записи как требующие ручной проверки. Полные критерии — §17.
+
+### 23.2. Открытые вопросы владельцу — развёрнуто (из human-decisions, бриф §19)
+- **Почтовые ящики:** сколько рабочих; все ли Яндекс или есть Mail.ru/Gmail/Exchange/корпоративные;
+  доступ по IMAP или только веб; будут ли app-password; удалять/помечать письма после обработки; забирать
+  только новые или весь архив.
+- **Тестовые письма:** сколько; есть ли пример каждого типа (тело/PDF/Word/архив+пароль) и от каждой
+  страховой; хранить ли всю цепочку пересылки; есть ли письма с несколькими пациентами/гарантиями.
+- **Данные / Excel:** обязательные поля реестра; **утверждённый шаблон Excel** для импорта в систему
+  клиники; нужен ли № карты пациента из МИС; распознавать ли диагнозы / суммы-лимиты / коды услуг по
+  прайсу; сопоставлять ли услуги с внутренним справочником.
+- **Пользователи / роли:** сколько на старте; кто может править распознанное; видит ли врач оригиналы;
+  выгружает ли регистратура Excel; нужна ли роль «только просмотр»; нужна ли 2FA.
+- **Интеграции:** в какую систему импортируют Excel и её требования (колонки/даты/кодировка/справочники);
+  нужен ли API в будущем; уведомления сотрудникам о новых письмах (Telegram/WhatsApp/чат).
+
+### 23.3. Безопасность / оператор данных — развёрнуто (§16, §19.6)
+- ✅ **Хостинг ПДн (2026-06-21): целевой = собственный РФ-сервер мед. клиники** (данные под контролем
+  клиники). **Полное логирование разрешено** (ADR D10), в логи не пишем только секреты. Текущий прод —
+  интерим на общем VPS 193.160.208.41; перенос на сервер клиники — при выходе из теста (ADR D4 —
+  окончательное размещение остаётся решением владельца).
+- Осталось решить с владельцем: внутренние требования к ПДн; сроки хранения оригиналов/вложений;
+  шифрование файлов на диске; доступ к бэкапам.
+- **SMTP-отправка наружу** (Яндекс XOAUTH2, `smtp.yandex.ru`) для уведомления автора об исправлении
+  ошибки: нужен рабочий OAuth-токен + проверка коннективности (outward-facing) → с владельцем. Пока
+  письма логируются как pending (`notifyErrorFixed`).

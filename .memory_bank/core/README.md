@@ -6,15 +6,20 @@
 
 ## Реестр сводок
 
-| Файл | Тема (topic) | Tier 2 |
-|------|--------------|--------|
-| `architecture.md` | пайплайн обработки, стек, слои | `domain/product-spec.md` |
-| `email-ingestion.md` | IMAP/Яндекс, двойная пересылка, дедуп | `domain/product-spec.md` |
-| `recognition.md` | извлечение текста, поля, confidence, ручная проверка | `domain/product-spec.md` |
-| `data-model.md` | сущности и поля (EmailMessage/Attachment/GuaranteeLetter/…) | `domain/product-spec.md` |
-| `admin-panel.md` | реестр, карточка, очередь, справочники, Excel | `domain/product-spec.md` |
-| `roles-and-access.md` | роли, RBAC, ПДн/безопасность | `domain/product-spec.md` |
-| `human-decisions.md` | что спрашивать у владельца | `domain/product-spec.md` |
+<!-- GENERATED:core-registry START -->
+<!-- Таблицу регенерирует tools/memory-audit.mjs из frontmatter. Не редактируй вручную. -->
 
-> Глоссарий ДМС — `../glossary.md` (Tier 1). Реестр и decision tree в INDEX держатся в согласии через
-> `tools/memory-audit.mjs` (регенерирует из frontmatter). Создал сводку — проставь frontmatter и запусти аудит.
+| Файл | topic | Когда читать (scope) | Tier 2 | updated |
+|------|-------|----------------------|--------|---------|
+| `admin-panel.md` | admin-panel | Админка — реальные страницы, реестр, карточка, справочники, шаблоны, Excel-экспорт | `../domain/product-spec.md` | 2026-07-22 |
+| `architecture.md` | architecture | Архитектура — пайплайн обработки писем, стек, слои, фоновые задачи | `../domain/product-spec.md` | 2026-07-22 |
+| `data-model.md` | data-model | Модель данных — сущности и ключевые поля | `../domain/product-spec.md` | 2026-07-22 |
+| `email-ingestion.md` | email-ingestion | Забор писем — IMAP/Яндекс, двойная пересылка, дедупликация | `../domain/insurer-recognition.md` | 2026-07-22 |
+| `human-decisions.md` | human-decisions | Список решений, которые принимает ТОЛЬКО владелец — остальное агент решает сам | `../domain/product-spec.md` | 2026-07-22 |
+| `recognition.md` | recognition | Распознавание — извлечение текста, поля, confidence, ручная проверка | `../domain/recognition-architecture.md` | 2026-07-22 |
+| `roles-and-access.md` | roles-and-access | Роли, права доступа (RBAC), ПДн и безопасность | `../domain/product-spec.md` | 2026-07-22 |
+<!-- GENERATED:core-registry END -->
+
+> Глоссарий ДМС — `../glossary.md` (Tier 1). Реестр и decision tree в INDEX регенерирует
+> `tools/memory-audit.mjs` из frontmatter. Создал сводку — проставь frontmatter и запусти аудит:
+> он сам впишет её и в реестр, и в decision tree. Руками таблицы не правим.
