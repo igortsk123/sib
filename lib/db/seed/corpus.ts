@@ -144,22 +144,25 @@ async function main() {
         dtByKey.set(`${l.emailId}|${l.rowIndex ?? ""}`, (l.docType as string) ?? (l.approvalStatus ?? ""))
       }
       if (rows.length) {
-        await db.insert(parseLog).values(
-          rows.map((r) => ({
-            insurer: officialName(r.insurer as string), // официальное имя (журнал ищет по нему)
-            docType: (r.docType as string) ?? dtByKey.get(`${r.emailId}|${r.rowIndex ?? ""}`) ?? null,
-            source: (r.source as string) ?? null,
-            method: (r.method as string) ?? null,
-            rowIndex: (r.rowIndex as number) ?? null,
-            missing: (r.missing as string[]) ?? [],
-            detGap: (r.detGap as string[]) ?? [],
-            llmFilled: (r.llmFilled as string[]) ?? [],
-          })),
-        )
-        console.log(`[corpus] parse_log: ${rows.length} записей`)
+        const plRows = rows.map((r) => ({
+          insurer: officialName(r.insurer as string), // официальное имя (журнал ищет по нему)
+          docType: (r.docType as string) ?? dtByKey.get(`${r.emailId}|${r.rowIndex ?? ""}`) ?? null,
+          source: (r.source as string) ?? null,
+          method: (r.method as string) ?? null,
+          rowIndex: (r.rowIndex as number) ?? null,
+          missing: (r.missing as string[]) ?? [],
+          detGap: (r.detGap as string[]) ?? [],
+          llmFilled: (r.llmFilled as string[]) ?? [],
+        }))
+        // Чанки: 9 колонок × >7000 строк превысят лимит параметров Postgres (65535). Вставляем пачками.
+        const CHUNK = 1000
+        for (let i = 0; i < plRows.length; i += CHUNK) {
+          await db.insert(parseLog).values(plRows.slice(i, i + CHUNK))
+        }
+        console.log(`[corpus] parse_log: ${plRows.length} записей`)
       }
-    } catch {
-      console.log("[corpus] parse_log.jsonl не найден — пропуск")
+    } catch (e) {
+      console.log(`[corpus] parse_log пропущен: ${(e as Error).message ?? e}`)
     }
 
     const emailMap = new Map<string, string>() // dataset emailId → db uuid
