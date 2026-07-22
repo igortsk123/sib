@@ -1,13 +1,35 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "permissions": {
-    "defaultMode": "acceptEdits",
     "allow": [
       "Read",
       "Edit",
       "Write",
       "Bash",
-      "WebFetch"
+      "WebFetch",
+      "Bash(git check-ignore *)",
+      "Bash(awk '{print $1, $NF}')",
+      "Bash(chmod 600 .env.local .memory_bank/_secrets/ACCESS.md)",
+      "Bash(python3 -)",
+      "Bash(node tools/memory-audit.mjs)",
+      "Bash(git add *)",
+      "Bash(git commit -q -m 'правила: боевые ящики подключены \\(креды в _secrets/.env.local\\); ПОЧТА строго read-only, не удалять *)",
+      "Bash(git push *)",
+      "Bash(git commit -q -m 'план: бэкофилл писем страховых за 2026 из боевых ящиков \\(read-only, фильтр по доменам, ~2655\\) *)",
+      "Bash(python3 .mail-intake/fetch_live.py 20)",
+      "Bash(git commit -q -m 'план бэкофилла: + живой авто-приём \\(S1\\) + контрольный батч \\(все страховые ×20 → Сибирская\\) *)",
+      "Bash(python3 -m py_compile .mail-intake/extract_dataset.py)",
+      "Bash(LIVE_MODE=1 python3 .mail-intake/extract_dataset.py)",
+      "Bash(rsync -az --timeout=60 .mail-intake/live/dataset/originals/emails/ root@193.160.208.41:/opt/sib-storage/emails/)",
+      "Bash(rsync -az --timeout=60 .mail-intake/live/dataset/originals/attachments/ root@193.160.208.41:/opt/sib-storage/attachments/)",
+      "Bash(scp -q -o ConnectTimeout=15 .mail-intake/live/dataset/dataset.json root@193.160.208.41:/opt/sib-storage/_seed/dataset.json)",
+      "Bash(scp -q -o ConnectTimeout=15 .mail-intake/live/dataset/parse_log.jsonl root@193.160.208.41:/opt/sib-storage/_seed/parse_log.jsonl)",
+      "Bash(ssh root@193.160.208.41 'ls /opt/sib-storage/emails/*.eml 2>/dev/null | wc -l')",
+      "Bash(ssh root@193.160.208.41 'ls /opt/sib-storage/attachments/ 2>/dev/null | wc -l')",
+      "Bash(echo \"залито: $\\(ssh root@193.160.208.41 'ls /opt/sib-storage/emails/*.eml 2>/dev/null | wc -l'\\) .eml, $\\(ssh root@193.160.208.41 'ls /opt/sib-storage/attachments/ 2>/dev/null | wc -l'\\) вложений\")",
+      "Bash(python3 -c \"import json;print\\(len\\(json.load\\(open\\('.mail-intake/live/dataset/dataset.json'\\)\\)['letters']\\),'записей,',len\\(json.load\\(open\\('.mail-intake/live/dataset/dataset.json'\\)\\)['emails']\\),'писем'\\)\")",
+      "Bash(echo \"локально live dataset: $\\(python3 -c \"import json;print\\(len\\(json.load\\(open\\('.mail-intake/live/dataset/dataset.json'\\)\\)['letters']\\),'записей,',len\\(json.load\\(open\\('.mail-intake/live/dataset/dataset.json'\\)\\)['emails']\\),'писем'\\)\"\\)\")",
+      "Bash(ssh -o ConnectTimeout=25 root@193.160.208.41 \"python3 -c \\\\\"import json;d=json.load\\(open\\('/opt/sib-storage/_seed/dataset.json'\\)\\);print\\('на сервере:',len\\(d['letters']\\),'записей,',len\\(d['emails']\\),'писем'\\)\\\\\"; docker run --rm --network sib-net --env-file /opt/sib.env -v /opt/sib-storage:/app/storage -e DATASET_PATH=/app/storage/_seed/dataset.json sib:latest pnpm db:seed:corpus 2>&1 | tail -5\")"
     ],
     "ask": [
       "Bash(rm -rf /)",
@@ -23,6 +45,7 @@
       "Read(./.env.*)",
       "Read(**/.ssh/**)",
       "Read(**/.aws/**)"
-    ]
+    ],
+    "defaultMode": "acceptEdits"
   }
 }

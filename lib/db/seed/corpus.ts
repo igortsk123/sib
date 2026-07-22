@@ -62,10 +62,19 @@ const VALID_DOCTYPE = new Set([
 ])
 const VALID_CARETYPE = new Set(["ambulatory", "dentistry", "combined", "other"])
 
+// Текст-поле в БД: не-строку (число/массив из письма/LLM) приводим к строке; пусто → null. Не роняем seed.
+function str(v: unknown): string | null {
+  if (v == null || v === "") return null
+  const s = String(v).trim()
+  return s || null
+}
+
 // ФИО к виду «Фамилия Имя Отчество» (нормализуем только полностью ВЕРХНИЙ регистр).
-function titleCaseFio(s: string | null): string | null {
-  if (!s) return s
-  const t = s.trim()
+// Устойчиво к не-строке (реальные письма/LLM иногда дают число/массив) — не роняем seed.
+function titleCaseFio(s: unknown): string | null {
+  if (s == null || s === "") return null
+  const t = String(s).trim()
+  if (!t) return null
   if (t !== t.toUpperCase()) return t
   return t.toLowerCase().replace(/(^|[\s\-])(\p{L})/gu, (_, sep: string, ch: string) => sep + ch.toUpperCase())
 }
@@ -234,10 +243,10 @@ async function main() {
         rowIndex: l.rowIndex,
         patientFullName: titleCaseFio(l.patientFullName),
         patientBirthDate: safeDate(l.patientBirthDate),
-        policyNumber: l.policyNumber,
-        letterNumber: l.letterNumber,
-        caseNumber: l.caseNumber ?? null,
-        contractNumber: l.contractNumber ?? null,
+        policyNumber: str(l.policyNumber),
+        letterNumber: str(l.letterNumber),
+        caseNumber: str(l.caseNumber),
+        contractNumber: str(l.contractNumber),
         docType: (l.docType && VALID_DOCTYPE.has(l.docType) ? l.docType : null) as never,
         careType: ((VALID_CARETYPE.has(l.careType as string) ? (l.careType as string) : null) || classifyCareType(l.services, l.text)) as never,
         approvalStatus: (VALID_STATUS.has(l.approvalStatus) ? l.approvalStatus : "unknown") as never,
@@ -245,8 +254,8 @@ async function main() {
         coverageFrom: safeDate(l.coverageFrom),
         coverageTo: safeDate(l.coverageTo),
         validUntil: safeDate(l.validUntil),
-        amountLimit: l.amountLimit ?? null,
-        conditions: l.conditions ?? null,
+        amountLimit: str(l.amountLimit),
+        conditions: str(l.conditions),
         services: (l.services ?? []).filter(Boolean),
         source: l.source,
         method: l.method ?? null,

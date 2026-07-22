@@ -26,6 +26,7 @@ draft → in_progress → completed → перенос в completed_plans/
 
 | slug | Название | status | created | updated |
 |------|----------|--------|---------|---------|
+| mail-backfill-2026 | — | draft | 2026-07-22 | 2026-07-22 |
 | self-healing-recognition | — | draft | 2026-06-22 | 2026-06-22 |
 | per-template-parse-journal | — | draft | 2026-06-22 | 2026-06-22 |
 | care-type-split-ambulatory-dentistry | — | draft | 2026-06-22 | 2026-06-22 |
