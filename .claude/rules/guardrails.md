@@ -1,6 +1,5 @@
 ---
 description: Protected-paths и работа с ПДн/секретами — что нельзя трогать/светить без явной команды
-alwaysApply: true
 ---
 
 # Guardrails — секреты, ПДн, боевое

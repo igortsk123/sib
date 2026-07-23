@@ -2,7 +2,7 @@
 tier: 2
 topic: anti-patterns
 scope: Грабли sib — чеклист при ревью/срезе
-tier1: ""
+tier1: core/lessons.md
 updated: 2026-06-21
 importance: med
 source: domain/product-spec.md §18

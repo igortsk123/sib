@@ -82,5 +82,51 @@
     ]
   },
   "skipDangerousModePermissionPrompt": true,
-  "skipAutoPermissionPrompt": true
+  "skipAutoPermissionPrompt": true,
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if command -v node >/dev/null 2>&1 && [ -f tools/session-freshness.mjs ]; then node tools/session-freshness.mjs . || true; fi"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if command -v node >/dev/null 2>&1 && [ -f tools/session-reminder.mjs ]; then node tools/session-reminder.mjs . --block --tier1-max-kb 4; elif [ -n \"$(git status --porcelain 2>/dev/null | grep -v '^.. \\.memory_bank/')\" ]; then echo 'Внимание: изменения сессии не зафиксированы в памяти — перед /clear запусти /memory-check (.memory_bank/)'; fi"
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if command -v node >/dev/null 2>&1 && [ -f tools/precompact-guard.mjs ]; then node tools/precompact-guard.mjs .; fi"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if command -v node >/dev/null 2>&1 && [ -f tools/read-logger.mjs ]; then node tools/read-logger.mjs . || true; fi"
+          }
+        ]
+      }
+    ]
+  }
 }

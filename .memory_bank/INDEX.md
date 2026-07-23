@@ -1,15 +1,11 @@
 # Memory Bank — Index (Tier 0)
 
-> Always-loaded тонкий указатель. Drill-down только когда нужно.
-
 sib — агрегатор и распознавание гарантийных писем ДМС для медицинской клиники (Next.js/TS, **прод LIVE**).
-
-> Правила работы — в `CLAUDE.md` + `.claude/rules/*` (Tier 0, always-on). Здесь — навигация по памяти:
-> читай INDEX перед задачей, дальше только нужный Tier 1/2 (не сканируй всё); не дублируй факт.
 
 ## Decision tree — что читать
 
-Идём: **Tier 1 (`core/<тема>.md`, сводки)** → drill-down в Tier 2 (`domain/`, `reference/`) при нехватке.
+**Tier 1 (`core/<тема>.md`, сводки)** → drill-down в Tier 2 (`domain/`, `reference/`) при нехватке.
+Только нужное по дереву, не сканируй всё; не дублируй факт.
 
 <!-- GENERATED:decision-tree START -->
 <!-- Таблицу регенерирует tools/memory-audit.mjs из frontmatter. Не редактируй вручную. -->
@@ -21,13 +17,12 @@ sib — агрегатор и распознавание гарантийных 
 | Модель данных — сущности и ключевые поля | `core/data-model.md` | `../domain/product-spec.md` |
 | Забор писем — IMAP/Яндекс, двойная пересылка, дедупликация | `core/email-ingestion.md` | `../domain/insurer-recognition.md` |
 | Список решений, которые принимает ТОЛЬКО владелец — остальное агент решает сам | `core/human-decisions.md` | `../domain/product-spec.md` |
+| Перед планированием — уроки; что пробовали и что НЕ сработало, отброшенные подходы | `core/lessons.md` | `../anti-patterns.md` |
 | Бизнес-контекст — зачем продукт, для кого, что в scope | `product_brief.md` | `domain/product-spec.md` |
 | Распознавание — извлечение текста, поля, confidence, ручная проверка | `core/recognition.md` | `../domain/recognition-architecture.md` |
 | Роли, права доступа (RBAC), ПДн и безопасность | `core/roles-and-access.md` | `../domain/product-spec.md` |
 | Термины ДМС/страхования и проекта — единый источник консистентности | `glossary.md` | — |
 <!-- GENERATED:decision-tree END -->
-
-**Правило:** сначала `core/<тема>.md`. Не хватает данных — drill в Tier 2 (указан в конце сводки).
 
 ## Always-on docs (Tier 0/1)
 - `source-of-truth.md` — разрешение конфликтов источников.

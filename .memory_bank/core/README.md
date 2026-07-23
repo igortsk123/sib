@@ -16,6 +16,7 @@
 | `data-model.md` | data-model | Модель данных — сущности и ключевые поля | `../domain/product-spec.md` | 2026-07-23 |
 | `email-ingestion.md` | email-ingestion | Забор писем — IMAP/Яндекс, двойная пересылка, дедупликация | `../domain/insurer-recognition.md` | 2026-07-22 |
 | `human-decisions.md` | human-decisions | Список решений, которые принимает ТОЛЬКО владелец — остальное агент решает сам | `../domain/product-spec.md` | 2026-07-23 |
+| `lessons.md` | lessons | Перед планированием — уроки; что пробовали и что НЕ сработало, отброшенные подходы | `../anti-patterns.md` | 2026-07-23 |
 | `recognition.md` | recognition | Распознавание — извлечение текста, поля, confidence, ручная проверка | `../domain/recognition-architecture.md` | 2026-07-23 |
 | `roles-and-access.md` | roles-and-access | Роли, права доступа (RBAC), ПДн и безопасность | `../domain/product-spec.md` | 2026-07-22 |
 <!-- GENERATED:core-registry END -->

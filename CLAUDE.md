@@ -9,14 +9,20 @@
 Где сейчас — `.memory_bank/project-state.md`.
 
 ## Иерархия памяти
-- **Tier 0 (auto-loaded):** этот файл + `.claude/rules/*.md` (path-scoped, грузятся по `paths:`).
-- **Tier 1 (navigation):** `.memory_bank/INDEX.md` — приоритезированный decision tree.
-- **Tier 2 (details):** `.memory_bank/**/*.md` + `domain/product-spec.md` — полные доки по мере нужды.
+- **Tier 0 (auto-loaded):** этот файл + импортированный INDEX + `.claude/rules/*.md`
+  (без `paths:` — всегда; с `paths:` — при касании подходящих файлов).
+- **Tier 2 (details):** `.memory_bank/**/*.md` + `domain/product-spec.md` — по decision tree.
+
+## Навигация памяти (грузится всегда, переживает компакцию)
+@.memory_bank/INDEX.md
 
 ## Сначала прочитай
-1. `.memory_bank/INDEX.md` — навигация: «задача → что читать».
-2. `.memory_bank/source-of-truth.md` — что считать истиной при конфликте.
-3. `.memory_bank/project-state.md` — где проект сейчас.
+1. `.memory_bank/source-of-truth.md` — что считать истиной при конфликте.
+2. `.memory_bank/project-state.md` — где проект сейчас.
+
+## Компакция контекста
+При сжатии контекста ОБЯЗАТЕЛЬНО сохранить: активный план (slug+статус), изменённые файлы,
+команды гейта, next steps, содержимое `.memory_bank/_intake/session-scratch.md`.
 
 ## Критично — инженерная конституция (`.claude/rules/engineering-principles.md`)
 - **Режим AUTOPILOT** (`.claude/rules/agent-workflow.md`): работаем автономно — план→выполнение→деплой без
