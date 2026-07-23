@@ -67,8 +67,8 @@ export async function GET(req: Request) {
     { header: "Срок действия письма", key: "validUntil", width: 18 },
     { header: "Дата начала обслуживания", key: "coverageFrom", width: 20 },
     { header: "Дата окончания обслуживания", key: "coverageTo", width: 22 },
-    { header: "Ограничение (лимит/условия)", key: "restriction", width: 40 },
-    { header: "Услуги", key: "services", width: 34 },
+    { header: "Ограничение (лимит/условия)", key: "restriction", width: 40, style: { alignment: { vertical: "top", wrapText: true } } },
+    { header: "Услуги", key: "services", width: 34, style: { alignment: { vertical: "top", wrapText: true } } },
     { header: "Источник", key: "source", width: 12 },
     { header: "Метод распознавания", key: "method", width: 18 },
     { header: "Карточка (всё в одном месте)", key: "link", width: 26 },
@@ -111,8 +111,7 @@ export async function GET(req: Request) {
       link: { text: "Открыть карточку", hyperlink: `${appUrl}/registry/${r.id}` },
       dup: r.isDuplicate ? "Да" : "",
     })
-    row.alignment = { vertical: "top", wrapText: true }
-    row.getCell("received").numFmt = RECEIVED_FMT // формат даты-времени на ячейке (row.alignment его не трогает)
+    row.getCell("received").numFmt = RECEIVED_FMT // формат даты-времени на ячейке
     const linkCell = row.getCell("link")
     linkCell.font = { color: { argb: "FF1A56DB" }, underline: true }
   }
