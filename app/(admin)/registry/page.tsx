@@ -162,9 +162,14 @@ export default async function RegistryPage({
                       </span>
                     )}
                     {r.isDuplicate && (
-                      <span title="Дубль — страховая прислала эту запись повторно" className="inline-flex text-muted-foreground" aria-label="Дубль">
+                      <Link
+                        href={`/registry?q=${encodeURIComponent(r.patient ?? "")}`}
+                        title="Дубль — показать все записи этого пациента"
+                        className="inline-flex text-muted-foreground hover:text-foreground"
+                        aria-label="Дубль — фильтр по пациенту"
+                      >
                         ⧉
-                      </span>
+                      </Link>
                     )}
                   </TableCell>
                   <TableCell className="font-medium">
