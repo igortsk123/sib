@@ -3,7 +3,7 @@ tier: 2
 topic: deployment
 scope: Playbook деплоя/окружения — прод развёрнут (sib.docon.pro)
 tier1: ""
-updated: 2026-06-21
+updated: 2026-07-23
 importance: high
 source: manual
 status: working
@@ -43,6 +43,19 @@ status: working
 - **Еженедельно** (вс 04:20) cron `/usr/local/bin/sib-docker-cleanup.sh`: `image prune -f` +
   `builder prune -a -f` (глубокая чистка кэша). Безопасно для общего сервера (**без `-a` на образах** —
   чужие проекты не трогаем). Лог `/var/log/sib-docker-cleanup.log`.
+
+## Живой приём почты (S1 runner, ADR D16)
+- **Где:** `/opt/sib-intake/` — `run.sh` + `.mail-intake/{fetch_live,extract_dataset,enrich}.py` + `.env.local` (600).
+  Курсор UID — `live/state.json`; лог `intake.log` (ротация при 5 MB).
+- **Таймер:** `/etc/systemd/system/sib-intake.{service,timer}` — oneshot каждые 3 мин
+  (`OnActiveSec=30s`, `OnUnitActiveSec=3min`). `systemctl status/list-timers sib-intake.timer`.
+- **Цикл:** `fetch_live.py inc` (read-only, инкрементально по UID) → `extract`+`enrich` →
+  файлы в `/opt/sib-storage/{emails,attachments,_intake}` → `docker exec sib-frontend npm run db:ingest`
+  (upsert, дедуп по rawSha256, self-healing шаблонов + алерты в `error_report`).
+- **Провижн при пересборке сервера:** `apt install poppler-utils`; `pip3 install xlrd striprtf olefile`;
+  скопировать `.mail-intake/*.py` + `.env.local`(600); `python3 fetch_live.py inc --bootstrap` (курсор на максимум);
+  `systemctl enable --now sib-intake.timer`. LibreOffice НЕ нужен (xlsx pure-python).
+- **Почта — STRICTLY READ-ONLY** (guardrails): `SELECT readonly`, `BODY.PEEK`, никаких STORE/EXPUNGE/удаления.
 
 ## Health
 - `GET /api/health` → `{ok, service:"sib", db, commit, uptimeSec}`; 200 если БД доступна, иначе 503.
