@@ -31,8 +31,8 @@ sib — агрегатор и распознавание гарантийных 
 - `decisions.md` — ADR-лог архитектурных решений.
 
 ## Plans workflow
-`plans/<slug>.md` (`draft`) → ждать «деплой» → выполнить → `completed` в `completed_plans/`;
-`partial`/`cancelled` остаются. Шаблон `plans/_template.md`, реестры в README (регенерирует аудит).
+`plans/<slug>.md` → выполнить → `completed` → `completed_plans/`; `partial`/`cancelled` остаются.
+Шаблон `plans/_template.md`, реестры в README (регенерирует аудит).
 
 ## Index map
 - `core/` — Tier 1 сводки. `guides/` — процесс-доки. `domain/` — Tier 2 детали
