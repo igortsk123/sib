@@ -55,8 +55,8 @@ function whereClause(f: RegistryFilter) {
   return conds.length ? and(...conds) : undefined
 }
 
-// Реестр ГП с поиском по пациенту/полису/№ГП/страховой.
-export async function searchLetters(f: RegistryFilter, limit = 500) {
+// Реестр ГП с поиском по пациенту/полису/№ГП/страховой. offset — пагинация (страницы UI).
+export async function searchLetters(f: RegistryFilter, limit = 500, offset = 0) {
   return db()
     .select({
       id: guaranteeLetter.id,
@@ -91,6 +91,7 @@ export async function searchLetters(f: RegistryFilter, limit = 500) {
     .where(whereClause(f))
     .orderBy(desc(emailMessage.receivedAt))
     .limit(limit)
+    .offset(offset)
 }
 
 // Страховые для фильтра (только те, у кого есть записи в скоупе — но для простоты все активные).

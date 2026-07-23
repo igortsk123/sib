@@ -27,7 +27,7 @@ const CARE_OPTIONS = ["ambulatory", "dentistry", "combined", "other"]
 export default async function RegistryPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; insurer?: string; status?: string; careType?: string; source?: string; review?: string; from?: string; to?: string }>
+  searchParams: Promise<{ q?: string; insurer?: string; status?: string; careType?: string; source?: string; review?: string; from?: string; to?: string; page?: string }>
 }) {
   const scope = await resolveRegistryScope()
   if (!scope.user) redirect("/login")
@@ -43,8 +43,17 @@ export default async function RegistryPage({
     dateTo: isoFromRu(sp.to),
     orgId: scope.orgId,
   }
+  const PAGE_SIZE = 100
+  const page = Math.max(1, parseInt(sp.page ?? "1", 10) || 1)
   const total = await countLetters(scope.orgId)
-  const rows = await searchLetters(f)
+  const rows = await searchLetters(f, PAGE_SIZE, (page - 1) * PAGE_SIZE)
+  // ссылки пагинации с сохранением фильтров
+  const pageQs = (p: number) => {
+    const q = new URLSearchParams(Object.fromEntries(Object.entries(sp).filter(([k, v]) => v && k !== "page")))
+    if (p > 1) q.set("page", String(p))
+    const s = q.toString()
+    return `/registry${s ? `?${s}` : ""}`
+  }
   const insurers = await listInsurerOptions()
   const clinics = scope.isAdmin ? (await listClinics()).map((c) => ({ id: c.id, name: c.name })) : []
   const exportQs = new URLSearchParams(
@@ -55,7 +64,7 @@ export default async function RegistryPage({
     <>
       <PageHeader
         title="Реестр гарантийных писем"
-        description={`Найдено: ${rows.length} из ${total}.`}
+        description={`Стр. ${page}: ${rows.length} строк · всего ${total}.`}
         action={
           <div className="flex flex-wrap items-center gap-2">
             {scope.isAdmin && <ClinicSelector clinics={clinics} current={scope.orgId} />}
@@ -192,6 +201,17 @@ export default async function RegistryPage({
               ))}
             </TableBody>
           </Table>
+        </div>
+      )}
+      {(page > 1 || rows.length === PAGE_SIZE) && (
+        <div className="mt-4 flex items-center justify-between text-sm">
+          {page > 1 ? (
+            <Link href={pageQs(page - 1)} className="text-primary hover:underline">← Назад</Link>
+          ) : <span />}
+          <span className="text-muted-foreground">стр. {page}</span>
+          {rows.length === PAGE_SIZE ? (
+            <Link href={pageQs(page + 1)} className="text-primary hover:underline">Вперёд →</Link>
+          ) : <span />}
         </div>
       )}
     </>
