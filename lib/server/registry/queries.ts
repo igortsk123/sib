@@ -28,16 +28,20 @@ function whereClause(f: RegistryFilter) {
   if (f.orgId === "__none__") conds.push(sql`false`)
   else if (f.orgId) conds.push(eq(guaranteeLetter.organizationId, f.orgId))
   else conds.push(notDemoOrg)
-  // ПОИСК (текст): пациент / полис / № ГП.
+  // ПОИСК (текст): пациент / полис / № ГП; «2003» — год рождения; «дд.мм.гггг» — точная ДР.
   if (f.q && f.q.trim()) {
-    const like = `%${f.q.trim()}%`
-    conds.push(
-      or(
-        ilike(guaranteeLetter.patientFullName, like),
-        ilike(guaranteeLetter.policyNumber, like),
-        ilike(guaranteeLetter.letterNumber, like),
-      ),
-    )
+    const t = f.q.trim()
+    const like = `%${t}%`
+    const ors = [
+      ilike(guaranteeLetter.patientFullName, like),
+      ilike(guaranteeLetter.policyNumber, like),
+      ilike(guaranteeLetter.letterNumber, like),
+    ]
+    if (/^(19|20)\d{2}$/.test(t))
+      ors.push(sql`extract(year from ${guaranteeLetter.patientBirthDate}) = ${Number(t)}`)
+    const dm = /^(\d{2})\.(\d{2})\.(\d{4})$/.exec(t)
+    if (dm) ors.push(sql`${guaranteeLetter.patientBirthDate} = ${`${dm[3]}-${dm[2]}-${dm[1]}`}`)
+    conds.push(or(...ors))
   }
   // ФИЛЬТРЫ (точное совпадение): страховая / статус / направление / источник / проверка / дата.
   if (f.insurerId) conds.push(eq(guaranteeLetter.insuranceCompanyId, f.insurerId))
