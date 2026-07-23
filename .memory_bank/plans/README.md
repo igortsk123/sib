@@ -28,6 +28,7 @@ draft → in_progress → completed → перенос в completed_plans/
 |------|----------|--------|---------|---------|
 | registry-data-quality-audit | — | in_progress | — | 2026-07-23 |
 | llm-to-deterministic | — | in_progress | — | 2026-07-23 |
+| demo-stand-anonymization | — | draft | — | 2026-07-23 |
 | mail-backfill-2026 | — | draft | 2026-07-22 | 2026-07-22 |
 | self-healing-recognition | — | draft | 2026-06-22 | 2026-06-22 |
 | per-template-parse-journal | — | draft | 2026-06-22 | 2026-06-22 |
