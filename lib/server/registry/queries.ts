@@ -94,6 +94,13 @@ export async function searchLetters(f: RegistryFilter, limit = 500, offset = 0) 
     .offset(offset)
 }
 
+// Число записей ПО ТЕКУЩИМ ФИЛЬТРАМ — для полной пагинации (все страницы кликабельны).
+export async function countFiltered(f: RegistryFilter) {
+  const r = await db().select({ n: sql<number>`count(*)::int` }).from(guaranteeLetter)
+    .where(whereClause(f))
+  return r[0]?.n ?? 0
+}
+
 // Страховые для фильтра (только те, у кого есть записи в скоупе — но для простоты все активные).
 export async function listInsurerOptions() {
   return db()

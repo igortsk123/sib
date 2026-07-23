@@ -4,7 +4,7 @@ import { AlertTriangle, Download, Inbox, Search } from "lucide-react"
 
 import { resolveRegistryScope } from "@/lib/server/scope"
 import { listClinics } from "@/lib/server/clinics/queries"
-import { countLetters, listInsurerOptions, searchLetters } from "@/lib/server/registry/queries"
+import { countFiltered, countLetters, listInsurerOptions, searchLetters } from "@/lib/server/registry/queries"
 import { STATUS_LABELS, SOURCE_LABELS } from "@/lib/letter-status"
 import { CARE_TYPE_LABELS } from "@/lib/care-type"
 import { isoFromRu, ruDate } from "@/lib/format"
@@ -46,7 +46,15 @@ export default async function RegistryPage({
   const PAGE_SIZE = 100
   const page = Math.max(1, parseInt(sp.page ?? "1", 10) || 1)
   const total = await countLetters(scope.orgId)
+  const found = await countFiltered(f)
+  const pages = Math.max(1, Math.ceil(found / PAGE_SIZE))
   const rows = await searchLetters(f, PAGE_SIZE, (page - 1) * PAGE_SIZE)
+  // компактный ряд страниц: 1 … p-2 p-1 [p] p+1 p+2 … N
+  const pageNums: (number | "…")[] = []
+  for (let i = 1; i <= pages; i++) {
+    if (i === 1 || i === pages || Math.abs(i - page) <= 2) pageNums.push(i)
+    else if (pageNums[pageNums.length - 1] !== "…") pageNums.push("…")
+  }
   // ссылки пагинации с сохранением фильтров
   const pageQs = (p: number) => {
     const q = new URLSearchParams(Object.fromEntries(Object.entries(sp).filter(([k, v]) => v && k !== "page")))
@@ -64,7 +72,7 @@ export default async function RegistryPage({
     <>
       <PageHeader
         title="Реестр гарантийных писем"
-        description={`Стр. ${page}: ${rows.length} строк · всего ${total}.`}
+        description={`Найдено ${found} (стр. ${page} из ${pages}) · всего в реестре ${total}.`}
         action={
           <div className="flex flex-wrap items-center gap-2">
             {scope.isAdmin && <ClinicSelector clinics={clinics} current={scope.orgId} />}
@@ -203,15 +211,23 @@ export default async function RegistryPage({
           </Table>
         </div>
       )}
-      {(page > 1 || rows.length === PAGE_SIZE) && (
-        <div className="mt-4 flex items-center justify-between text-sm">
-          {page > 1 ? (
-            <Link href={pageQs(page - 1)} className="text-primary hover:underline">← Назад</Link>
-          ) : <span />}
-          <span className="text-muted-foreground">стр. {page}</span>
-          {rows.length === PAGE_SIZE ? (
-            <Link href={pageQs(page + 1)} className="text-primary hover:underline">Вперёд →</Link>
-          ) : <span />}
+      {pages > 1 && (
+        <div className="mt-4 flex flex-wrap items-center justify-center gap-1.5 text-sm">
+          {page > 1 && (
+            <Link href={pageQs(page - 1)} className="rounded border border-border px-2 py-1 text-primary hover:bg-muted">←</Link>
+          )}
+          {pageNums.map((n, i) =>
+            n === "…" ? (
+              <span key={`e${i}`} className="px-1 text-muted-foreground">…</span>
+            ) : n === page ? (
+              <span key={n} className="rounded border border-primary bg-primary px-2 py-1 font-medium text-primary-foreground">{n}</span>
+            ) : (
+              <Link key={n} href={pageQs(n)} className="rounded border border-border px-2 py-1 text-primary hover:bg-muted">{n}</Link>
+            ),
+          )}
+          {page < pages && (
+            <Link href={pageQs(page + 1)} className="rounded border border-border px-2 py-1 text-primary hover:bg-muted">→</Link>
+          )}
         </div>
       )}
     </>
