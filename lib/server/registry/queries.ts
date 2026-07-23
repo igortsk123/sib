@@ -4,6 +4,11 @@ import { and, desc, eq, ilike, inArray, or, sql } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { attachment, emailMessage, guaranteeLetter, insuranceCompany } from "@/lib/db/schema"
 
+// Демо-организация (стенд продаж, ADR D22): в админском режиме «все клиники» (orgId=null)
+// её записи СКРЫВАЕМ — иначе счётчики/список мешаются с боевыми. Видна при явном выборе.
+const DEMO_ORG_NAME = "Демо-клиника"
+const notDemoOrg = sql`${guaranteeLetter.organizationId} not in (select id from organization where name = ${DEMO_ORG_NAME})`
+
 export type RegistryFilter = {
   q?: string // поиск: пациент / полис / № ГП
   insurerId?: string // фильтр: страховая
@@ -19,9 +24,10 @@ export type RegistryFilter = {
 
 function whereClause(f: RegistryFilter) {
   const conds = []
-  // Скоуп по клинике: реальный id → фильтр; "__none__" → ничего; null → все клиники (админ).
+  // Скоуп по клинике: реальный id → фильтр; "__none__" → ничего; null → все клиники (админ, БЕЗ демо).
   if (f.orgId === "__none__") conds.push(sql`false`)
   else if (f.orgId) conds.push(eq(guaranteeLetter.organizationId, f.orgId))
+  else conds.push(notDemoOrg)
   // ПОИСК (текст): пациент / полис / № ГП.
   if (f.q && f.q.trim()) {
     const like = `%${f.q.trim()}%`
@@ -98,7 +104,7 @@ export async function countLetters(orgId?: string | null) {
       ? sql`false`
       : orgId
         ? eq(guaranteeLetter.organizationId, orgId)
-        : undefined
+        : notDemoOrg // админ «все клиники» — без демо-стенда
   const r = await db().select({ n: sql<number>`count(*)::int` }).from(guaranteeLetter).where(where)
   return r[0]?.n ?? 0
 }
