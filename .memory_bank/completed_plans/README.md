@@ -14,6 +14,7 @@
 
 | slug | Название | Завершён |
 |------|----------|----------|
+| demo-stand-anonymization | — | — |
 | kit-align | HEAL — выравнивание памяти sib под кит Memory Bank v1.3.0 | 2026-07-22 |
 | admin-doctype-templates | — | 2026-06-22 |
 | registry-demo | — | 2026-06-21 |

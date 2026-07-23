@@ -2,11 +2,23 @@
 tier: 2
 topic: plan-demo-stand
 scope: Демо-стенд для продаж — анонимизация реального корпуса (БД + ИСХОДНИКИ) в org «Демо-клиника»
-status: draft
+status: completed
 source: manual
 updated: 2026-07-23
 importance: high
 ---
+
+## ✅ РЕАЛИЗОВАНО И ЗАДЕПЛОЕНО (2026-07-23, та же сессия; полный ADR — D22)
+Стенд живой: https://sib.docon.pro/login → **+79998887777 / код 5603** (TEST_LOGIN-механизм, без Telegram;
+значения — в `/opt/sib.env`+`.env.local`, не в git) → org «Демо-клиника» (role registry) + баннер
+«ДЕМО-ДАННЫЕ». Наполнение: **144 письма → 3791 запись, 13 страховых, 1096 дублей (D20 сработал на лету —
+витрина фичи), 88 review, 91 файл-оригинал** (demo-* в общем сторадже). Боевой org не тронут.
+Пайплайн: `demo_stage` (БД-копии) → движок `/opt/sib-intake/demo-build/demo/anonymize.py` (копия в
+`.mail-intake/demo/`) → верификатор `verify_demo.py`: **PII_HITS=0, sha=0** (гейт) → extract+enrich в
+изолированном `demo-build/.mail-intake` (паритет 3791) → ingest (insert-only) → user+membership SQL.
+Грабли сессии (RTF сырая cp1251, коллизии фейков, биграм, ssh-обрыв убил docker exec — nohup+лог) —
+`core/lessons.md` + D22. Скан-PDF исключены (решение владельца). Обновление стенда = перегенерация
+тем же пайплайном (seed фиксирован).
 
 # План: демо-стенд — анонимизация корпуса до неотличимости
 
