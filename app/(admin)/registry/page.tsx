@@ -183,7 +183,7 @@ export default async function RegistryPage({
                   </TableCell>
                   <TableCell className="font-medium">
                     <Link href={`/registry/${r.id}`} className="text-primary hover:underline">
-                      {r.patient ?? "—"}
+                      {r.patient ? `${r.patient}${r.birthDate ? `, ${String(r.birthDate).slice(0, 4)}` : ""}` : "—"}
                     </Link>
                   </TableCell>
                   <TableCell><Truncate text={r.insurer ?? ""} width="max-w-[150px]" /></TableCell>
