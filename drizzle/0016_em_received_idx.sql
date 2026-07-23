@@ -1,0 +1,1 @@
+CREATE INDEX "em_received_idx" ON "email_message" USING btree ("received_at");

@@ -39,6 +39,8 @@ export const emailMessage = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
+    // Реестр сортируется по received_at desc (join gl→em) — без индекса сорт всей таблицы (владелец: тормозит)
+    index("em_received_idx").on(t.receivedAt),
     index("email_org_idx").on(t.organizationId),
     index("email_mailbox_idx").on(t.mailbox),
     index("email_message_id_idx").on(t.messageId),
