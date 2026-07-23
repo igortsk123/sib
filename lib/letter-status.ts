@@ -56,3 +56,22 @@ export const METHOD_LABELS: Record<string, string> = {
   llm: "ИИ",
   llm_vision: "ИИ (скан/фото)",
 }
+
+// ─────────────────────────────────────────────────────────────────────
+// Отображение значения поля с учётом статуса извлечения (guarantee_letter.field_status).
+// Правило владельца: пустая ячейка не должна быть двусмысленной.
+//  • значение есть → показываем значение (оно приоритетнее статуса);
+//  • пусто + статус 'absent'    → «нет данных»    (проверили ФАЙЛ и ТЕЛО — поля реально нет);
+//  • пусто + статус 'unreadable'→ «не распознано» (тех.сбой: нет библиотеки/архив закрыт/скан не прочитан);
+//  • пусто без статуса          → "" (как раньше — обратная совместимость со старыми записями).
+// ─────────────────────────────────────────────────────────────────────
+export const CELL_ABSENT = "нет данных"
+export const CELL_UNREADABLE = "не распознано"
+
+export function cellText(value: string | null | undefined, status?: string | null): string {
+  const v = value == null ? "" : String(value).trim()
+  if (v) return v
+  if (status === "absent") return CELL_ABSENT
+  if (status === "unreadable") return CELL_UNREADABLE
+  return ""
+}

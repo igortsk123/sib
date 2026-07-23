@@ -4,7 +4,7 @@ import { env } from "@/lib/env"
 import { searchLetters } from "@/lib/server/registry/queries"
 import { requireUser } from "@/lib/server/auth/guards"
 import { resolveRegistryScope } from "@/lib/server/scope"
-import { STATUS_LABELS, SOURCE_LABELS, METHOD_LABELS, docTypeLabel } from "@/lib/letter-status"
+import { STATUS_LABELS, SOURCE_LABELS, METHOD_LABELS, docTypeLabel, cellText } from "@/lib/letter-status"
 import { CARE_TYPE_LABELS } from "@/lib/care-type"
 import { isoFromRu, ruDate } from "@/lib/format"
 
@@ -89,20 +89,20 @@ export async function GET(req: Request) {
     const row = ws.addRow({
       id: r.id,
       patient: r.patient ?? "",
-      birthDate: ruDate(r.birthDate),
+      birthDate: cellText(ruDate(r.birthDate), r.fieldStatus?.patientBirthDate),
       insurer: r.insurer ?? "",
-      policy: r.policy ?? "",
-      contractNumber: r.contractNumber ?? "",
-      letterNumber: r.letterNumber ?? "",
-      caseNumber: r.caseNumber ?? "",
+      policy: cellText(r.policy, r.fieldStatus?.policyNumber),
+      contractNumber: cellText(r.contractNumber, r.fieldStatus?.contractNumber),
+      letterNumber: cellText(r.letterNumber, r.fieldStatus?.letterNumber),
+      caseNumber: cellText(r.caseNumber, r.fieldStatus?.caseNumber),
       docType: docTypeLabel(r.docType, r.status),
       careType: CARE_TYPE_LABELS[r.careType ?? ""] ?? "",
       status: STATUS_LABELS[r.status] ?? r.status,
-      letterDate: ruDate(r.letterDate),
+      letterDate: cellText(ruDate(r.letterDate), r.fieldStatus?.letterDate),
       received: tomskExcelSerial(r.receivedAt),
-      validUntil: ruDate(r.validUntil),
-      coverageFrom: ruDate(r.coverageFrom),
-      coverageTo: ruDate(r.coverageTo),
+      validUntil: cellText(ruDate(r.validUntil), r.fieldStatus?.validUntil),
+      coverageFrom: cellText(ruDate(r.coverageFrom), r.fieldStatus?.coverageFrom),
+      coverageTo: cellText(ruDate(r.coverageTo), r.fieldStatus?.coverageTo),
       restriction: [r.amountLimit, r.conditions].filter(Boolean).join("; "),
       services,
       source: SOURCE_LABELS[r.source ?? ""] ?? r.source ?? "",

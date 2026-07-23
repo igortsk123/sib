@@ -194,6 +194,7 @@ async function main() {
         source: l.source,
         method: l.method ?? null,
         confidence: l.confidence ?? {},
+        fieldStatus: l.fieldStatus ?? {},
         needsReview: l.needsReview ?? false,
         reviewNote: l.reviewNote ?? null,
         reviewStatus: "auto",

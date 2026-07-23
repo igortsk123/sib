@@ -1,0 +1,1 @@
+ALTER TABLE "guarantee_letter" ADD COLUMN "field_status" jsonb DEFAULT '{}'::jsonb NOT NULL;

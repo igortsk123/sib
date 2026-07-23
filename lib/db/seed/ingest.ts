@@ -186,6 +186,7 @@ async function main() {
         source: l.source,
         method: l.method ?? null,
         confidence: l.confidence ?? {},
+        fieldStatus: l.fieldStatus ?? {},
         needsReview: willReview,
         reviewNote: forcedReview ? "Новый тип документа — авто-распознан, проверьте поля" : (l.reviewNote ?? null),
         reviewStatus: "auto",

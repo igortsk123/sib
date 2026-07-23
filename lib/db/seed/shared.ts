@@ -38,6 +38,7 @@ export type LetterRec = {
   source: string
   method?: string | null
   confidence?: Record<string, number>
+  fieldStatus?: Record<string, string> // статус извлечения по полю: found|absent|unreadable
   needsReview?: boolean
   reviewNote?: string | null
 }

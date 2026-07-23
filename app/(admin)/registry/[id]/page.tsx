@@ -6,7 +6,7 @@ import { reviewMessage } from "@/lib/review-hints"
 
 import { resolveRegistryScope } from "@/lib/server/scope"
 import { getLetter } from "@/lib/server/registry/queries"
-import { STATUS_LABELS, SOURCE_LABELS, METHOD_LABELS, docTypeLabel } from "@/lib/letter-status"
+import { STATUS_LABELS, SOURCE_LABELS, METHOD_LABELS, docTypeLabel, cellText, CELL_ABSENT, CELL_UNREADABLE } from "@/lib/letter-status"
 import { CARE_TYPE_LABELS } from "@/lib/care-type"
 import { ruDate } from "@/lib/format"
 import { ReportErrorButton } from "@/components/admin/report-error-button"
@@ -34,6 +34,18 @@ export default async function LetterCardPage({ params }: { params: Promise<{ id:
   // Скоуп: сотрудник клиники / админ с выбранной клиникой видит только свою.
   if (scope.orgId === "__none__") notFound()
   if (scope.orgId && l.organizationId !== scope.orgId) notFound()
+
+  // Значение поля с учётом статуса извлечения: «нет данных»/«не распознано» — курсивом, приглушённо.
+  const fs = (l.fieldStatus ?? {}) as Record<string, string>
+  const cellNode = (value: string | null | undefined, key: string): React.ReactNode => {
+    const t = cellText(value, fs[key])
+    if (!t) return null // пусто без статуса → Field покажет «—»
+    return t === CELL_ABSENT || t === CELL_UNREADABLE ? (
+      <span className="italic text-muted-foreground">{t}</span>
+    ) : (
+      t
+    )
+  }
 
   return (
     <>
@@ -68,15 +80,15 @@ export default async function LetterCardPage({ params }: { params: Promise<{ id:
           <CardContent className="grid grid-cols-2 gap-4">
             <Field label="Пациент" value={l.patientFullName} />
             <Field label="Дата рождения" value={ruDate(l.patientBirthDate) || null} />
-            <Field label="Полис" value={l.policyNumber} />
-            <Field label="№ обращения" value={l.caseNumber} />
-            <Field label="№ ГП" value={l.letterNumber} />
-            <Field label="№ договора" value={l.contractNumber} />
+            <Field label="Полис" value={cellNode(l.policyNumber, "policyNumber")} />
+            <Field label="№ обращения" value={cellNode(l.caseNumber, "caseNumber")} />
+            <Field label="№ ГП" value={cellNode(l.letterNumber, "letterNumber")} />
+            <Field label="№ договора" value={cellNode(l.contractNumber, "contractNumber")} />
             <Field label="Тип" value={docTypeLabel(l.docType, l.approvalStatus)} />
             <Field label="Статус" value={STATUS_LABELS[l.approvalStatus] ?? l.approvalStatus} />
             <Field label="Направление" value={CARE_TYPE_LABELS[l.careType ?? ""] ?? "—"} />
             <Field label="Страховая" value={data.insurer} />
-            <Field label="Дата письма" value={ruDate(l.letterDate) || null} />
+            <Field label="Дата письма" value={cellNode(ruDate(l.letterDate), "letterDate")} />
             <Field
               label="Период обслуживания"
               value={l.coverageFrom || l.coverageTo ? `${ruDate(l.coverageFrom) || "…"} — ${ruDate(l.coverageTo) || "…"}` : null}
