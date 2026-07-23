@@ -51,19 +51,11 @@ review_after: ""
   контексте шаблона (чем разобрано / что добирал ИИ), `parse_log` (ловить смену форм источником),
   «Сообщить об ошибке» (`error_report` + `/error-reports`). Правка почты сотрудника инлайн.
 - 🛠 **Инцидент диска решён**: build cache 17GB→100% диск; деплой-скрипт теперь держит кэш ≤3GB.
-- ✅ **S1 — ЖИВОЙ АВТО-ПРИЁМ работает** (2026-07-22): systemd-таймер `sib-intake.timer` на сервере каждые
-  **3 мин**: `fetch_live.py inc` (инкрементально по UID, курсор `live/state.json`, READ-ONLY) → `extract`+`enrich`
-  (poppler + xlrd/striprtf/olefile + LLM на сервере) → файлы в `/opt/sib-storage` → `docker exec … npm run db:ingest`
-  (upsert без wipe, дедуп по rawSha256, self-healing: новый тип/шаблон → авто-создание `doc_template(status=new)` +
-  `needsReview` + алерт в `error_report`). Раннер — `/opt/sib-intake/{run.sh,.mail-intake/*.py,.env.local(600)}`,
-  units `/etc/systemd/system/sib-intake.{service,timer}`, лог `/opt/sib-intake/intake.log`. Валидирован на реальных
-  письмах (3 новых вставлено, 28 дедупнуто). Код в репо: `lib/db/seed/{ingest,shared}.ts`, `db:ingest`.
-- ✅ **Полный бэкофилл 2026 в проде** (2026-07-22): оба ящика read-only → fetch по доменам страховых →
-  **2249 писем → 9660 записей ГП**, 2507 вложений, 52 шаблона типов, журнал разбора 9660 строк. Покрытие на
-  реальных данных: **ФИО 9621/9660 (99.6%), полис 9561/9660 (99%)**, к проверке 417. careType: ambulatory 3271,
-  combined 3271, dentistry 3118 (⚠ на строках реестров fallback-классификатор даёт ровный 3-раздел — требует
-  уточнения, LLM careType гонялся только на одиночных). Фикс сида: `parse_log` вставка чанками по 1000
-  (9660×9 колонок превышало лимит параметров PG 65535). Модель обогащения — `gpt-5.4-mini` (~740 LLM-вызовов).
+- ✅ **S1 — ЖИВОЙ АВТО-ПРИЁМ работает** (2026-07-22, ADR D16): `sib-intake.timer` каждые 3 мин: `fetch_live.py inc`
+  (по UID, READ-ONLY) → extract+enrich (сервер) → `db:ingest` (upsert без wipe, дедуп rawSha256, self-healing).
+  Раннер `/opt/sib-intake/`. Детали — D16.
+- ✅ **Полный бэкофилл 2026 в проде** (2026-07-22): **2249 писем → ~9686 записей ГП**. Покрытие: ФИО 99.6%, полис 99%.
+  careType на строках реестров — fallback ровно 3-раздел (⚠ уточнить). Обогащение `gpt-5.4-mini`. Хронология — history.
 - 🔑 **Боевые ящики подключены** (2026-07-22): `registratura@cl-sib.ru` (INBOX ~34.6k) и `dms@cl-sib.ru`
   (INBOX ~2.9k) — **app-пароли Яндекс**, IMAP-логин ПРОВЕРЕН (imap.yandex.ru:993, оба ✓). Креды — только в
   `.env.local` (MAILBOX_*) и `_secrets/ACCESS.md` (600, gitignored). Разблокирует **S1 (приём)** и **SMTP**
