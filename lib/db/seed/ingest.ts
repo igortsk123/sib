@@ -10,7 +10,7 @@ import { classifyCareType } from "@/lib/care-type"
 import {
   type Dataset,
   VALID_CARETYPE, VALID_DOCTYPE, VALID_STATUS,
-  safeDate, str, titleCaseFio,
+  dupKey, safeDate, str, titleCaseFio,
 } from "./shared"
 
 // ─────────────────────────────────────────────────────────────────────
@@ -33,7 +33,7 @@ async function main() {
 
   const client = postgres(url, { prepare: false, max: 1 })
   const db = drizzle(client, { schema })
-  const summary = { newEmails: 0, skipped: 0, newLetters: 0, newTemplates: 0, needsReview: 0, alerts: 0 }
+  const summary = { newEmails: 0, skipped: 0, newLetters: 0, duplicates: 0, newTemplates: 0, needsReview: 0, alerts: 0 }
   try {
     const insurers = await db
       .select({ id: insuranceCompany.id, name: insuranceCompany.name, aliases: insuranceCompany.aliases })
@@ -73,6 +73,22 @@ async function main() {
     const existingTpl = new Set<string>()
     const tplRows = await db.select({ ic: docTemplate.insuranceCompanyId, dt: docTemplate.docType }).from(docTemplate)
     for (const t of tplRows) existingTpl.add(`${t.ic}::${t.dt}`)
+
+    // Индекс дублей (ADR D6): существующие записи клиники → ключ → id первой (канонической) записи.
+    // Страховые пере-шлют один список повторно (Ингосстрах ~16 мин) — повтор помечаем, НЕ удаляем.
+    const dupIndex = new Map<string, string>()
+    const exRows = await db
+      .select({
+        id: guaranteeLetter.id, icid: guaranteeLetter.insuranceCompanyId,
+        p: guaranteeLetter.patientFullName, pol: guaranteeLetter.policyNumber,
+        dt: guaranteeLetter.docType, ld: guaranteeLetter.letterDate, dup: guaranteeLetter.isDuplicate,
+      })
+      .from(guaranteeLetter)
+      .where(eq(guaranteeLetter.organizationId, orgId))
+    for (const r of exRows) {
+      const k = dupKey({ insurerId: r.icid, patient: r.p, policy: r.pol, docType: r.dt, letterDate: r.ld })
+      if (k && !r.dup && !dupIndex.has(k)) dupIndex.set(k, r.id)
+    }
 
     // Вставка новых писем + вложений.
     const emailMap = new Map<string, string>()
@@ -160,6 +176,12 @@ async function main() {
       // self-healing: новый шаблон → форсим ручную проверку записи.
       const forcedReview = isNewTpl
       const willReview = (l.needsReview ?? false) || forcedReview
+      // Дубль (D6): та же страховая+пациент+полис+тип+дата уже в реестре → пометка, не удаление.
+      const patient = titleCaseFio(l.patientFullName)
+      const policyNo = str(l.policyNumber)
+      const letterD = safeDate(l.letterDate)
+      const k = dupKey({ insurerId, patient, policy: policyNo, docType: dt, letterDate: letterD })
+      const dupOf = k ? (dupIndex.get(k) ?? null) : null
       const [ins] = await db.insert(guaranteeLetter).values({
         organizationId: orgId,
         emailMessageId: emId,
@@ -167,16 +189,18 @@ async function main() {
         attachmentId: firstAtt,
         insuranceCompanyId: insurerId,
         rowIndex: l.rowIndex,
-        patientFullName: titleCaseFio(l.patientFullName),
+        patientFullName: patient,
         patientBirthDate: safeDate(l.patientBirthDate),
-        policyNumber: str(l.policyNumber),
+        policyNumber: policyNo,
         letterNumber: str(l.letterNumber),
         caseNumber: str(l.caseNumber),
         contractNumber: str(l.contractNumber),
         docType: (dt) as never,
         careType: ((VALID_CARETYPE.has(l.careType as string) ? (l.careType as string) : null) || classifyCareType(l.services, l.text)) as never,
         approvalStatus: (VALID_STATUS.has(l.approvalStatus) ? l.approvalStatus : "unknown") as never,
-        letterDate: safeDate(l.letterDate),
+        letterDate: letterD,
+        isDuplicate: Boolean(dupOf),
+        duplicateOfId: dupOf,
         coverageFrom: safeDate(l.coverageFrom),
         coverageTo: safeDate(l.coverageTo),
         validUntil: safeDate(l.validUntil),
@@ -192,6 +216,8 @@ async function main() {
         reviewStatus: "auto",
       }).returning({ id: guaranteeLetter.id })
       summary.newLetters++
+      if (dupOf) summary.duplicates++
+      else if (k) dupIndex.set(k, ins.id) // первая запись с этим ключом — каноническая
       if (willReview) summary.needsReview++
       if (tplKey && isNewTpl && !firstLetterOfTpl.has(tplKey)) firstLetterOfTpl.set(tplKey, ins.id)
 

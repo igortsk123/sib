@@ -70,6 +70,7 @@ export async function searchLetters(f: RegistryFilter, limit = 500) {
       source: guaranteeLetter.source,
       method: guaranteeLetter.method,
       fieldStatus: guaranteeLetter.fieldStatus,
+      isDuplicate: guaranteeLetter.isDuplicate,
       needsReview: guaranteeLetter.needsReview,
       reviewNote: guaranteeLetter.reviewNote,
       insurer: insuranceCompany.name,

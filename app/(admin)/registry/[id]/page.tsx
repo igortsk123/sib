@@ -114,6 +114,20 @@ export default async function LetterCardPage({ params }: { params: Promise<{ id:
             <Field label="Метод" value={METHOD_LABELS[l.method ?? ""] ?? "—"} />
             <Field label="Писем-источников" value={String(data.sourceEmails.length)} />
             <Field label="Вложений" value={String(data.attachments.length)} />
+            {l.isDuplicate && (
+              <Field
+                label="Дубль"
+                value={
+                  l.duplicateOfId ? (
+                    <Link href={`/registry/${l.duplicateOfId}`} className="text-primary hover:underline">
+                      Да — открыть первую запись
+                    </Link>
+                  ) : (
+                    "Да"
+                  )
+                }
+              />
+            )}
           </CardContent>
         </Card>
       </div>

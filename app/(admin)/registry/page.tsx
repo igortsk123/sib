@@ -161,6 +161,11 @@ export default async function RegistryPage({
                         <AlertTriangle className="size-4 text-warning" aria-label="Требует проверки" />
                       </span>
                     )}
+                    {r.isDuplicate && (
+                      <span title="Дубль — страховая прислала эту запись повторно" className="inline-flex text-muted-foreground" aria-label="Дубль">
+                        ⧉
+                      </span>
+                    )}
                   </TableCell>
                   <TableCell className="font-medium">
                     <Link href={`/registry/${r.id}`} className="text-primary hover:underline">

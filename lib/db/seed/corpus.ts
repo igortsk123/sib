@@ -10,7 +10,7 @@ import { classifyCareType } from "@/lib/care-type"
 import {
   type Dataset,
   VALID_CARETYPE, VALID_DOCTYPE, VALID_STATUS,
-  safeDate, str, titleCaseFio,
+  dupKey, safeDate, str, titleCaseFio,
 } from "./shared"
 
 // ─────────────────────────────────────────────────────────────────────
@@ -144,6 +144,7 @@ async function main() {
     }
     // «insurerId::docType» → представитель (тема + тело + файл) для предзаполнения шаблона (что гнать через LLM).
     const tplRep = new Map<string, { subject: string | null; text: string | null; storagePath: string | null; filename: string | null }>()
+    const dupIndex = new Map<string, string>() // дубли внутри батча (D6): ключ → id первой записи
     for (const l of data.letters) {
       const emId = emailMap.get(l.emailId)
       if (!emId) continue
@@ -168,23 +169,31 @@ async function main() {
           })
         }
       }
-      await db.insert(guaranteeLetter).values({
+      // Дубль (D6): повтор той же записи в батче → пометка, не удаление.
+      const patient = titleCaseFio(l.patientFullName)
+      const policyNo = str(l.policyNumber)
+      const letterD = safeDate(l.letterDate)
+      const k = dupKey({ insurerId, patient, policy: policyNo, docType: dt, letterDate: letterD })
+      const dupOf = k ? (dupIndex.get(k) ?? null) : null
+      const [ins] = await db.insert(guaranteeLetter).values({
         organizationId: orgId,
         emailMessageId: emId,
         sourceEmailIds: sourceIds,
         attachmentId: firstAtt,
         insuranceCompanyId: insurerId,
         rowIndex: l.rowIndex,
-        patientFullName: titleCaseFio(l.patientFullName),
+        patientFullName: patient,
         patientBirthDate: safeDate(l.patientBirthDate),
-        policyNumber: str(l.policyNumber),
+        policyNumber: policyNo,
         letterNumber: str(l.letterNumber),
         caseNumber: str(l.caseNumber),
         contractNumber: str(l.contractNumber),
         docType: (l.docType && VALID_DOCTYPE.has(l.docType) ? l.docType : null) as never,
         careType: ((VALID_CARETYPE.has(l.careType as string) ? (l.careType as string) : null) || classifyCareType(l.services, l.text)) as never,
         approvalStatus: (VALID_STATUS.has(l.approvalStatus) ? l.approvalStatus : "unknown") as never,
-        letterDate: safeDate(l.letterDate),
+        letterDate: letterD,
+        isDuplicate: Boolean(dupOf),
+        duplicateOfId: dupOf,
         coverageFrom: safeDate(l.coverageFrom),
         coverageTo: safeDate(l.coverageTo),
         validUntil: safeDate(l.validUntil),
@@ -198,7 +207,8 @@ async function main() {
         needsReview: l.needsReview ?? false,
         reviewNote: l.reviewNote ?? null,
         reviewStatus: "auto",
-      })
+      }).returning({ id: guaranteeLetter.id })
+      if (k && !dupOf) dupIndex.set(k, ins.id) // первая запись с ключом — каноническая
       n++
     }
     console.log(`[corpus] готово: писем ${data.emails.length}, записей ГП ${n}`)

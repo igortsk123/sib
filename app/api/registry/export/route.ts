@@ -72,6 +72,7 @@ export async function GET(req: Request) {
     { header: "Источник", key: "source", width: 12 },
     { header: "Метод распознавания", key: "method", width: 18 },
     { header: "Карточка (всё в одном месте)", key: "link", width: 26 },
+    { header: "Дубль", key: "dup", width: 8 }, // D6: повтор той же записи (в конце — не сдвигает колонки)
   ]
   const lastCol = ws.columnCount // держим фильтр в синхроне с числом колонок
   const lastColLetter = ws.getColumn(lastCol).letter
@@ -108,6 +109,7 @@ export async function GET(req: Request) {
       source: SOURCE_LABELS[r.source ?? ""] ?? r.source ?? "",
       method: METHOD_LABELS[r.method ?? ""] ?? r.method ?? "",
       link: { text: "Открыть карточку", hyperlink: `${appUrl}/registry/${r.id}` },
+      dup: r.isDuplicate ? "Да" : "",
     })
     row.alignment = { vertical: "top", wrapText: true }
     row.getCell("received").numFmt = RECEIVED_FMT // формат даты-времени на ячейке (row.alignment его не трогает)

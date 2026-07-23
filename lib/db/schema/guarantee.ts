@@ -60,6 +60,10 @@ export const guaranteeLetter = pgTable(
     // (absent → «нет данных») от «не смогли распознать / тех.сбой» (unreadable → «не распознано»).
     // Экспорт и карточка переводят статус в человекочитаемый текст (не кладём маркер в само поле).
     fieldStatus: jsonb("field_status").$type<Record<string, string>>().notNull().default({}),
+    // Дубль (ADR D6: помечаем, НЕ удаляем): страховые пере-шлют один список повторно
+    // (Ингосстрах — с разбегом ~16 мин). duplicateOfId — первая (каноническая) запись.
+    isDuplicate: boolean("is_duplicate").notNull().default(false),
+    duplicateOfId: uuid("duplicate_of_id"),
     // Низкая уверенность → человеку: перепроверить перед переносом в систему клиники.
     needsReview: boolean("needs_review").notNull().default(false),
     reviewNote: text("review_note"), // причина пометки (какие поля сомнительны)

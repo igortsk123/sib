@@ -79,3 +79,17 @@ export function safeDate(v: string | null | undefined): string | null {
   if (m) return `${m[3]}-${m[2]}-${m[1]}`
   return null
 }
+
+// Ключ дубля (ADR D6): страховая+пациент+полис+тип+дата письма. Неполный ключ (нет пациента/полиса/
+// типа) → null — НЕ считаем дублем, чтобы не склеить разных людей по пустым полям.
+export function dupKey(v: {
+  insurerId?: string | null
+  patient?: string | null
+  policy?: string | null
+  docType?: string | null
+  letterDate?: string | null
+}): string | null {
+  const { insurerId, patient, policy, docType, letterDate } = v
+  if (!insurerId || !patient?.trim() || !policy?.trim() || !docType) return null
+  return [insurerId, patient.trim().toLowerCase(), policy.trim(), docType, letterDate ?? ""].join("|")
+}
