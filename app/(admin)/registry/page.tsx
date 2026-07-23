@@ -160,13 +160,13 @@ export default async function RegistryPage({
               <TableRow>
                 <TableHead className="w-8 text-center" title="Требует проверки">⚑</TableHead>
                 <TableHead>Пациент</TableHead>
+                <TableHead>Действует до</TableHead>
                 <TableHead>Страховая</TableHead>
                 <TableHead>Направление</TableHead>
                 <TableHead>Полис</TableHead>
                 <TableHead>№ ГП</TableHead>
                 <TableHead>Статус</TableHead>
                 <TableHead>Источник</TableHead>
-                <TableHead>Дата</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -194,6 +194,7 @@ export default async function RegistryPage({
                       {r.patient ? `${r.patient}${r.birthDate ? `, ${String(r.birthDate).slice(0, 4)}` : ""}` : "—"}
                     </Link>
                   </TableCell>
+                  <TableCell className="text-muted-foreground">{ruDate(r.coverageTo ?? r.validUntil) || "—"}</TableCell>
                   <TableCell><Truncate text={r.insurer ?? ""} width="max-w-[150px]" /></TableCell>
                   <TableCell className="text-muted-foreground">{CARE_TYPE_LABELS[r.careType ?? ""] ?? "—"}</TableCell>
                   <TableCell className="font-mono text-xs">{r.policy ?? "—"}</TableCell>
@@ -204,7 +205,6 @@ export default async function RegistryPage({
                     </Badge>
                   </TableCell>
                   <TableCell className="text-muted-foreground">{SOURCE_LABELS[r.source ?? ""] ?? r.source}</TableCell>
-                  <TableCell className="text-muted-foreground">{ruDate(r.letterDate) || "—"}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
