@@ -47,10 +47,9 @@ function whereClause(f: RegistryFilter) {
   if (f.source) conds.push(eq(guaranteeLetter.source, f.source))
   if (f.review === "1") conds.push(eq(guaranteeLetter.needsReview, true))
   else if (f.review === "0") conds.push(eq(guaranteeLetter.needsReview, false))
-  // Нераспознанные как ГП (тип «Прочее» + статус неизвестен) — не мусорим реестр по умолчанию;
-  // доступны через фильтр «Требует проверки» (данные не удаляются).
-  if (f.review !== "1")
-    conds.push(sql`not (${guaranteeLetter.docType} = 'other' and ${guaranteeLetter.approvalStatus} = 'unknown')`)
+  // Тип «Прочее» = письмо не распознано как ГП (служебные/акты/запросы) — в реестре по умолчанию
+  // НЕ показываем (владелец: «лишние»); доступны через фильтр «Требует проверки». Данные не удаляются.
+  if (f.review !== "1") conds.push(sql`${guaranteeLetter.docType} is distinct from 'other'`)
   if (f.dateFrom) conds.push(sql`${guaranteeLetter.letterDate} >= ${f.dateFrom}`)
   if (f.dateTo) conds.push(sql`${guaranteeLetter.letterDate} <= ${f.dateTo}`)
   return conds.length ? and(...conds) : undefined
