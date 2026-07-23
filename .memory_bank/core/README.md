@@ -19,7 +19,7 @@
 | `lessons.md` | lessons | Перед планированием — уроки; что пробовали и что НЕ сработало, отброшенные подходы | `../anti-patterns.md` | 2026-07-23 |
 | `recognition.md` | recognition | Распознавание — извлечение текста, поля, confidence, ручная проверка | `../domain/recognition-architecture.md` | 2026-07-23 |
 | `roles-and-access.md` | roles-and-access | Роли, права доступа (RBAC), ПДн и безопасность | `../domain/product-spec.md` | 2026-07-22 |
-| `pricing.md` | pricing | Ценообразование сервиса и QR-допродажи — вилки РФ, экономический эффект, ICP (гипотеза владельца) | — | 2026-07-23 |
+| `pricing.md` | pricing | Ценообразование сервиса и QR-допродажи — вилки РФ, эффект, спрос, решения владельца | `../domain/pricing-research.md` | 2026-07-23 |
 <!-- GENERATED:core-registry END -->
 
 > Глоссарий ДМС — `../glossary.md` (Tier 1). Реестр и decision tree в INDEX регенерирует
