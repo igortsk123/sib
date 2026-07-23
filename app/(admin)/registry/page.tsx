@@ -161,11 +161,11 @@ export default async function RegistryPage({
                 <TableHead className="w-8 text-center" title="Требует проверки">⚑</TableHead>
                 <TableHead>Пациент</TableHead>
                 <TableHead>Действует до</TableHead>
+                <TableHead>Статус</TableHead>
                 <TableHead>Страховая</TableHead>
                 <TableHead>Направление</TableHead>
                 <TableHead>Полис</TableHead>
                 <TableHead>№ ГП</TableHead>
-                <TableHead>Статус</TableHead>
                 <TableHead>Источник</TableHead>
               </TableRow>
             </TableHeader>
@@ -195,15 +195,15 @@ export default async function RegistryPage({
                     </Link>
                   </TableCell>
                   <TableCell className="text-muted-foreground">{ruDate(r.coverageTo ?? r.validUntil) || "—"}</TableCell>
-                  <TableCell><Truncate text={r.insurer ?? ""} width="max-w-[150px]" /></TableCell>
-                  <TableCell className="text-muted-foreground">{CARE_TYPE_LABELS[r.careType ?? ""] ?? "—"}</TableCell>
-                  <TableCell className="font-mono text-xs">{r.policy ?? "—"}</TableCell>
-                  <TableCell className="font-mono text-xs">{r.letterNumber ?? "—"}</TableCell>
                   <TableCell>
                     <Badge variant={r.status === "approved" ? "secondary" : "outline"}>
                       {STATUS_LABELS[r.status] ?? r.status}
                     </Badge>
                   </TableCell>
+                  <TableCell><Truncate text={r.insurer ?? ""} width="max-w-[150px]" /></TableCell>
+                  <TableCell className="text-muted-foreground">{CARE_TYPE_LABELS[r.careType ?? ""] ?? "—"}</TableCell>
+                  <TableCell className="font-mono text-xs">{r.policy ?? "—"}</TableCell>
+                  <TableCell className="font-mono text-xs">{r.letterNumber ?? "—"}</TableCell>
                   <TableCell className="text-muted-foreground">{SOURCE_LABELS[r.source ?? ""] ?? r.source}</TableCell>
                 </TableRow>
               ))}
