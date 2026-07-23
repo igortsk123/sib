@@ -22,6 +22,7 @@ sib — агрегатор и распознавание гарантийных 
 | Распознавание — извлечение текста, поля, confidence, ручная проверка | `core/recognition.md` | `../domain/recognition-architecture.md` |
 | Роли, права доступа (RBAC), ПДн и безопасность | `core/roles-and-access.md` | `../domain/product-spec.md` |
 | Термины ДМС/страхования и проекта — единый источник консистентности | `glossary.md` | — |
+| Ценообразование сервиса и QR-допродажи — вилки РФ, экономический эффект, ICP (гипотеза владельца) | `core/pricing.md` | — |
 <!-- GENERATED:decision-tree END -->
 
 ## Always-on docs (Tier 0/1)
