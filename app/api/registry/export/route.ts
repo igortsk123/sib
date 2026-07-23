@@ -8,6 +8,21 @@ import { STATUS_LABELS, SOURCE_LABELS, METHOD_LABELS, docTypeLabel } from "@/lib
 import { CARE_TYPE_LABELS } from "@/lib/care-type"
 import { isoFromRu, ruDate } from "@/lib/format"
 
+// Партнёр «Клиника Сибирская» — Томск, GMT+7 (без перехода на летнее время).
+// «Получено» пишем как Excel-datetime в локальном времени партнёра, не в UTC.
+const TOMSK_OFFSET_MS = 7 * 60 * 60 * 1000
+const EXCEL_EPOCH_DAYS = 25569 // 1970-01-01 в серийных днях Excel (учитывает баг 1900-02-29)
+const MS_PER_DAY = 24 * 60 * 60 * 1000
+// UTC-инстант → серийный номер Excel так, чтобы ячейка показывала стенные часы Томска
+// независимо от TZ сервера и версии exceljs (детерминированная арифметика на числах).
+function tomskExcelSerial(v: Date | string | null | undefined): number | null {
+  if (!v) return null
+  const t = new Date(v).getTime()
+  if (Number.isNaN(t)) return null
+  const serial = EXCEL_EPOCH_DAYS + (t + TOMSK_OFFSET_MS) / MS_PER_DAY
+  return Math.round(serial * 86400) / 86400 // до целых секунд — убираем плавающий дрейф минуты
+}
+
 // Выгрузка реестра ГП в Excel (бриф §10). Только по сессии (ПДн), в скоупе клиники.
 // Отдельная колонка «Требует проверки» + кликабельная ссылка на карточку для сверки.
 export async function GET(req: Request) {
@@ -34,7 +49,9 @@ export async function GET(req: Request) {
 
   const wb = new ExcelJS.Workbook()
   const ws = wb.addWorksheet("Реестр ГП")
+  const RECEIVED_FMT = "dd.mm.yyyy hh:mm" // «Получено» — дата+время в поясе партнёра
   ws.columns = [
+    { header: "ID записи", key: "id", width: 38 }, // уникальный ИД — по нему сообщать о косяках
     { header: "Пациент", key: "patient", width: 28 },
     { header: "Дата рождения", key: "birthDate", width: 14 },
     { header: "Страховая", key: "insurer", width: 18 },
@@ -46,6 +63,7 @@ export async function GET(req: Request) {
     { header: "Направление", key: "careType", width: 14 },
     { header: "Статус", key: "status", width: 14 },
     { header: "Дата письма", key: "letterDate", width: 14 },
+    { header: "Получено", key: "received", width: 18, style: { numFmt: RECEIVED_FMT } }, // Томск GMT+7
     { header: "Срок действия письма", key: "validUntil", width: 18 },
     { header: "Дата начала обслуживания", key: "coverageFrom", width: 20 },
     { header: "Дата окончания обслуживания", key: "coverageTo", width: 22 },
@@ -55,18 +73,21 @@ export async function GET(req: Request) {
     { header: "Метод распознавания", key: "method", width: 18 },
     { header: "Карточка (всё в одном месте)", key: "link", width: 26 },
   ]
+  const lastCol = ws.columnCount // держим фильтр в синхроне с числом колонок
+  const lastColLetter = ws.getColumn(lastCol).letter
   const head = ws.getRow(1)
   head.font = { bold: true, color: { argb: "FFFFFFFF" } }
   head.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF1F4E79" } }
   head.alignment = { vertical: "middle" }
   ws.views = [{ state: "frozen", ySplit: 1 }] // шапка зафиксирована при прокрутке
-  ws.autoFilter = { from: "A1", to: "Q1" } // фильтры по колонкам для анализа
+  ws.autoFilter = { from: "A1", to: `${lastColLetter}1` } // фильтры по колонкам для анализа
 
   for (const r of rows) {
     const services = Array.isArray(r.services)
       ? (r.services as unknown[]).filter(Boolean).map(String).join(", ")
       : ""
     const row = ws.addRow({
+      id: r.id,
       patient: r.patient ?? "",
       birthDate: ruDate(r.birthDate),
       insurer: r.insurer ?? "",
@@ -78,6 +99,7 @@ export async function GET(req: Request) {
       careType: CARE_TYPE_LABELS[r.careType ?? ""] ?? "",
       status: STATUS_LABELS[r.status] ?? r.status,
       letterDate: ruDate(r.letterDate),
+      received: tomskExcelSerial(r.receivedAt),
       validUntil: ruDate(r.validUntil),
       coverageFrom: ruDate(r.coverageFrom),
       coverageTo: ruDate(r.coverageTo),
@@ -88,6 +110,7 @@ export async function GET(req: Request) {
       link: { text: "Открыть карточку", hyperlink: `${appUrl}/registry/${r.id}` },
     })
     row.alignment = { vertical: "top", wrapText: true }
+    row.getCell("received").numFmt = RECEIVED_FMT // формат даты-времени на ячейке (row.alignment его не трогает)
     const linkCell = row.getCell("link")
     linkCell.font = { color: { argb: "FF1A56DB" }, underline: true }
   }
