@@ -3,12 +3,12 @@ tier: 1
 topic: recognition
 scope: Распознавание — извлечение текста, поля, confidence, ручная проверка
 tier2: ../domain/recognition-architecture.md
-updated: 2026-07-22
+updated: 2026-07-23
 importance: high
 source: domain/product-spec.md §5,11
 status: working
 source_of_truth: supporting
-last_verified: 2026-07-22
+last_verified: 2026-07-23
 review_after: ""
 ---
 
@@ -37,6 +37,12 @@ Regex + правила по страховой + словари + **LLM** (OpenA
 извлечение по форматам) + **LLM** (OpenAI прокси, рантайм `gpt-5.4-mini`, Structured Outputs) только
 на поля; **gpt-5.5** — учитель-эталон. Наблюдаемость гибрида — `parse_log` (поле «уехало в LLM» = источник
 сменил форму → правим правило).
+
+⚙️ **ФАЙЛ-FIRST (ADR D19, 2026-07-23):** свободный путь двухпроходный — поля сначала из ВЛОЖЕНИЙ, тело —
+фолбэк; ФИО: сила извлечения (метка) важнее источника; тип enroll/detach — имя файла (прикр/prikr↔откр/snyat)
+приоритетнее keywords; `source` честный. **field_status (D18):** absent=«нет данных» (искали файл+тело),
+unreadable=«не распознано» (тех.сбой) — парсер эмитит, `enrich.prune_fs` снимает с дозаполненных.
+Дубли (D20): пере-отправка списков → `is_duplicate` на приёме (dupKey).
 
 **Tier 2:** **`domain/recognition-architecture.md`** — авторитетный конвейер (письмо→домен→тип→метод,
 таблицы форматов/методов, per-insurer, маски полисов); `domain/insurer-recognition.md` (эмпирика 13 страховых).

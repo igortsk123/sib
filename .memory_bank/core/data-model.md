@@ -3,12 +3,12 @@ tier: 1
 topic: data-model
 scope: Модель данных — сущности и ключевые поля
 tier2: ../domain/product-spec.md
-updated: 2026-07-22
+updated: 2026-07-23
 importance: high
 source: domain/product-spec.md §22 (факт кода), §7,§13
 status: working
 source_of_truth: supporting
-last_verified: 2026-07-22
+last_verified: 2026-07-23
 review_after: ""
 ---
 
@@ -25,7 +25,9 @@ review_after: ""
 - **GuaranteeLetter** (`guarantee_letter`) — запись реестра. `EmailMessage 1—N GuaranteeLetter`
   (D10): Excel-реестр = много записей из письма, `rowIndex` — строка. Поля: пациент; документ
   (`letterNumber`/`caseNumber`/`contractNumber`/`docType`/`careType`/`approvalStatus`/`services`);
-  даты/лимиты; распознавание (`source`/`method`/`confidence`/`needsReview`/`reviewStatus`).
+  даты/лимиты; распознавание (`source`/`method`/`confidence`/`needsReview`/`reviewStatus`);
+  **`fieldStatus`** jsonb `found|absent|unreadable` — «нет данных»≠«не распознано» (D18, мигр.0014);
+  **`isDuplicate`/`duplicateOfId`** — пометка дублей, не удаление (D20, мигр.0015; `dupKey` shared.ts).
 - **ProcessingQueue** (`processing_queue`) — очередь ручной проверки: `reason`, `correlationKey`
   (архив↔пароль, D10).
 - **ParseLog** (`parse_log`, D15) — наблюдаемость гибрида: `method`/`detGap`/`llmFilled`/`missing`
