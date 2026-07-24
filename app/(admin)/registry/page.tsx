@@ -13,6 +13,7 @@ import { PageHeader } from "@/components/admin/page-header"
 import { ClinicSelector } from "@/components/admin/clinic-selector"
 import { Truncate } from "@/components/admin/truncate"
 import { DateMaskInput } from "@/components/admin/date-mask-input"
+import { DateFieldRu } from "@/components/admin/date-field-ru"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -142,11 +143,11 @@ export default async function RegistryPage({
       <form className="mb-4 flex flex-wrap items-end gap-3 rounded-lg border border-border bg-card p-3" action="/api/registry/export" method="get">
         <div className="flex flex-col gap-1">
           <Label className="text-xs text-muted-foreground">Экспорт: с</Label>
-          <Input type="date" name="from" defaultValue={isoFromRu(sp.from) ?? ""} className="h-9 w-40" />
+          <DateFieldRu name="from" defaultValue={sp.from ?? ""} className="w-40" />
         </div>
         <div className="flex flex-col gap-1">
           <Label className="text-xs text-muted-foreground">по</Label>
-          <Input type="date" name="to" defaultValue={isoFromRu(sp.to) ?? ""} className="h-9 w-40" />
+          <DateFieldRu name="to" defaultValue={sp.to ?? ""} className="w-40" />
         </div>
         <div className="flex flex-col gap-1">
           <Label className="text-xs text-muted-foreground">Направления</Label>
