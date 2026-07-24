@@ -36,7 +36,7 @@ export async function GET(req: Request) {
       insurerId: p.get("insurer") ?? undefined,
       status: p.get("status") ?? undefined,
       careType: p.get("careType") ?? undefined,
-      careTypeIn: p.get("careTypeIn")?.split(",").map((s) => s.trim()).filter(Boolean),
+      careTypeIn: [...p.getAll("careTypeIn")].flatMap((v) => v.split(",")).map((s) => s.trim()).filter(Boolean),
       source: p.get("source") ?? undefined,
       review: p.get("review") ?? undefined,
       dateFrom: isoFromRu(p.get("from")), // «дд.мм.гггг» → ISO
@@ -46,6 +46,44 @@ export async function GET(req: Request) {
     5000,
   )
   const appUrl = env.APP_URL.replace(/\/+$/, "")
+  const stamp0 = new Date().toISOString().slice(0, 10)
+
+  // ── Шаблон «Дентал Про»: массовая загрузка пациентов (создание полисов) — колонки их импортёра
+  // байт-в-байт (включая хвостовые пробелы в заголовках). Программа ← услуги/программа записи.
+  if (p.get("template") === "dental") {
+    const wbD = new ExcelJS.Workbook()
+    const wsD = wbD.addWorksheet("Лист1")
+    wsD.columns = [
+      { header: "Фамилия", key: "f", width: 16 },
+      { header: "Имя", key: "i", width: 14 },
+      { header: "Отчество ", key: "o", width: 16 },
+      { header: "Дата рождения ", key: "bd", width: 14 },
+      { header: "Страховая компания ", key: "ins", width: 24 },
+      { header: "Страховая программа ", key: "prog", width: 28 },
+      { header: "Номер полиса ", key: "pol", width: 20 },
+      { header: "Дата начала обслуживания", key: "cf", width: 16 },
+      { header: "Дата окончания обслуживания", key: "cto", width: 16 },
+    ]
+    for (const r of rows) {
+      const w = (r.patient ?? "").trim().split(/\s+/)
+      const prog = Array.isArray(r.services)
+        ? (r.services as unknown[]).filter(Boolean).map(String).join(", ")
+        : ""
+      wsD.addRow({
+        f: w[0] ?? "", i: w[1] ?? "", o: w.slice(2).join(" "),
+        bd: ruDate(r.birthDate), ins: r.insurer ?? "", prog,
+        pol: r.policy ?? "", cf: ruDate(r.coverageFrom), cto: ruDate(r.coverageTo),
+      })
+    }
+    const bufD = await wbD.xlsx.writeBuffer()
+    return new Response(bufD, {
+      headers: {
+        "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "Content-Disposition": `attachment; filename="dentalpro-${stamp0}.xlsx"`,
+        "Cache-Control": "no-store",
+      },
+    })
+  }
 
   const wb = new ExcelJS.Workbook()
   const ws = wb.addWorksheet("Реестр ГП")
