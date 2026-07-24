@@ -181,6 +181,7 @@ export default async function RegistryPage({
             <TableHeader>
               <TableRow>
                 <TableHead className="w-8 text-center" title="Требует проверки">⚑</TableHead>
+                <TableHead>Получено</TableHead>
                 <TableHead>Пациент</TableHead>
                 <TableHead>Действует до</TableHead>
                 <TableHead>Статус</TableHead>
@@ -188,7 +189,6 @@ export default async function RegistryPage({
                 <TableHead>Направление</TableHead>
                 <TableHead>Полис</TableHead>
                 <TableHead>№ ГП</TableHead>
-                <TableHead>Источник</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -211,6 +211,9 @@ export default async function RegistryPage({
                       </Link>
                     )}
                   </TableCell>
+                  <TableCell className="whitespace-nowrap text-muted-foreground">
+                    {r.receivedAt ? new Date(r.receivedAt).toLocaleString("ru-RU", { day: "2-digit", month: "2-digit", year: "2-digit", hour: "2-digit", minute: "2-digit", timeZone: "Asia/Tomsk" }) : "—"}
+                  </TableCell>
                   <TableCell className="font-medium">
                     <Link href={`/registry/${r.id}`} className="text-primary hover:underline">
                       {r.patient ? `${r.patient}${r.birthDate ? `, ${String(r.birthDate).slice(0, 4)}` : ""}` : "—"}
@@ -226,7 +229,6 @@ export default async function RegistryPage({
                   <TableCell className="text-muted-foreground">{CARE_TYPE_LABELS[r.careType ?? ""] ?? "—"}</TableCell>
                   <TableCell className="font-mono text-xs">{r.policy ?? "—"}</TableCell>
                   <TableCell className="font-mono text-xs">{r.letterNumber ?? "—"}</TableCell>
-                  <TableCell className="text-muted-foreground">{SOURCE_LABELS[r.source ?? ""] ?? r.source}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
