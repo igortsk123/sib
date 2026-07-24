@@ -13,7 +13,7 @@ import { PageHeader } from "@/components/admin/page-header"
 import { ClinicSelector } from "@/components/admin/clinic-selector"
 import { Truncate } from "@/components/admin/truncate"
 import { DateMaskInput } from "@/components/admin/date-mask-input"
-import { DateFieldRu } from "@/components/admin/date-field-ru"
+import { ExportDialog } from "@/components/admin/export-dialog"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -77,7 +77,7 @@ export default async function RegistryPage({
         action={
           <div className="flex flex-wrap items-center gap-2">
             {scope.isAdmin && <ClinicSelector clinics={clinics} current={scope.orgId} />}
-            <span className="text-xs text-muted-foreground">Экспорт — в блоке под фильтрами</span>
+            <ExportDialog defaultFrom={sp.from} defaultTo={sp.to} />
           </div>
         }
       />
@@ -137,37 +137,6 @@ export default async function RegistryPage({
           <Button type="submit">Применить</Button>
           <Button asChild variant="ghost"><Link href="/registry">Сбросить</Link></Button>
         </div>
-      </form>
-
-      {/* ЭКСПОРТ: период + направления (можно несколько) + шаблон (Стандартный | Дентал Про) */}
-      <form className="mb-4 flex flex-wrap items-end gap-3 rounded-lg border border-border bg-card p-3" action="/api/registry/export" method="get">
-        <div className="flex flex-col gap-1">
-          <Label className="text-xs text-muted-foreground">Экспорт: с</Label>
-          <DateFieldRu name="from" defaultValue={sp.from ?? ""} className="w-40" />
-        </div>
-        <div className="flex flex-col gap-1">
-          <Label className="text-xs text-muted-foreground">по</Label>
-          <DateFieldRu name="to" defaultValue={sp.to ?? ""} className="w-40" />
-        </div>
-        <div className="flex flex-col gap-1">
-          <Label className="text-xs text-muted-foreground">Направления</Label>
-          <div className="flex h-9 items-center gap-3 text-sm">
-            {(["ambulatory", "dentistry", "combined"] as const).map((c) => (
-              <label key={c} className="flex items-center gap-1">
-                <input type="checkbox" name="careTypeIn" value={c} defaultChecked className="accent-primary" />
-                {CARE_TYPE_LABELS[c]}
-              </label>
-            ))}
-          </div>
-        </div>
-        <div className="flex flex-col gap-1">
-          <Label className="text-xs text-muted-foreground">Шаблон</Label>
-          <select name="template" className="h-9 rounded-md border border-input bg-background px-2 text-sm">
-            <option value="">Стандартный</option>
-            <option value="dental">Дентал Про (загрузка пациентов)</option>
-          </select>
-        </div>
-        <Button type="submit" variant="outline" className="gap-2"><Download className="size-4" /> Выгрузить</Button>
       </form>
 
       {rows.length === 0 ? (
