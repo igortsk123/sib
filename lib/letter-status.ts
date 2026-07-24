@@ -8,7 +8,7 @@ export const STATUS_LABELS: Record<string, string> = {
   partial: "Частично",
   need_info: "Требуется инфо",
   need_approval: "Треб. согласование",
-  unknown: "—",
+  unknown: "не определён",
 }
 
 export const DOC_TYPE_LABELS: Record<string, string> = {

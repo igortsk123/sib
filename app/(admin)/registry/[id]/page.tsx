@@ -85,7 +85,16 @@ export default async function LetterCardPage({ params }: { params: Promise<{ id:
             <Field label="№ ГП" value={cellNode(l.letterNumber, "letterNumber")} />
             <Field label="№ договора" value={cellNode(l.contractNumber, "contractNumber")} />
             <Field label="Тип" value={docTypeLabel(l.docType, l.approvalStatus)} />
-            <Field label="Статус" value={STATUS_LABELS[l.approvalStatus] ?? l.approvalStatus} />
+            <Field
+              label="Статус"
+              value={
+                l.approvalStatus === "unknown" ? (
+                  <span className="font-medium text-warning">не определён — сверьте с оригиналом ниже</span>
+                ) : (
+                  STATUS_LABELS[l.approvalStatus] ?? l.approvalStatus
+                )
+              }
+            />
             <Field label="Направление" value={CARE_TYPE_LABELS[l.careType ?? ""] ?? "—"} />
             <Field label="Страховая" value={data.insurer} />
             <Field label="Дата письма" value={cellNode(ruDate(l.letterDate), "letterDate")} />
