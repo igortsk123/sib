@@ -12,9 +12,15 @@ export function ruDate(v?: string | Date | null): string {
 export const RU_DATE_PATTERN = "(0[1-9]|[12][0-9]|3[01])\\.(0[1-9]|1[0-2])\\.(19|20)[0-9]{2}"
 export function isoFromRu(ru?: string | null): string | undefined {
   if (!ru) return undefined
-  const m = ru.trim().match(/^(\d{2})\.(\d{2})\.(\d{4})$/)
-  if (!m) return undefined
-  const d = +m[1], mo = +m[2], y = +m[3]
-  if (mo < 1 || mo > 12 || d < 1 || d > 31 || y < 1900 || y > 2099) return undefined
-  return `${m[3]}-${m[2]}-${m[1]}`
+  const t = ru.trim()
+  // уже ISO (нативный date-инпут) — валидируем и пропускаем
+  const iso = t.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+  const m = iso ? null : t.match(/^(\d{2})\.(\d{2})\.(\d{4})$/)
+  const [y, mo, d] = iso ? [+iso[1], +iso[2], +iso[3]] : m ? [+m[3], +m[2], +m[1]] : [0, 0, 0]
+  if (!y) return undefined
+  // РЕАЛЬНЫЙ календарь: 31.02/29.02 невисокосного и т.п. отбрасываются
+  const dt = new Date(Date.UTC(y, mo - 1, d))
+  if (y < 1900 || y > 2099 || dt.getUTCFullYear() !== y || dt.getUTCMonth() !== mo - 1 || dt.getUTCDate() !== d)
+    return undefined
+  return `${String(y).padStart(4, "0")}-${String(mo).padStart(2, "0")}-${String(d).padStart(2, "0")}`
 }

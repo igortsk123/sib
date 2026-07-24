@@ -142,11 +142,11 @@ export default async function RegistryPage({
       <form className="mb-4 flex flex-wrap items-end gap-3 rounded-lg border border-border bg-card p-3" action="/api/registry/export" method="get">
         <div className="flex flex-col gap-1">
           <Label className="text-xs text-muted-foreground">Экспорт: с</Label>
-          <DateMaskInput name="from" defaultValue={sp.from ?? ""} className="h-9 w-32" />
+          <Input type="date" name="from" defaultValue={isoFromRu(sp.from) ?? ""} className="h-9 w-40" />
         </div>
         <div className="flex flex-col gap-1">
           <Label className="text-xs text-muted-foreground">по</Label>
-          <DateMaskInput name="to" defaultValue={sp.to ?? ""} className="h-9 w-32" />
+          <Input type="date" name="to" defaultValue={isoFromRu(sp.to) ?? ""} className="h-9 w-40" />
         </div>
         <div className="flex flex-col gap-1">
           <Label className="text-xs text-muted-foreground">Направления</Label>
