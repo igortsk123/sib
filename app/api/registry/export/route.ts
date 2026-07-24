@@ -69,11 +69,15 @@ export async function GET(req: Request) {
       const prog = Array.isArray(r.services)
         ? (r.services as unknown[]).filter(Boolean).map(String).join(", ")
         : ""
-      wsD.addRow({
+      // нет даты окончания обслуживания → подставляем «Действует до» (validUntil) и выделяем ЖИРНЫМ
+      const subEnd = !r.coverageTo && r.validUntil
+      const rw = wsD.addRow({
         f: w[0] ?? "", i: w[1] ?? "", o: w.slice(2).join(" "),
         bd: ruDate(r.birthDate), ins: r.insurer ?? "", prog,
-        pol: r.policy ?? "", cf: ruDate(r.coverageFrom), cto: ruDate(r.coverageTo),
+        pol: r.policy ?? "", cf: ruDate(r.coverageFrom),
+        cto: ruDate(r.coverageTo ?? r.validUntil),
       })
+      if (subEnd) rw.getCell("cto").font = { bold: true }
     }
     const bufD = await wbD.xlsx.writeBuffer()
     return new Response(bufD, {
