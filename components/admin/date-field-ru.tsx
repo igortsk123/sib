@@ -27,13 +27,34 @@ export function DateFieldRu({ name, defaultValue, className }: { name: string; d
     return () => document.removeEventListener("mousedown", close)
   }, [open])
 
+  // Маска с «умным» клампом сегментов: не даёт набрать несуществующие день/месяц (17.15 → нет).
   const mask = (raw: string) => {
-    const d = raw.replace(/\D/g, "").slice(0, 8)
+    let d = raw.replace(/\D/g, "").slice(0, 8)
+    // ДЕНЬ: 4-9 первой цифрой → 04..09; вторая цифра не даёт >31; 00 → 01
+    if (d.length >= 1 && +d[0] > 3) d = "0" + d
+    if (d.length >= 2) {
+      if (d.slice(0, 2) === "00") d = "01" + d.slice(2)
+      if (+d.slice(0, 2) > 31) d = d.slice(0, 1)
+    }
+    // МЕСЯЦ: 2-9 первой цифрой → 02..09; >12 не набрать; 00 → 01
+    if (d.length >= 3 && +d[2] > 1) d = d.slice(0, 2) + "0" + d.slice(2)
+    if (d.length >= 4) {
+      if (d.slice(2, 4) === "00") d = d.slice(0, 2) + "01" + d.slice(4)
+      if (+d.slice(2, 4) > 12) d = d.slice(0, 3)
+    }
+    d = d.slice(0, 8)
     let out = d.slice(0, 2)
     if (d.length > 2) out += "." + d.slice(2, 4)
     if (d.length > 4) out += "." + d.slice(4, 8)
     return out
   }
+  // Полная дата → проверка по реальному календарю (29.02 невисокосного, 31.04 и т.п.)
+  const full = v.match(/^(\d{2})\.(\d{2})\.(\d{4})$/)
+  const invalid = Boolean(full && (() => {
+    const dd = +full[1], mm = +full[2], yy = +full[3]
+    const t = new Date(yy, mm - 1, dd)
+    return t.getFullYear() !== yy || t.getMonth() !== mm - 1 || t.getDate() !== dd
+  })())
 
   const toggle = () => {
     const m = v.match(/^(\d{2})\.(\d{2})\.(\d{4})$/)
@@ -58,7 +79,8 @@ export function DateFieldRu({ name, defaultValue, className }: { name: string; d
         inputMode="numeric"
         pattern={RU_DATE_PATTERN}
         title="Дата в формате дд.мм.гггг"
-        className="h-9 pr-9"
+        aria-invalid={invalid}
+        className={`h-9 pr-9 ${invalid ? "border-destructive focus-visible:ring-destructive" : ""}`}
       />
       <button
         type="button"
