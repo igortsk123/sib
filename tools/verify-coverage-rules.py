@@ -64,3 +64,13 @@ for kw in ["удален", "имплант", "протезир", "ортодон
     doc_n = low.count(kw)
     flag = "  ⚠ есть в тексте, нет в правилах" if n == 0 and doc_n > 0 else ""
     print(f"4) «{kw}»: правил={n}, упоминаний в тексте={doc_n}{flag}")
+
+# 5) таблицы/лимиты не потеряны (формы Ф3/Ф4 промпта): в тексте есть ограничения, а лимитов в правилах нет
+markers = set(re.findall(r"не более \d+|\d+ раз(?:а|ов)?|\d+ сеанс\w*|\d+-х? зуб\w*|\d+ ?%", low))
+lim_rules = sum(1 for r in q("select coalesce(limit_amount,'') from coverage_rule cr "
+                             "join program_document pd on pd.id=cr.document_id "
+                             f"where pd.id::text like '{pref}%'") if r and r[0].strip())
+flag = "  \u26a0 в тексте есть ограничения, а правил с лимитом нет — проверить таблицы (Ф3/Ф4)" if markers and lim_rules == 0 else ""
+print(f"5) ЛИМИТЫ: маркеров в тексте={len(markers)}, правил с limit_amount={lim_rules}{flag}")
+if markers:
+    print("   примеры:", ", ".join(sorted(markers)[:8]))
