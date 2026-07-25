@@ -61,12 +61,25 @@ def fetch(url: str) -> tuple[bytes, int]:
         return resp.read(), resp.status
 
 
+# Динамика страниц, которая меняется от запроса к запросу и не является изменением условий:
+# «© Sat Jul 25 22:05:23 MSK 2026», «Обновлено 25.07.2026 в 12:45», таймстемпы и номера сборок.
+VOLATILE = [
+    re.compile(r"(?i)(mon|tue|wed|thu|fri|sat|sun)\s+\w{3}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2}\s+\w+\s+\d{4}"),
+    re.compile(r"\d{2}[.:]\d{2}[.:]\d{2,4}(\s+в\s+\d{1,2}[:.]\d{2})?"),
+    re.compile(r"(?i)обновлено[^.]{0,40}"),
+    re.compile(r"\b\d{10,}\b"),  # эпохи, идентификаторы сессий
+]
+
+
 def page_text(raw: bytes) -> bytes:
-    """Текст страницы без разметки: баннеры и счётчики не должны давать ложных «обновлений»."""
+    """Текст страницы без разметки и без меняющихся отметок времени: иначе поллер каждую неделю
+    (и даже каждый прогон) считал бы страницу «обновившейся» из-за часов в подвале."""
     doc = raw.decode("utf-8", "ignore")
     doc = re.sub(r"(?is)<(script|style|noscript)[^>]*>.*?</\1>", " ", doc)
     doc = re.sub(r"(?s)<[^>]+>", " ", doc)
     doc = html.unescape(doc)
+    for rx in VOLATILE:
+        doc = rx.sub(" ", doc)
     return re.sub(r"\s+", " ", doc).strip().encode("utf-8")
 
 
@@ -76,7 +89,7 @@ def save_new_version(doc: dict, blob: bytes, sha: str, is_page: bool) -> str:
     stem, ext = os.path.splitext(base)
     stem = re.sub(r"_\d{4}-\d{2}-\d{2}$", "", stem)
     ext = ext or (".txt" if is_page else ".pdf")
-    newname = f"{stem}_{stamp}{ext}"
+    newname = f"{stem}_{stamp}_{sha[:8]}{ext}"  # хэш в имени: редакции одного дня не затирают друг друга
     with open(os.path.join(STORAGE, "programs", newname), "wb") as f:
         f.write(blob)
 

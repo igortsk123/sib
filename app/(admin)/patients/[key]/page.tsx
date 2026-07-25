@@ -51,6 +51,18 @@ export default async function PatientPage({ params }: { params: Promise<{ key: s
         description={`Дата рождения: ${d(card.birthDate)}${card.policyNumber ? ` · Полис: ${card.policyNumber}` : ""}`}
       />
 
+      {card.alsoKnown.length > 0 && (
+        <Card className="mb-4 p-4 text-sm">
+          <span className="text-muted-foreground">По тому же полису есть записи с другим написанием ФИО — возможно, это тот же человек: </span>
+          {card.alsoKnown.map((a, i) => (
+            <span key={a.key}>
+              {i > 0 ? ", " : ""}
+              <Link href={`/patients/${a.key}`} className="text-primary hover:underline">{a.fullName}</Link>
+            </span>
+          ))}
+        </Card>
+      )}
+
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>

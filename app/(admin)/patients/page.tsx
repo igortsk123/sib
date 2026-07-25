@@ -20,7 +20,7 @@ export default async function PatientsPage({
   if (!scope.user) redirect("/login")
   const sp = await searchParams
   const page = Number(sp.page ?? "1") || 1
-  const { rows, total, pageSize } = await patientsList({ orgId: scope.orgId, q: sp.q, page })
+  const { rows, total, pageSize, unmatched } = await patientsList({ orgId: scope.orgId, q: sp.q, page })
   const pages = Math.max(1, Math.ceil(total / pageSize))
 
   return (
@@ -34,6 +34,13 @@ export default async function PatientsPage({
         <Input name="q" defaultValue={sp.q ?? ""} placeholder="Фамилия, год рождения или полис" className="max-w-xs" />
         <button type="submit" className="rounded-md border px-3 py-1.5 text-sm hover:bg-accent">Найти</button>
         <span className="text-sm text-muted-foreground">Найдено: {total}</span>
+        {unmatched.noName + unmatched.noBirth > 0 && (
+          <span className="text-sm text-muted-foreground">
+            · не сопоставлено с пациентом: {unmatched.noName + unmatched.noBirth} записей
+            {unmatched.noBirth > 0 ? ` (${unmatched.noBirth} без даты рождения` : " ("}
+            {unmatched.noName > 0 ? `${unmatched.noBirth > 0 ? ", " : ""}${unmatched.noName} без ФИО` : ""})
+          </span>
+        )}
       </form>
 
       <Card className="overflow-hidden p-0">

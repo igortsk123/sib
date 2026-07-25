@@ -1,5 +1,5 @@
 import "server-only"
-import { and, desc, eq, ilike, isNotNull, or, sql } from "drizzle-orm"
+import { and, desc, eq, ilike, inArray, isNotNull, isNull, ne, or, sql } from "drizzle-orm"
 
 import { db } from "@/lib/db"
 import { guaranteeLetter, insuranceCompany } from "@/lib/db/schema"
@@ -67,9 +67,24 @@ export async function patientsList({ orgId, q, page = 1 }: ListArgs) {
         .as("p"),
     )
 
+  // Записи, которые нельзя отнести к пациенту: нет ФИО или нет точной даты рождения.
+  // Показываем их числом, чтобы «5713 пациентов» не выглядели полным охватом.
+  const [unmatched] = await db()
+    .select({
+      noName: sql<number>`count(*) filter (where ${guaranteeLetter.patientFullName} is null)`,
+      noBirth: sql<number>`count(*) filter (where ${guaranteeLetter.patientFullName} is not null and ${guaranteeLetter.patientBirthDate} is null)`,
+    })
+    .from(guaranteeLetter)
+    .where(and(
+      orgId ? eq(guaranteeLetter.organizationId, orgId) : undefined,
+      isNull(guaranteeLetter.patientKey),
+      eq(guaranteeLetter.isDuplicate, false),
+    ))
+
   return {
     rows: rows.map((r) => ({ ...r, key: r.key ?? patientKey(r.fullName, String(r.birthDate)) })),
     total: Number(totals[0]?.total ?? 0),
+    unmatched: { noName: Number(unmatched?.noName ?? 0), noBirth: Number(unmatched?.noBirth ?? 0) },
     page,
     pageSize: PAGE_SIZE,
   }
@@ -122,7 +137,23 @@ export async function patientCard(key: string, orgId: string | null) {
     isDuplicate: r.isDuplicate,
   }))
 
+  // Один полис у разных ключей = один человек записан по-разному (обычно без отчества).
+  // Данные НЕ сливаем (это исказило бы историю), но показываем подсказку в карточке.
+  const policies = mine.map((r) => r.policyNumber).filter((p): p is string => Boolean(p && p.length >= 6))
+  const alsoKnown = policies.length
+    ? await db()
+        .selectDistinct({ key: guaranteeLetter.patientKey, fullName: guaranteeLetter.patientFullName })
+        .from(guaranteeLetter)
+        .where(and(
+          orgId ? eq(guaranteeLetter.organizationId, orgId) : undefined,
+          inArray(guaranteeLetter.policyNumber, policies),
+          isNotNull(guaranteeLetter.patientKey),
+          ne(guaranteeLetter.patientKey, key),
+        ))
+    : []
+
   return {
+    alsoKnown: alsoKnown.filter((a): a is { key: string; fullName: string } => Boolean(a.key && a.fullName)),
     fullName: mine[0].fullName ?? "",
     birthDate: String(mine[0].birthDate),
     policyNumber: mine.find((r) => r.policyNumber)?.policyNumber ?? null,
