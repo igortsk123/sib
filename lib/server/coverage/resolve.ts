@@ -22,6 +22,7 @@ export type ResolvedRule = {
   programName: string | null
   scopeLevel: string
   needsReview: boolean
+  documentId: string
   documentTitle: string
   documentUrl: string | null
   effectiveFrom: string | null
@@ -106,6 +107,7 @@ async function selectRules(
       scopeLevel: coverageRule.scopeLevel,
       overridable: coverageRule.overridable,
       needsReview: coverageRule.needsReview,
+      documentId: coverageRule.documentId,
       documentTitle: programDocument.title,
       documentUrl: sql<string | null>`coalesce(${programDocument.fileUrl}, ${programDocument.sourceUrl})`,
       effectiveFrom: programDocument.effectiveFrom,

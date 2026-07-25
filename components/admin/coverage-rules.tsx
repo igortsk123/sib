@@ -68,16 +68,19 @@ function RuleLine({ rule }: { rule: ResolvedRule }) {
       <VerdictBadge verdict={rule.verdict} needsReview={rule.needsReview} />
       <span>{rule.servicePattern ?? rule.serviceClass}</span>
       {rule.limitAmount && (
-        <span className="text-xs font-medium text-amber-700 dark:text-amber-400">{rule.limitAmount}</span>
+        <span className="text-xs font-medium text-foreground">{rule.limitAmount}</span>
       )}
       {rule.conditionText && <span className="text-xs text-muted-foreground">— {rule.conditionText}</span>}
       <span className="text-xs text-muted-foreground/70">
-        {rule.documentUrl ? (
-          <a href={rule.documentUrl} target="_blank" rel="noreferrer" className="hover:underline">
-            {rule.clause} ↗
+        {/* Ссылка ведёт на НАШУ копию той редакции, по которой построено правило:
+            внешний адрес может отдать уже другую редакцию. Источник — отдельной ссылкой. */}
+        <a href={`/api/original/program-doc/${rule.documentId}`} target="_blank" rel="noreferrer" className="hover:underline">
+          {rule.clause} 📄
+        </a>
+        {rule.documentUrl && (
+          <a href={rule.documentUrl} target="_blank" rel="noreferrer" className="ml-1 hover:underline" title="Источник на сайте страховой">
+            ↗
           </a>
-        ) : (
-          rule.clause
         )}
         {rule.scopeLevel !== "program" ? " · общие правила СК" : ""}
         {rule.effectiveFrom ? ` · ред. ${new Date(rule.effectiveFrom).toLocaleDateString("ru")}` : ""}

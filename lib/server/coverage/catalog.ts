@@ -40,6 +40,7 @@ export async function coverageCatalog(f: CatalogFilters) {
       clause: coverageRule.clause,
       scopeLevel: coverageRule.scopeLevel,
       needsReview: coverageRule.needsReview,
+      documentId: coverageRule.documentId,
       documentTitle: programDocument.title,
       documentUrl: sql<string | null>`coalesce(${programDocument.fileUrl}, ${programDocument.sourceUrl})`,
       effectiveFrom: programDocument.effectiveFrom,

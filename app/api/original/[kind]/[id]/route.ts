@@ -4,7 +4,7 @@ import { eq } from "drizzle-orm"
 import { simpleParser } from "mailparser"
 
 import { db } from "@/lib/db"
-import { attachment, docTemplate, emailMessage } from "@/lib/db/schema"
+import { attachment, docTemplate, emailMessage, programDocument } from "@/lib/db/schema"
 import { requireUser } from "@/lib/server/auth/guards"
 import { CONTENT_TYPES, resolveStoragePath } from "@/lib/storage"
 
@@ -75,6 +75,31 @@ export async function GET(
         "Content-Type": CONTENT_TYPES[ext] ?? "application/octet-stream",
         "Content-Disposition": `inline; filename*=UTF-8''${encodeURIComponent(filename)}`,
         "Cache-Control": "private, no-store",
+      },
+    })
+  }
+
+  // Документы условий страховых: отдаём НАШУ локальную копию той редакции, по которой
+  // построены правила. Внешняя ссылка может отдать уже другую редакцию — это источник ошибок.
+  if (kind === "program-doc") {
+    const rows = await db().select().from(programDocument).where(eq(programDocument.id, id)).limit(1)
+    const rel = rows[0]?.storagePath ?? null
+    if (!rel) return new Response("Not found", { status: 404 })
+    const full = resolveStoragePath(rel)
+    if (!full) return new Response("Forbidden", { status: 403 })
+    let data: Buffer
+    try {
+      data = await readFile(full)
+    } catch {
+      return new Response("File missing", { status: 404 })
+    }
+    const ext = path.extname(full).slice(1).toLowerCase()
+    const filename = `${rows[0]?.title ?? id}.${ext || "pdf"}`
+    return new Response(new Uint8Array(data), {
+      headers: {
+        "Content-Type": CONTENT_TYPES[ext] ?? (ext === "txt" ? "text/plain; charset=utf-8" : "application/octet-stream"),
+        "Content-Disposition": `inline; filename*=UTF-8''${encodeURIComponent(filename)}`,
+        "Cache-Control": "private, max-age=3600",
       },
     })
   }

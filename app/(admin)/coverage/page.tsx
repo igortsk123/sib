@@ -91,16 +91,17 @@ export default async function CoveragePage({
                   {r.programName ?? <span className="text-muted-foreground">общие правила страховой</span>}
                 </TableCell>
                 <TableCell className="text-sm">
-                  {r.limitAmount && <span className="mr-1 font-medium text-amber-700 dark:text-amber-400">{r.limitAmount}</span>}
+                  {r.limitAmount && <span className="mr-1 font-medium text-foreground">{r.limitAmount}</span>}
                   {r.conditionText ?? (r.limitAmount ? "" : "—")}
                 </TableCell>
                 <TableCell className="text-xs">
-                  {r.documentUrl ? (
-                    <a href={r.documentUrl} target="_blank" rel="noreferrer" className="text-primary hover:underline">
-                      {r.clause} ↗
+                  <a href={`/api/original/program-doc/${r.documentId}`} target="_blank" rel="noreferrer" className="text-primary hover:underline">
+                    {r.clause} 📄
+                  </a>
+                  {r.documentUrl && (
+                    <a href={r.documentUrl} target="_blank" rel="noreferrer" className="ml-1 text-muted-foreground hover:underline" title="Источник на сайте страховой">
+                      ↗
                     </a>
-                  ) : (
-                    r.clause
                   )}
                   <div className="text-muted-foreground">
                     {r.documentTitle}
