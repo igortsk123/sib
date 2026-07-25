@@ -22,6 +22,7 @@ if not rules:
 
 # 1) полнота: листовые пункты документа
 declared = {m.group(1) for m in re.finditer(r'(?m)^\s*(\d+\.\d+(?:\.\d+)*)\.?[\s]', doc)}
+declared = {c for c in declared if not re.fullmatch(r'0?\d{1,2}\.0?\d{1,2}\.(19|20)\d\d', c) and int(c.split('.')[0]) < 30}
 leaves = sorted({c for c in declared if not any(o != c and o.startswith(c + ".") for o in declared)},
                 key=lambda s: [int(x) for x in s.split(".")])
 have = set()
