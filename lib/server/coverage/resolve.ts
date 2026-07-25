@@ -21,8 +21,10 @@ export type ResolvedRule = {
   clause: string | null
   programName: string | null
   scopeLevel: string
+  needsReview: boolean
   documentTitle: string
   documentUrl: string | null
+  effectiveFrom: string | null
 }
 
 export type CoverageResolution = {
@@ -103,8 +105,10 @@ async function selectRules(
       programName: coverageRule.programName,
       scopeLevel: coverageRule.scopeLevel,
       overridable: coverageRule.overridable,
+      needsReview: coverageRule.needsReview,
       documentTitle: programDocument.title,
       documentUrl: sql<string | null>`coalesce(${programDocument.fileUrl}, ${programDocument.sourceUrl})`,
+      effectiveFrom: programDocument.effectiveFrom,
     })
     .from(coverageRule)
     .innerJoin(programDocument, eq(programDocument.id, coverageRule.documentId))

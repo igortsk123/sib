@@ -12,6 +12,7 @@ import {
   MessageSquareWarning,
   ShieldCheck,
   Users,
+  BookOpenCheck,
   type LucideIcon,
 } from "lucide-react"
 
@@ -38,6 +39,8 @@ type NavItem = { href: string; label: string; icon: LucideIcon; primary?: boolea
 function navFor(role: NavRole): NavItem[] {
   const insurers: NavItem = { href: "/insurers", label: "Страховые", icon: ShieldCheck }
   const registry: NavItem = { href: "/registry", label: "Реестр ГП", icon: FileText, primary: true }
+  // Справочник правил покрытия — нужен и врачу, и регистратуре (core/coverage-assistant-vision.md).
+  const coverage: NavItem = { href: "/coverage", label: "Правила покрытия", icon: BookOpenCheck, primary: true }
   const parselog: NavItem = { href: "/parse-log", label: "Журнал распознавания", icon: Activity }
   const reports: NavItem = { href: "/error-reports", label: "Сообщения об ошибках", icon: MessageSquareWarning }
   if (role === "platform")
@@ -45,6 +48,7 @@ function navFor(role: NavRole): NavItem[] {
       { href: "/admin/clinics", label: "Клиники", icon: Building2, primary: true },
       { ...registry, primary: true },
       { ...insurers, primary: true },
+      coverage,
       parselog,
       reports,
     ]
@@ -52,11 +56,13 @@ function navFor(role: NavRole): NavItem[] {
     return [
       { ...registry, primary: true },
       { href: "/staff", label: "Сотрудники", icon: Users, primary: true },
+      coverage,
       { ...insurers, primary: true },
       parselog,
     ]
   return [
     { ...registry, primary: true },
+    coverage,
     { ...insurers, primary: true },
   ]
 }

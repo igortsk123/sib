@@ -30,12 +30,19 @@ export const coverageRule = pgTable(
     scopeLevel: text("scope_level").notNull().default("insurer"), // program | insurer
     // Правило СК, которое программа вправе переопределить («кроме случаев, предусмотренных Программой»).
     overridable: boolean("overridable").notNull().default(false),
+    // Правило перенесено на новую редакцию документа автоматически (carry_rules.py) и ещё не
+    // сверено агентом с новым текстом. Показывается пользователю как «редакция обновилась».
+    needsReview: boolean("needs_review").notNull().default(false),
+    carriedFromDocumentId: uuid("carried_from_document_id").references(() => programDocument.id, {
+      onDelete: "set null",
+    }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
     index("cr_doc_idx").on(t.documentId),
     index("cr_insurer_idx").on(t.insuranceCompanyId),
     index("cr_program_idx").on(t.insuranceCompanyId, t.programName),
+    index("cr_review_idx").on(t.needsReview),
   ],
 )
 

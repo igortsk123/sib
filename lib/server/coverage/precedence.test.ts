@@ -14,8 +14,10 @@ const row = (over: Partial<Row>): Row => ({
   programName: null,
   scopeLevel: "insurer",
   overridable: false,
+  needsReview: false,
   documentTitle: "Правила ДМС",
   documentUrl: null,
+  effectiveFrom: null,
   ...over,
 })
 
