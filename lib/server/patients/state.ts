@@ -21,6 +21,8 @@ export type PatientLetter = {
   amountLimit: string | null
   conditions: string | null
   isDuplicate: boolean
+  /** Номер письма страховой — по нему аннул-письмо отзывает конкретное ГП. */
+  letterNumber: string | null
 }
 
 export type PatientState = {
@@ -36,6 +38,8 @@ export type PatientState = {
   activeGuarantees: PatientLetter[]
   /** Гарантийные письма с истёкшим сроком. */
   expiredGuarantees: PatientLetter[]
+  /** ГП, отозванные страховой annul-письмом с тем же номером, — не покрывают ничего. */
+  annulledGuarantees: PatientLetter[]
 }
 
 /** Ключ пациента для ссылок: ПДн в URL не попадают, только хэш от ФИО+даты рождения. */
@@ -64,8 +68,20 @@ export function computePatientState(letters: PatientLetter[], today: Date = new 
   const guarantees = byDate.filter(
     (l) => l.docType === "guarantee" || GUARANTEE_STATUSES.has(l.approvalStatus),
   )
-  const activeGuarantees = guarantees.filter((l) => !l.validUntil || l.validUntil >= iso)
-  const expiredGuarantees = guarantees.filter((l) => l.validUntil && l.validUntil < iso)
+
+  // Аннулирование: страховая отзывает выданное ГП отдельным annul-письмом с ТЕМ ЖЕ номером.
+  // Такое ГП не должно давать «оплатит» — исключаем его из действующих (Д10, серийные annul).
+  const annulledNumbers = new Set(
+    real
+      .filter((l) => l.docType === "annul" || l.approvalStatus === "annul")
+      .map((l) => l.letterNumber)
+      .filter((n): n is string => Boolean(n)),
+  )
+  const isAnnulled = (l: PatientLetter) => Boolean(l.letterNumber && annulledNumbers.has(l.letterNumber))
+  const annulledGuarantees = guarantees.filter(isAnnulled)
+  const live = guarantees.filter((l) => !isAnnulled(l))
+  const activeGuarantees = live.filter((l) => !l.validUntil || l.validUntil >= iso)
+  const expiredGuarantees = live.filter((l) => l.validUntil && l.validUntil < iso)
 
   return {
     attached,
@@ -75,6 +91,7 @@ export function computePatientState(letters: PatientLetter[], today: Date = new 
     since: last?.letterDate ?? null,
     activeGuarantees,
     expiredGuarantees,
+    annulledGuarantees,
   }
 }
 

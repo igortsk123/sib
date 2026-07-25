@@ -30,6 +30,7 @@ const state = (over: Partial<PatientState>): PatientState => ({
   since: "2026-01-10",
   activeGuarantees: [],
   expiredGuarantees: [],
+  annulledGuarantees: [],
   ...over,
 })
 
@@ -45,6 +46,7 @@ const gp = (over: Record<string, unknown>) => ({
   amountLimit: null,
   conditions: null,
   isDuplicate: false,
+  letterNumber: null,
   ...over,
 })
 

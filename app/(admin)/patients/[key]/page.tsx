@@ -92,6 +92,9 @@ export default async function PatientPage({ params }: { params: Promise<{ key: s
               {state.expiredGuarantees.length > 0 && (
                 <span className="text-muted-foreground"> · истекло: {state.expiredGuarantees.length}</span>
               )}
+              {state.annulledGuarantees.length > 0 && (
+                <span className="text-destructive"> · аннулировано страховой: {state.annulledGuarantees.length}</span>
+              )}
             </div>
             {!state.attached && (
               <p className="text-sm text-muted-foreground">

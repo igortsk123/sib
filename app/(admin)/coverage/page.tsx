@@ -94,15 +94,13 @@ export default async function CoveragePage({
             <TableRow>
               <TableHead className="w-[120px]">Ответ</TableHead>
               <TableHead>Услуга</TableHead>
-              <TableHead>Программа</TableHead>
-              <TableHead>Условие / лимит</TableHead>
-              <TableHead className="w-[220px]">Основание</TableHead>
+              <TableHead className="w-[260px]">Основание</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {rows.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} className="py-8 text-center text-muted-foreground">
+                <TableCell colSpan={3} className="py-8 text-center text-muted-foreground">
                   Ничего не найдено — измените запрос или выберите другую страховую
                 </TableCell>
               </TableRow>
@@ -112,16 +110,19 @@ export default async function CoveragePage({
                 <TableCell>
                   <VerdictBadge verdict={r.verdict} needsReview={r.needsReview} />
                 </TableCell>
-                <TableCell className="text-sm">
+                <TableCell className="whitespace-normal text-sm">
                   {r.servicePattern ?? r.serviceClass}
                   <div className="text-xs text-muted-foreground">{r.serviceClass}</div>
-                </TableCell>
-                <TableCell className="text-sm">
-                  {r.programName ?? <span className="text-muted-foreground">общие правила страховой</span>}
-                </TableCell>
-                <TableCell className="text-sm">
-                  {r.limitAmount && <span className="mr-1 font-medium text-foreground">{r.limitAmount}</span>}
-                  {r.conditionText ?? (r.limitAmount ? "" : "—")}
+                  {(r.limitAmount || r.conditionText) && (
+                    // Условие/лимит по клику (просьба владельца) — без колонки, текст раскрывается в строке.
+                    <details className="mt-1">
+                      <summary className="cursor-pointer text-xs text-primary hover:underline">условие / лимит</summary>
+                      <div className="mt-1 whitespace-normal break-words rounded-md border border-border bg-muted/40 p-2 text-xs">
+                        {r.limitAmount && <span className="mr-1 font-medium text-foreground">{r.limitAmount}</span>}
+                        {r.conditionText ?? ""}
+                      </div>
+                    </details>
+                  )}
                 </TableCell>
                 <TableCell className="text-xs">
                   <a href={`/api/original/program-doc/${r.documentId}`} target="_blank" rel="noreferrer" className="text-primary hover:underline">

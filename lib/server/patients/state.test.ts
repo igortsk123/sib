@@ -14,6 +14,7 @@ const letter = (over: Partial<PatientLetter>): PatientLetter => ({
   amountLimit: null,
   conditions: null,
   isDuplicate: false,
+  letterNumber: null,
   ...over,
 })
 
@@ -68,6 +69,31 @@ describe("computePatientState", () => {
       TODAY,
     )
     expect(st.attached).toBe(true)
+  })
+
+  it("аннулированное страховой ГП (annul с тем же номером) исключается из действующих", () => {
+    const st = computePatientState(
+      [
+        letter({ letterDate: "2026-05-20", approvalStatus: "approved", docType: "guarantee", validUntil: "2026-07-20", services: ["Удаление зуба 3.6"], letterNumber: "01П/111-26" }),
+        letter({ letterDate: "2026-05-25", approvalStatus: "annul", docType: "annul", services: [], letterNumber: "01П/111-26" }),
+      ],
+      TODAY,
+    )
+    expect(st.activeGuarantees).toHaveLength(0)
+    expect(st.annulledGuarantees).toHaveLength(1)
+    expect(guaranteeCovering(st, "удаление зуба 3.6")).toBeNull()
+  })
+
+  it("annul с ДРУГИМ номером не трогает действующее ГП", () => {
+    const st = computePatientState(
+      [
+        letter({ letterDate: "2026-05-20", approvalStatus: "approved", docType: "guarantee", validUntil: "2026-07-20", services: ["Удаление зуба 3.6"], letterNumber: "01П/111-26" }),
+        letter({ letterDate: "2026-05-25", approvalStatus: "annul", docType: "annul", services: [], letterNumber: "01П/999-26" }),
+      ],
+      TODAY,
+    )
+    expect(st.activeGuarantees).toHaveLength(1)
+    expect(st.annulledGuarantees).toHaveLength(0)
   })
 
   it("делит гарантийные письма на действующие и истёкшие", () => {

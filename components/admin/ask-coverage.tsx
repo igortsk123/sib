@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 
+import { GuaranteeRequest } from "./guarantee-request"
+
 // Вопрос «можно ли делать?» в карточке пациента (фаза Ф-A). Врач или регистратура вводит
 // услугу (и сумму, если есть) — ответ мгновенный по гейтам, с пунктами документов.
 const VERDICT: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
@@ -24,11 +26,15 @@ export function AskCoverage({ patientKey }: { patientKey: string }) {
   const [result, setResult] = useState<AskCoverageResult | null>(null)
   const [pending, start] = useTransition()
 
+  const parsedAmount = (() => {
+    const n = amount.trim() ? Number(amount.replace(/\s/g, "")) : null
+    return n != null && Number.isFinite(n) ? n : null
+  })()
+
   function submit(e: React.FormEvent) {
     e.preventDefault()
-    const amountNum = amount.trim() ? Number(amount.replace(/\s/g, "")) : null
     start(async () => {
-      setResult(await askCoverage({ patientKey, serviceText: service, amount: Number.isFinite(amountNum) ? amountNum : null }))
+      setResult(await askCoverage({ patientKey, serviceText: service, amount: parsedAmount }))
     })
   }
 
@@ -99,6 +105,9 @@ export function AskCoverage({ patientKey }: { patientKey: string }) {
                   ))}
                 </ul>
               </details>
+            )}
+            {(result.answer.verdict === "need_guarantee" || result.answer.verdict === "approval") && (
+              <GuaranteeRequest patientKey={patientKey} serviceText={service} amount={parsedAmount} />
             )}
           </div>
         )}

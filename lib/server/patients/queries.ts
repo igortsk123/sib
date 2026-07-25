@@ -140,6 +140,7 @@ export async function patientCard(key: string, orgId: string | null) {
     amountLimit: r.amountLimit,
     conditions: r.conditions,
     isDuplicate: r.isDuplicate,
+    letterNumber: r.letterNumber,
   }))
 
   // Один полис у разных ключей = один человек записан по-разному (обычно без отчества).
