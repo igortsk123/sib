@@ -72,8 +72,8 @@ export default async function RegistryPage({
   return (
     <>
       <PageHeader
-        title="Реестр гарантийных писем"
-        description={`Найдено ${found} (стр. ${page} из ${pages}) · всего в реестре ${total}.`}
+        title="Реестр писем ДМС"
+        description={`Гарантийные письма, прикрепления, открепления и направления. Найдено ${found} (стр. ${page} из ${pages}) · всего ${total}.`}
         action={
           <div className="flex flex-wrap items-center gap-2">
             {scope.isAdmin && <ClinicSelector clinics={clinics} current={scope.orgId} />}

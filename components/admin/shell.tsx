@@ -39,7 +39,7 @@ type NavItem = { href: string; label: string; icon: LucideIcon; primary?: boolea
 
 function navFor(role: NavRole): NavItem[] {
   const insurers: NavItem = { href: "/insurers", label: "Страховые", icon: ShieldCheck }
-  const registry: NavItem = { href: "/registry", label: "Реестр ГП", icon: FileText, primary: true }
+  const registry: NavItem = { href: "/registry", label: "Реестр писем ДМС", icon: FileText, primary: true }
   // Справочник правил покрытия — нужен и врачу, и регистратуре (core/coverage-assistant-vision.md).
   const coverage: NavItem = { href: "/coverage", label: "Правила покрытия", icon: BookOpenCheck, primary: true }
   // Пациенты без дублей: что действует у человека сейчас (core/coverage-assistant-vision.md).

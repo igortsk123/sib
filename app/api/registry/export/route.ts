@@ -90,7 +90,7 @@ export async function GET(req: Request) {
   }
 
   const wb = new ExcelJS.Workbook()
-  const ws = wb.addWorksheet("Реестр ГП")
+  const ws = wb.addWorksheet("Реестр писем ДМС")
   const RECEIVED_FMT = "dd.mm.yyyy hh:mm" // «Получено» — дата+время в поясе партнёра
   ws.columns = [
     { header: "ID записи", key: "id", width: 38 }, // уникальный ИД — по нему сообщать о косяках
