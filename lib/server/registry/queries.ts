@@ -1,8 +1,8 @@
 import "server-only"
-import { and, desc, eq, ilike, inArray, or, sql } from "drizzle-orm"
+import { and, desc, eq, ilike, inArray, isNull, or, sql } from "drizzle-orm"
 
 import { db } from "@/lib/db"
-import { attachment, emailMessage, guaranteeLetter, insuranceCompany } from "@/lib/db/schema"
+import { attachment, emailMessage, guaranteeLetter, insuranceCompany, programDocument } from "@/lib/db/schema"
 
 // Демо-организация (стенд продаж, ADR D22): в админском режиме «все клиники» (orgId=null)
 // её записи СКРЫВАЕМ — иначе счётчики/список мешаются с боевыми. Видна при явном выборе.
@@ -152,5 +152,32 @@ export async function getLetter(id: string) {
     a.id === row.letter.emailMessageId ? -1 : b.id === row.letter.emailMessageId ? 1 : 0,
   )
   const atts = await db().select().from(attachment).where(inArray(attachment.emailMessageId, srcIds))
-  return { ...row, sourceEmails, attachments: atts }
+
+  // Условия программы: АКТУАЛЬНЫЕ (не superseded) документы страховой этой записи.
+  // Матч программы: program_name ~ услуги записи (подстрочно, в обе стороны); фолбэк — правила страховой.
+  let programDocs: { title: string; url: string; kind: string }[] = []
+  if (row.letter.insuranceCompanyId) {
+    const docs = await db()
+      .select({
+        title: programDocument.title, kind: programDocument.docKind,
+        programName: programDocument.programName,
+        sourceUrl: programDocument.sourceUrl, fileUrl: programDocument.fileUrl,
+      })
+      .from(programDocument)
+      .where(and(
+        eq(programDocument.insuranceCompanyId, row.letter.insuranceCompanyId),
+        isNull(programDocument.supersededById),
+      ))
+    const services = (Array.isArray(row.letter.services) ? row.letter.services : [])
+      .filter(Boolean).map((x) => String(x).toLowerCase())
+    const norm = (t: string) => t.toLowerCase()
+    const progMatch = docs.filter((d) =>
+      d.kind === "program" && d.programName &&
+      services.some((sv) => sv.includes(norm(d.programName!).slice(0, 24)) || norm(d.programName!).includes(sv.slice(0, 24))))
+    const rules = docs.filter((d) => d.kind === "rules")
+    programDocs = [...progMatch, ...(progMatch.length ? [] : docs.filter((d) => d.kind === "program")), ...rules]
+      .slice(0, 3)
+      .map((d) => ({ title: d.title, url: d.fileUrl ?? d.sourceUrl, kind: d.kind }))
+  }
+  return { ...row, sourceEmails, attachments: atts, programDocs }
 }
