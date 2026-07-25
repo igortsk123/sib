@@ -134,6 +134,13 @@
       "when": 1784979922463,
       "tag": "0018_document_text",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1784980609361,
+      "tag": "0019_coverage_rule",
+      "breakpoints": true
     }
   ]
 }
