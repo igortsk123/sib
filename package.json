@@ -14,7 +14,8 @@
     "db:seed": "tsx lib/db/seed/run.ts",
     "db:seed:corpus": "tsx lib/db/seed/corpus.ts",
     "db:ingest": "tsx lib/db/seed/ingest.ts",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@types/mailparser": "^3.4.6",
@@ -37,6 +38,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@playwright/test": "^1.62.0",
     "@tailwindcss/postcss": "^4.2.0",
     "@types/node": "^24",
     "@types/react": "19.2.14",

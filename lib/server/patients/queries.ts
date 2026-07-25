@@ -21,6 +21,10 @@ const pKey = guaranteeLetter.patientKey
 type ListArgs = { orgId: string | null; q?: string; page?: number }
 
 export async function patientsList({ orgId, q, page = 1 }: ListArgs) {
+  // "__none__" — сотрудник без клиники: показываем пусто, НЕ передаём строку в uuid-колонку.
+  if (orgId === "__none__") {
+    return { rows: [], total: 0, unmatched: { noName: 0, noBirth: 0 }, page: 1, pageSize: PAGE_SIZE }
+  }
   const scope = and(
     orgId ? eq(guaranteeLetter.organizationId, orgId) : undefined,
     isNotNull(guaranteeLetter.patientKey),
@@ -92,6 +96,7 @@ export async function patientsList({ orgId, q, page = 1 }: ListArgs) {
 
 /** Все письма пациента по хэш-ключу (ПДн в URL не попадают). */
 export async function patientCard(key: string, orgId: string | null) {
+  if (orgId === "__none__") return null
   const rows = await db()
     .select({
       id: guaranteeLetter.id,

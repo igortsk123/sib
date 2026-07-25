@@ -46,6 +46,7 @@ export type SourceRow = {
 }
 
 export async function coverageSources(orgId: string | null) {
+  if (orgId === "__none__") return { rows: [], total: 0, covered: 0, coveredShare: 0 }
   const orgFilter = orgId ? sql`and gl.organization_id = ${orgId}` : sql``
 
   const rows = await db().execute<{
