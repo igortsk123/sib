@@ -4,7 +4,7 @@ import { redirect } from "next/navigation"
 import { coverageSources } from "@/lib/server/coverage/sources"
 import { resolveRegistryScope } from "@/lib/server/scope"
 import { coverageCatalog, coverageFacets } from "@/lib/server/coverage/catalog"
-import { CoverageSources } from "@/components/admin/coverage-sources"
+import { CoverageSummary } from "@/components/admin/coverage-sources"
 import { PageHeader } from "@/components/admin/page-header"
 import { VerdictBadge } from "@/components/admin/verdict-badge"
 import { Card } from "@/components/ui/card"
@@ -44,11 +44,12 @@ export default async function CoveragePage({
         description="Что оплачивает страховая по каждой программе. Источник — актуальные редакции правил и программ; у каждого правила указан пункт документа."
       />
 
-      <CoverageSources
-        rows={sources.rows}
+      <CoverageSummary
         total={sources.total}
         covered={sources.covered}
         coveredShare={sources.coveredShare}
+        gaps={sources.rows.filter((r) => r.rules === 0).length}
+        gapPatients={sources.rows.filter((r) => r.rules === 0).reduce((sum, r) => sum + r.patients, 0)}
       />
 
       <p className="mb-3 text-sm">
