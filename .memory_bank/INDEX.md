@@ -37,7 +37,7 @@ sib — агрегатор и распознавание гарантийных 
 Шаблон `plans/_template.md`, реестры в README (регенерирует аудит).
 
 ## Index map
-`core/` Tier 1 · `guides/` процесс · `domain/` Tier 2 (`product-spec.md` — бриф) · `reference/` стандарты ·
+`core/` Tier 1 · `guides/` процесс · `domain/` Tier 2 (`domain/product-spec.md` — бриф) · `reference/` стандарты ·
 `archive/` · `changelog/` (memory-log, project-history) · `_secrets/ACCESS.md` (gitignored, 600).
 
 ## Обслуживание памяти
