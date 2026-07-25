@@ -163,13 +163,16 @@ export function AdminShell({
                 <div className="mt-1 text-xs text-primary">{user.roleLabel}</div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <form action={logout}>
-                <DropdownMenuItem asChild>
-                  <button type="submit" className="w-full">
-                    <LogOut className="size-4" /> Выйти
-                  </button>
-                </DropdownMenuItem>
-              </form>
+              <DropdownMenuItem
+                onSelect={(e) => {
+                  // Radix закрывает меню на select и отменяет submit вложенной формы —
+                  // поэтому вызываем server action напрямую, а не через <form>.
+                  e.preventDefault()
+                  void logout()
+                }}
+              >
+                <LogOut className="size-4" /> Выйти
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

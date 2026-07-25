@@ -49,5 +49,8 @@ export async function destroySession() {
   const jar = await cookies()
   const token = jar.get(COOKIE)?.value
   if (token) await db().delete(session).where(eq(session.token, token))
+  // Гасим cookie теми же атрибутами, с какими ставили: одного delete() бывает мало
+  // для secure/lax-cookie, и пользователь остаётся «залогинен».
+  jar.set(COOKIE, "", { httpOnly: true, secure: true, sameSite: "lax", path: "/", maxAge: 0 })
   jar.delete(COOKIE)
 }
