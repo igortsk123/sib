@@ -1,8 +1,10 @@
 import Link from "next/link"
 import { redirect } from "next/navigation"
 
-import { getCurrentUser } from "@/lib/server/auth/session"
+import { coverageSources } from "@/lib/server/coverage/sources"
+import { resolveRegistryScope } from "@/lib/server/scope"
 import { coverageCatalog, coverageFacets } from "@/lib/server/coverage/catalog"
+import { CoverageSources } from "@/components/admin/coverage-sources"
 import { PageHeader } from "@/components/admin/page-header"
 import { VerdictBadge } from "@/components/admin/verdict-badge"
 import { Card } from "@/components/ui/card"
@@ -16,13 +18,14 @@ export default async function CoveragePage({
 }: {
   searchParams: Promise<{ insurer?: string; program?: string; q?: string; page?: string }>
 }) {
-  const user = await getCurrentUser()
-  if (!user) redirect("/login")
+  const scope = await resolveRegistryScope()
+  if (!scope.user) redirect("/login")
   const sp = await searchParams
   const page = Number(sp.page ?? "1") || 1
-  const [{ rows, total, pageSize }, facets] = await Promise.all([
+  const [{ rows, total, pageSize }, facets, sources] = await Promise.all([
     coverageCatalog({ insurer: sp.insurer, program: sp.program, q: sp.q, page }),
     coverageFacets(),
+    coverageSources(scope.orgId),
   ])
   const pages = Math.max(1, Math.ceil(total / pageSize))
   const link = (over: Record<string, string | undefined>) => {
@@ -39,6 +42,13 @@ export default async function CoveragePage({
       <PageHeader
         title="Правила покрытия"
         description="Что оплачивает страховая по каждой программе. Источник — актуальные редакции правил и программ; у каждого правила указан пункт документа."
+      />
+
+      <CoverageSources
+        rows={sources.rows}
+        total={sources.total}
+        covered={sources.covered}
+        coveredShare={sources.coveredShare}
       />
 
       <p className="mb-3 text-sm">
