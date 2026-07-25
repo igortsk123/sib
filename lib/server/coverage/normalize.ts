@@ -30,21 +30,13 @@ function quotedGroups(raw: string): QuotedGroup[] {
 }
 
 /**
- * Режет строку письма на отдельные программы. Связка через «+» остаётся одним именем:
- * «"Поликлиника" + "Помощь на территории России"» → одна программа.
- * Без кавычек строка возвращается целиком (её алиас заводится в program_alias как есть).
+ * Режет строку письма на ОТДЕЛЬНЫЕ программы: «"Поликлиника" + "Поликлиническая помощь на
+ * территории России" "Специализированная стоматология"» → три самостоятельные программы.
+ * Каждая называется так, как её называет страховая, — их правила ищутся по отдельности.
  */
 export function splitPrograms(raw: string): string[] {
   const groups = quotedGroups(raw)
-  if (groups.length === 0) {
-    return raw.split(/\s*;\s*/).map(normalizeAlias).filter(isMeaningful)
-  }
-  const parts: string[] = []
-  groups.forEach((g, i) => {
-    const between = i > 0 ? raw.slice(groups[i - 1].end, g.start) : ""
-    if (i > 0 && between.includes("+")) parts[parts.length - 1] += ` + ${g.text}`
-    else parts.push(g.text)
-  })
+  const parts = groups.length > 0 ? groups.map((g) => g.text) : raw.split(/\s*[;+]\s*/)
   return parts.map(normalizeAlias).filter(isMeaningful)
 }
 
