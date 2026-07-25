@@ -3,10 +3,13 @@ import { notFound, redirect } from "next/navigation"
 import { ChevronLeft } from "lucide-react"
 
 import { getCurrentUser } from "@/lib/server/auth/session"
+import { documentsWithChecks } from "@/lib/server/coverage/documents"
 import { getInsurer, listTemplates, templateJournalByType } from "@/lib/server/templates/queries"
 import { PageHeader } from "@/components/admin/page-header"
 import { DocTypeTemplates, type TemplateRow } from "@/components/admin/doctype-templates"
+import { ProgramDocumentsTable } from "@/components/admin/program-documents-table"
 import { Badge } from "@/components/ui/badge"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export const dynamic = "force-dynamic"
 
@@ -18,7 +21,11 @@ export default async function InsurerPage({ params }: { params: Promise<{ id: st
   const insurer = await getInsurer(id)
   if (!insurer) notFound()
 
-  const [templates, journal] = await Promise.all([listTemplates(id), templateJournalByType(insurer.name)])
+  const [templates, journal, docs] = await Promise.all([
+    listTemplates(id),
+    templateJournalByType(insurer.name),
+    documentsWithChecks(id),
+  ])
   const rows: TemplateRow[] = templates.map((t) => {
     const j = journal[t.docType]
     return {
@@ -34,12 +41,13 @@ export default async function InsurerPage({ params }: { params: Promise<{ id: st
       gaps: j?.gaps ?? {},
     }
   })
+  const totalRules = docs.reduce((sum, d) => sum + Number(d.rules), 0)
 
   return (
     <>
       <PageHeader
         title={insurer.name}
-        description="Настройка распознавания по типам документов: образец → LLM-эталон → парсер; дрейф из журнала разбора."
+        description="Распознавание писем по типам документов и условия страхования: документы, из которых извлечены правила покрытия."
         action={
           <Link href="/insurers" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
             <ChevronLeft className="size-4" /> Все страховые
@@ -55,7 +63,27 @@ export default async function InsurerPage({ params }: { params: Promise<{ id: st
           <span className="text-sm text-muted-foreground">домены не заданы</span>
         )}
       </div>
-      <DocTypeTemplates insurerId={id} templates={rows} />
+
+      <Tabs defaultValue="templates">
+        <TabsList className="mb-4">
+          <TabsTrigger value="templates">Шаблоны и типы документов</TabsTrigger>
+          <TabsTrigger value="conditions">
+            Документы условий {docs.length > 0 ? `(${docs.length})` : ""}
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="templates">
+          <DocTypeTemplates insurerId={id} templates={rows} />
+        </TabsContent>
+
+        <TabsContent value="conditions">
+          <p className="mb-3 text-sm text-muted-foreground">
+            Правила и программы этой страховой: из них извлечено <b>{totalRules}</b> правил покрытия.
+            Источники проверяются автоматически по понедельникам в 06:30 — история проверок ниже.
+          </p>
+          <ProgramDocumentsTable rows={docs} showInsurer={false} />
+        </TabsContent>
+      </Tabs>
     </>
   )
 }

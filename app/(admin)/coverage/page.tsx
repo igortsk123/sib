@@ -52,12 +52,6 @@ export default async function CoveragePage({
         gapPatients={sources.rows.filter((r) => r.rules === 0).reduce((sum, r) => sum + r.patients, 0)}
       />
 
-      <p className="mb-3 text-sm">
-        <Link href="/coverage/documents" className="text-primary hover:underline">
-          Документы условий и обновления →
-        </Link>
-      </p>
-
       <form className="mb-4 flex flex-wrap items-center gap-2" action="/coverage">
         <Input name="q" defaultValue={sp.q ?? ""} placeholder="Поиск по услуге: удаление зуб, имплантац…" className="max-w-xs" />
         <select

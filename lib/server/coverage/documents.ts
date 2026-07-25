@@ -10,7 +10,7 @@ import { coverageRule, documentCheck, insuranceCompany, programDocument } from "
 // недельный поллер.
 // ─────────────────────────────────────────────────────────────────────
 
-export async function documentsWithChecks() {
+export async function documentsWithChecks(insurerId?: string) {
   const docs = await db()
     .select({
       id: programDocument.id,
@@ -29,7 +29,8 @@ export async function documentsWithChecks() {
     })
     .from(programDocument)
     .leftJoin(insuranceCompany, eq(insuranceCompany.id, programDocument.insuranceCompanyId))
-    .where(isNull(programDocument.supersededById))
+    .where(and(isNull(programDocument.supersededById),
+      insurerId ? eq(programDocument.insuranceCompanyId, insurerId) : undefined))
     .orderBy(insuranceCompany.name, programDocument.title)
 
   const checks = await db()
