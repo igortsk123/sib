@@ -13,6 +13,7 @@ import {
   ShieldCheck,
   Users,
   BookOpenCheck,
+  UserRound,
   type LucideIcon,
 } from "lucide-react"
 
@@ -41,12 +42,15 @@ function navFor(role: NavRole): NavItem[] {
   const registry: NavItem = { href: "/registry", label: "Реестр ГП", icon: FileText, primary: true }
   // Справочник правил покрытия — нужен и врачу, и регистратуре (core/coverage-assistant-vision.md).
   const coverage: NavItem = { href: "/coverage", label: "Правила покрытия", icon: BookOpenCheck, primary: true }
+  // Пациенты без дублей: что действует у человека сейчас (core/coverage-assistant-vision.md).
+  const patients: NavItem = { href: "/patients", label: "Пациенты", icon: UserRound, primary: true }
   const parselog: NavItem = { href: "/parse-log", label: "Журнал распознавания", icon: Activity }
   const reports: NavItem = { href: "/error-reports", label: "Сообщения об ошибках", icon: MessageSquareWarning }
   if (role === "platform")
     return [
       { href: "/admin/clinics", label: "Клиники", icon: Building2, primary: true },
       { ...registry, primary: true },
+      patients,
       { ...insurers, primary: true },
       coverage,
       parselog,
@@ -55,6 +59,7 @@ function navFor(role: NavRole): NavItem[] {
   if (role === "owner")
     return [
       { ...registry, primary: true },
+      patients,
       { href: "/staff", label: "Сотрудники", icon: Users, primary: true },
       coverage,
       { ...insurers, primary: true },
@@ -62,6 +67,7 @@ function navFor(role: NavRole): NavItem[] {
     ]
   return [
     { ...registry, primary: true },
+    patients,
     coverage,
     { ...insurers, primary: true },
   ]

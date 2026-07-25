@@ -30,6 +30,9 @@ export const guaranteeLetter = pgTable(
     // Пациент (бриф §7.1)
     patientFullName: text("patient_full_name"),
     patientBirthDate: date("patient_birth_date"),
+    // Ключ пациента (ФИО+дата рождения), заполняется триггером set_patient_key —
+    // по нему работает раздел «Пациенты» (см. lib/server/patients/state.ts).
+    patientKey: text("patient_key"),
     policyNumber: text("policy_number"),
     policySeries: text("policy_series"),
 
