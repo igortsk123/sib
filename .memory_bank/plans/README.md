@@ -28,6 +28,8 @@ draft → in_progress → completed → перенос в completed_plans/
 |------|----------|--------|---------|---------|
 | registry-data-quality-audit | — | in_progress | — | 2026-07-23 |
 | llm-to-deterministic | — | in_progress | — | 2026-07-23 |
+| coverage-roadmap | — | in_progress | — | 2026-07-25 |
+| coverage-resolver | — | in_progress | — | 2026-07-25 |
 | coverage-pipeline | — | in_progress | — | 2026-07-25 |
 | mail-backfill-2026 | — | draft | 2026-07-22 | 2026-07-22 |
 | self-healing-recognition | — | draft | 2026-06-22 | 2026-06-22 |

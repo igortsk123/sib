@@ -5,7 +5,7 @@ scope: Промпты экстракции coverage_rule по типам док�
 updated: 2026-07-25
 source: manual
 importance: high
-tier1: core/recognition.md
+tier1: ../core/coverage-pipeline.md
 ---
 
 # ПРОМПТ ЭКСТРАКЦИИ ПРАВИЛ ПОКРЫТИЯ (v3, обкатан на 3 документах)

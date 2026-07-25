@@ -9,9 +9,7 @@
 Где сейчас — `.memory_bank/project-state.md`.
 
 ## Иерархия памяти
-- **Tier 0 (auto-loaded):** этот файл + импортированный INDEX + `.claude/rules/*.md`
-  (без `paths:` — всегда; с `paths:` — при касании подходящих файлов).
-- **Tier 2 (details):** `.memory_bank/**/*.md` + `domain/product-spec.md` — по decision tree.
+Tier 0 (авто): этот файл + INDEX + `.claude/rules/*.md`. Tier 2 (детали): `.memory_bank/**` по decision tree.
 
 ## Навигация памяти (грузится всегда, переживает компакцию)
 @.memory_bank/INDEX.md
@@ -21,8 +19,8 @@
 2. `.memory_bank/project-state.md` — где проект сейчас.
 
 ## Компакция контекста
-При сжатии контекста ОБЯЗАТЕЛЬНО сохранить: активный план (slug+статус), изменённые файлы,
-команды гейта, next steps, содержимое `.memory_bank/_intake/session-scratch.md`.
+Сохранять: активный план (slug+статус), изменённые файлы, команды гейта, next steps,
+`.memory_bank/_intake/session-scratch.md`.
 
 ## Критично — инженерная конституция (`.claude/rules/engineering-principles.md`)
 - **Режим AUTOPILOT** (`.claude/rules/agent-workflow.md`): работаем автономно — план→выполнение→деплой без
@@ -38,6 +36,5 @@
   и audit не «чисто». Захват на ходу — `.memory_bank/_intake/session-scratch.md` (append-only блокнот).
 
 ## Path-scoped правила (.claude/rules/)
-Всегда: `agent-workflow` (план→деплой), `memory-discipline` (память), `engineering-principles`
-(конституция), `guardrails` (ПДн/секреты). По путям: `code-standards` (`**/*.{ts,tsx}`),
-`ui-rules` (`app/**`, `components/**`).
+Всегда: `agent-workflow`, `memory-discipline`, `engineering-principles`, `guardrails`.
+По путям: `code-standards` (`**/*.{ts,tsx}`), `ui-rules` (`app/**`, `components/**`).
