@@ -40,7 +40,11 @@ export function CoverageSources({
         </p>
       </Card>
 
-      <Card className="mb-6 overflow-hidden p-0">
+      <details className="mb-6 group" open>
+        <summary className="mb-2 cursor-pointer text-sm text-primary hover:underline">
+          Подробнее: источники по каждой программе ({rows.length})
+        </summary>
+      <Card className="overflow-hidden p-0">
         <Table>
           <TableHeader>
             <TableRow>
@@ -97,7 +101,10 @@ export function CoverageSources({
                       ))}
                     </div>
                   ) : (
-                    <Badge variant="destructive">документов нет</Badge>
+                    <div className="flex flex-col gap-0.5">
+                      <Badge variant="destructive" className="w-fit">документов нет</Badge>
+                      {r.reason && <span className="text-muted-foreground">{r.reason}</span>}
+                    </div>
                   )}
                 </TableCell>
                 <TableCell className="text-right text-sm">{r.patients}</TableCell>
@@ -107,6 +114,7 @@ export function CoverageSources({
           </TableBody>
         </Table>
       </Card>
+      </details>
     </>
   )
 }

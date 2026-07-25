@@ -38,6 +38,7 @@ export type SourceRow = {
   insurerId: string
   program: string
   matchedProgram: string | null
+  reason: string | null
   patients: number
   share: number
   rules: number
@@ -52,6 +53,7 @@ export async function coverageSources(orgId: string | null) {
     insurer_id: string
     program: string
     program_name: string | null
+    reason: string | null
     patients: number
     rules: number
     docs: { id: string; title: string; url: string | null }[] | null
@@ -61,7 +63,7 @@ export async function coverageSources(orgId: string | null) {
       select ck, program, count(distinct patient_key) as patients
       from per_letter where length(program) >= 3 group by ck, program
     )
-    select ic.name as insurer, ic.id::text as insurer_id, a.program, pa.program_name,
+    select ic.name as insurer, ic.id::text as insurer_id, a.program, pa.program_name, pa.note as reason,
       a.patients::int as patients,
       coalesce((select count(*) from coverage_rule cr
         join program_document pd on pd.id = cr.document_id and pd.superseded_by_id is null
@@ -102,6 +104,7 @@ export async function coverageSources(orgId: string | null) {
     insurerId: r.insurer_id,
     program: r.program,
     matchedProgram: r.program_name,
+    reason: r.reason,
     patients: Number(r.patients),
     share: Math.round((Number(r.patients) / denominator) * 1000) / 10,
     rules: Number(r.rules ?? 0),
