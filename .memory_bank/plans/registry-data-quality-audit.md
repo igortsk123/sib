@@ -272,5 +272,7 @@ docType/approvalStatus содержат enroll/detach как основные �
   страховых: sourceUrl (где смотреть обновление), sha, дата файла, applies_to (all|policies_from_date|
   unknown — полис живёт по редакции НА ДАТУ ЗАКЛЮЧЕНИЯ, версии не удаляем, цепочка superseded_by).
   Посеяно 11 источников (8 PDF в /opt/sib-storage/programs/ + 3 страницы). Недельный поллер
-  `sib-programs.timer` (Пн 06:30): sha-сверка → новая версия строкой + файлом. TODO: определить
-  applies_to/effective_from по титулам приказов; для Альфы «Томск_*» — документы от клиники.
+  `sib-programs.timer` (Пн 06:30): sha-сверка → новая версия строкой + файлом. ✅ applies_to/effective_from
+  проставлены (2026-07-25): rules→policies_from_date с датами приказов (Альфа №84 09.04.2024, №08
+  17.01.2024, РЕСО 28.02.2020, Ингос по file_date); program/clinics_list→unknown. Остаётся: «Томск_*»
+  Альфы — документы от клиники; уточнение непубличных редакций при появлении.
