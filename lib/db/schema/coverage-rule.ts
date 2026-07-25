@@ -1,10 +1,11 @@
-import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core"
+import { boolean, index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core"
 
 import { insuranceCompany } from "./insurer"
 import { programDocument } from "./program-document"
 
 // ─────────────────────────────────────────────────────────────────────
-// L2 MART конвейера покрытия: структурированные правила, ИЗВЛЕЧЁННЫЕ LLM из document_text.
+// L2 MART конвейера покрытия: структурированные правила, извлечённые агентом из document_text
+// ВРУЧНУЮ (без внешних LLM — решение владельца); методика: .memory_bank/guides/coverage-extraction-prompt.md.
 // Перезаливка при обновлении документа: каскад по documentId (новая версия → свои правила).
 // Ответ ИИ (L3) собирает контекст отсюда, а не из 200-страничных PDF.
 // ─────────────────────────────────────────────────────────────────────
@@ -23,9 +24,19 @@ export const coverageRule = pgTable(
     conditionText: text("condition_text"), // «только после травмы в период договора»
     limitAmount: text("limit_amount"),
     clause: text("clause"), // «п. 3.2.7»
+    // Уровень правила: program — из программы страхования, insurer — из общих правил СК.
+    // Программа сильнее общих правил (у Ингосстраха общие правила запрещают стоматологию
+    // «кроме случаев, прямо предусмотренных Программой») — см. resolveCoverage.
+    scopeLevel: text("scope_level").notNull().default("insurer"), // program | insurer
+    // Правило СК, которое программа вправе переопределить («кроме случаев, предусмотренных Программой»).
+    overridable: boolean("overridable").notNull().default(false),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [index("cr_doc_idx").on(t.documentId), index("cr_insurer_idx").on(t.insuranceCompanyId)],
+  (t) => [
+    index("cr_doc_idx").on(t.documentId),
+    index("cr_insurer_idx").on(t.insuranceCompanyId),
+    index("cr_program_idx").on(t.insuranceCompanyId, t.programName),
+  ],
 )
 
 export type CoverageRule = typeof coverageRule.$inferSelect

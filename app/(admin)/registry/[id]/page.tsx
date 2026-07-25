@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { CoverageRules } from "@/components/admin/coverage-rules"
 import { notFound, redirect } from "next/navigation"
 import { AlertTriangle, ChevronLeft, FileText, Paperclip } from "lucide-react"
 
@@ -15,9 +16,9 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
-function Field({ label, value }: { label: string; value: React.ReactNode }) {
+function Field({ label, value, full }: { label: string; value: React.ReactNode; full?: boolean }) {
   return (
-    <div className="flex flex-col gap-0.5">
+    <div className={`flex flex-col gap-0.5${full ? " col-span-2" : ""}`}>
       <span className="text-xs text-muted-foreground">{label}</span>
       <span className="text-sm">{value ?? "—"}</span>
     </div>
@@ -119,6 +120,17 @@ export default async function LetterCardPage({ params }: { params: Promise<{ id:
                 ) : (
                   <span className="italic text-muted-foreground">ожидается загрузка документов со стороны клиники</span>
                 )
+              }
+            />
+            <Field
+              label="Что покрывает программа"
+              full
+              value={
+                <CoverageRules
+                  rules={data.coverage.rules}
+                  matchedPrograms={data.coverage.matchedPrograms}
+                  unmatched={data.coverage.unmatched}
+                />
               }
             />
             <Field

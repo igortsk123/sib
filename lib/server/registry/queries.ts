@@ -2,6 +2,7 @@ import "server-only"
 import { and, desc, eq, ilike, inArray, isNull, or, sql } from "drizzle-orm"
 
 import { db } from "@/lib/db"
+import { resolveCoverage } from "@/lib/server/coverage/resolve"
 import { attachment, emailMessage, guaranteeLetter, insuranceCompany, programDocument } from "@/lib/db/schema"
 
 // Демо-организация (стенд продаж, ADR D22): в админском режиме «все клиники» (orgId=null)
@@ -179,5 +180,14 @@ export async function getLetter(id: string) {
       .slice(0, 3)
       .map((d) => ({ title: d.title, url: d.fileUrl ?? d.sourceUrl, kind: d.kind }))
   }
-  return { ...row, sourceEmails, attachments: atts, programDocs }
+  // Выжимка правил покрытия: программа пациента сильнее общих правил СК (см. resolveCoverage).
+  const coverage = row.letter.insuranceCompanyId
+    ? await resolveCoverage({
+        insuranceCompanyId: row.letter.insuranceCompanyId,
+        services: row.letter.services,
+        onDate: row.letter.letterDate ? new Date(row.letter.letterDate) : null,
+      })
+    : { matchedPrograms: [], unmatched: [], rules: [] }
+
+  return { ...row, sourceEmails, attachments: atts, programDocs, coverage }
 }

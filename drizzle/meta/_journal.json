@@ -141,6 +141,13 @@
       "when": 1784980609361,
       "tag": "0019_coverage_rule",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1785067009361,
+      "tag": "0020_program_alias",
+      "breakpoints": true
     }
   ]
 }
