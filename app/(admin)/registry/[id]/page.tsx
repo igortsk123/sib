@@ -105,10 +105,10 @@ export default async function LetterCardPage({ params }: { params: Promise<{ id:
             <Field label="Действует до" value={ruDate(l.validUntil) || null} />
             <Field label="Лимит" value={l.amountLimit} />
             <Field label="Ограничение" value={l.conditions} />
-            {data.programDocs.length > 0 && (
-              <Field
-                label="Правила программы (актуальная редакция)"
-                value={
+            <Field
+              label="Правила программы (актуальная редакция)"
+              value={
+                data.programDocs.length > 0 ? (
                   <span className="flex flex-col gap-0.5">
                     {data.programDocs.map((d) => (
                       <a key={d.url} href={d.url} target="_blank" rel="noreferrer" className="text-primary hover:underline">
@@ -116,9 +116,11 @@ export default async function LetterCardPage({ params }: { params: Promise<{ id:
                       </a>
                     ))}
                   </span>
-                }
-              />
-            )}
+                ) : (
+                  <span className="italic text-muted-foreground">ожидается загрузка документов со стороны клиники</span>
+                )
+              }
+            />
             <Field
               label="Услуги"
               value={Array.isArray(l.services) && l.services.length ? l.services.filter(Boolean).join(", ") : "—"}
