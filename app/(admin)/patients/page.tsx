@@ -1,6 +1,9 @@
 import Link from "next/link"
 import { redirect } from "next/navigation"
 
+// Цифры покрытия считаются при каждом открытии страницы — без кэша.
+export const dynamic = "force-dynamic"
+
 import { patientsList } from "@/lib/server/patients/queries"
 import { resolveRegistryScope } from "@/lib/server/scope"
 import { PageHeader } from "@/components/admin/page-header"

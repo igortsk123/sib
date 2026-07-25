@@ -1,6 +1,9 @@
 import Link from "next/link"
 import { redirect } from "next/navigation"
 
+// Цифры покрытия считаются при каждом открытии страницы — без кэша.
+export const dynamic = "force-dynamic"
+
 import { coverageSources } from "@/lib/server/coverage/sources"
 import { resolveRegistryScope } from "@/lib/server/scope"
 import { CoverageSourcesTable, CoverageSummary } from "@/components/admin/coverage-sources"
@@ -32,6 +35,10 @@ export default async function CoverageSourcesPage() {
         showDetailsLink={false}
       />
       <CoverageSourcesTable rows={sources.rows} />
+      <p className="mt-3 text-xs text-muted-foreground">
+        Данные пересчитаны {new Date().toLocaleString("ru", { dateStyle: "short", timeStyle: "short" })} —
+        при каждом открытии страницы, по текущему состоянию писем и правил.
+      </p>
     </>
   )
 }

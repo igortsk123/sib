@@ -1,6 +1,9 @@
 import Link from "next/link"
 import { redirect } from "next/navigation"
 
+// Цифры покрытия считаются при каждом открытии страницы — без кэша.
+export const dynamic = "force-dynamic"
+
 import { coverageSources } from "@/lib/server/coverage/sources"
 import { resolveRegistryScope } from "@/lib/server/scope"
 import { coverageCatalog, coverageFacets } from "@/lib/server/coverage/catalog"
