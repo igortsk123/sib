@@ -127,6 +127,13 @@
       "when": 1784974957133,
       "tag": "0017_program_document",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1784979922463,
+      "tag": "0018_document_text",
+      "breakpoints": true
     }
   ]
 }
