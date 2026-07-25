@@ -52,14 +52,14 @@ export function CoverageSummary({
 export function CoverageSourcesTable({ rows }: { rows: SourceRow[] }) {
   return (
     <Card className="overflow-hidden p-0">
-      <Table className="text-sm">
+      <Table className="w-full table-fixed text-sm">
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[130px]">Страховая</TableHead>
-            <TableHead className="w-[80px] text-right">Пациентов</TableHead>
-            <TableHead className="w-[70px] text-right">Правил</TableHead>
-            <TableHead className="w-[280px]">Программа</TableHead>
-            <TableHead>Документы</TableHead>
+            <TableHead className="w-[16%]">Страховая</TableHead>
+            <TableHead className="w-[9%] text-right">Пациентов</TableHead>
+            <TableHead className="w-[8%] text-right">Правил</TableHead>
+            <TableHead className="w-[30%]">Программа</TableHead>
+            <TableHead className="w-[37%]">Документы</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -72,17 +72,17 @@ export function CoverageSourcesTable({ rows }: { rows: SourceRow[] }) {
           )}
           {rows.map((r) => (
             <TableRow key={`${r.insurerId}-${r.program}`}>
-              <TableCell className="text-xs">{r.insurer}</TableCell>
+              <TableCell className="break-words text-xs">{r.insurer}</TableCell>
               <TableCell className="text-right">{r.patients}</TableCell>
               <TableCell className="text-right">{r.rules || "—"}</TableCell>
-              <TableCell className="text-xs">
+              <TableCell className="break-words text-xs">
                 {r.program}
                 <div className="text-muted-foreground">
                   {r.share}%
                   {r.matchedProgram && r.matchedProgram !== r.program ? ` · правила: ${r.matchedProgram}` : ""}
                 </div>
               </TableCell>
-              <TableCell className="text-xs">
+              <TableCell className="break-words text-xs">
                 {r.documents.length > 0 ? (
                   <div className="flex flex-col gap-0.5">
                     {r.documents.map((doc) => (
@@ -91,7 +91,7 @@ export function CoverageSourcesTable({ rows }: { rows: SourceRow[] }) {
                           href={`/api/original/program-doc/${doc.id}`}
                           target="_blank"
                           rel="noreferrer"
-                          className="text-primary hover:underline"
+                          className="break-words text-primary hover:underline"
                         >
                           {doc.title}
                         </a>
