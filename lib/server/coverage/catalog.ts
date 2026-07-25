@@ -1,5 +1,5 @@
 import "server-only"
-import { and, asc, count, desc, eq, ilike, isNull, or, sql } from "drizzle-orm"
+import { and, asc, count, desc, eq, ilike, isNotNull, isNull, or, sql } from "drizzle-orm"
 
 import { db } from "@/lib/db"
 import { coverageRule, insuranceCompany, programDocument } from "@/lib/db/schema"
@@ -63,6 +63,19 @@ export async function coverageCatalog(f: CatalogFilters) {
 }
 
 export async function coverageFacets() {
+  const programs = await db()
+    .select({
+      programName: coverageRule.programName,
+      insurerName: insuranceCompany.name,
+      rules: count(coverageRule.id),
+    })
+    .from(coverageRule)
+    .innerJoin(programDocument, eq(programDocument.id, coverageRule.documentId))
+    .leftJoin(insuranceCompany, eq(insuranceCompany.id, coverageRule.insuranceCompanyId))
+    .where(and(isNull(programDocument.supersededById), isNotNull(coverageRule.programName)))
+    .groupBy(coverageRule.programName, insuranceCompany.name)
+    .orderBy(insuranceCompany.name, coverageRule.programName)
+
   const insurers = await db()
     .select({ id: insuranceCompany.id, name: insuranceCompany.name, rules: count(coverageRule.id) })
     .from(coverageRule)
@@ -71,5 +84,5 @@ export async function coverageFacets() {
     .where(isNull(programDocument.supersededById))
     .groupBy(insuranceCompany.id, insuranceCompany.name)
     .orderBy(desc(count(coverageRule.id)))
-  return { insurers }
+  return { insurers, programs }
 }

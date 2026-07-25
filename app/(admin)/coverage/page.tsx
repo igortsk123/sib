@@ -14,20 +14,20 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 export default async function CoveragePage({
   searchParams,
 }: {
-  searchParams: Promise<{ insurer?: string; q?: string; page?: string }>
+  searchParams: Promise<{ insurer?: string; program?: string; q?: string; page?: string }>
 }) {
   const user = await getCurrentUser()
   if (!user) redirect("/login")
   const sp = await searchParams
   const page = Number(sp.page ?? "1") || 1
   const [{ rows, total, pageSize }, facets] = await Promise.all([
-    coverageCatalog({ insurer: sp.insurer, q: sp.q, page }),
+    coverageCatalog({ insurer: sp.insurer, program: sp.program, q: sp.q, page }),
     coverageFacets(),
   ])
   const pages = Math.max(1, Math.ceil(total / pageSize))
   const link = (over: Record<string, string | undefined>) => {
     const p = new URLSearchParams()
-    for (const [k, v] of Object.entries({ insurer: sp.insurer, q: sp.q, page: String(page), ...over })) {
+    for (const [k, v] of Object.entries({ insurer: sp.insurer, program: sp.program, q: sp.q, page: String(page), ...over })) {
       if (v && v !== "1") p.set(k, v)
     }
     const qs = p.toString()
@@ -49,9 +49,24 @@ export default async function CoveragePage({
 
       <form className="mb-4 flex flex-wrap items-center gap-2" action="/coverage">
         <Input name="q" defaultValue={sp.q ?? ""} placeholder="Поиск по услуге: удаление зуб, имплантац…" className="max-w-xs" />
+        <select
+          name="program"
+          defaultValue={sp.program ?? ""}
+          className="h-9 max-w-sm rounded-md border bg-background px-2 text-sm"
+        >
+          <option value="">Все программы</option>
+          {facets.programs.map((p) => (
+            <option key={`${p.insurerName}-${p.programName}`} value={p.programName ?? ""}>
+              {p.programName} — {p.insurerName ?? "?"} ({p.rules})
+            </option>
+          ))}
+        </select>
         {sp.insurer && <input type="hidden" name="insurer" value={sp.insurer} />}
         <button type="submit" className="rounded-md border px-3 py-1.5 text-sm hover:bg-accent">Найти</button>
         <span className="text-sm text-muted-foreground">Найдено: {total}</span>
+        {(sp.q || sp.program || sp.insurer) && (
+          <Link href="/coverage" className="text-sm text-primary hover:underline">Сбросить</Link>
+        )}
       </form>
 
       <div className="mb-4 flex flex-wrap gap-2 text-sm">

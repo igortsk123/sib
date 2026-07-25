@@ -176,7 +176,10 @@ export async function getLetter(id: string) {
       d.kind === "program" && d.programName &&
       services.some((sv) => sv.includes(norm(d.programName!).slice(0, 24)) || norm(d.programName!).includes(sv.slice(0, 24))))
     const rules = docs.filter((d) => d.kind === "rules")
-    programDocs = [...progMatch, ...(progMatch.length ? [] : docs.filter((d) => d.kind === "program")), ...rules]
+    // Показываем ТОЛЬКО документы, относящиеся к программе пациента, плюс общие правила его
+    // страховой. Никаких «примеров» чужих договоров: нет документа — так и пишем (решение
+    // владельца 2026-07-25).
+    programDocs = [...progMatch, ...rules]
       .slice(0, 3)
       .map((d) => ({ title: d.title, url: d.fileUrl ?? d.sourceUrl, kind: d.kind }))
   }
