@@ -3,14 +3,12 @@ import { redirect } from "next/navigation"
 import { AlertTriangle, Download, Inbox, Search } from "lucide-react"
 
 import { resolveRegistryScope } from "@/lib/server/scope"
-import { listClinics } from "@/lib/server/clinics/queries"
 import { countFiltered, countLetters, listInsurerOptions, searchLetters } from "@/lib/server/registry/queries"
 import { STATUS_LABELS, SOURCE_LABELS } from "@/lib/letter-status"
 import { CARE_TYPE_LABELS } from "@/lib/care-type"
 import { isoFromRu, ruDate } from "@/lib/format"
 import { reviewMessage } from "@/lib/review-hints"
 import { PageHeader } from "@/components/admin/page-header"
-import { ClinicSelector } from "@/components/admin/clinic-selector"
 import { Truncate } from "@/components/admin/truncate"
 import { DateMaskInput } from "@/components/admin/date-mask-input"
 import { ExportDialog } from "@/components/admin/export-dialog"
@@ -64,7 +62,6 @@ export default async function RegistryPage({
     return `/registry${s ? `?${s}` : ""}`
   }
   const insurers = await listInsurerOptions()
-  const clinics = scope.isAdmin ? (await listClinics()).map((c) => ({ id: c.id, name: c.name })) : []
   const exportQs = new URLSearchParams(
     Object.fromEntries(Object.entries(sp).filter(([, v]) => v)),
   ).toString()
@@ -76,7 +73,6 @@ export default async function RegistryPage({
         description={`Гарантийные письма, прикрепления, открепления и направления. Найдено ${found} (стр. ${page} из ${pages}) · всего ${total}.`}
         action={
           <div className="flex flex-wrap items-center gap-2">
-            {scope.isAdmin && <ClinicSelector clinics={clinics} current={scope.orgId} />}
             <ExportDialog defaultFrom={sp.from} defaultTo={sp.to} />
           </div>
         }

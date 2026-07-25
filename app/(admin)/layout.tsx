@@ -5,6 +5,10 @@ import { getCurrentUser } from "@/lib/server/auth/session"
 import { getUserMemberships } from "@/lib/server/auth/guards"
 import { normalizePhone } from "@/lib/server/auth/phone"
 import { AdminShell, type NavRole } from "@/components/admin/shell"
+import { db } from "@/lib/db"
+import { organization } from "@/lib/db/schema"
+import { getActiveOrg } from "@/lib/server/scope"
+import { asc } from "drizzle-orm"
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser()
@@ -17,6 +21,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const isOwner = memberships.some((m) => m.role === "owner" && m.status === "active")
 
   const role: NavRole = user.isPlatformAdmin ? "platform" : isOwner ? "owner" : "staff"
+
+  // Выбор клиники — ГЛОБАЛЬНЫЙ (в шапке): контекст действует во всех разделах, а не только
+  // в реестре, иначе при тестировании легко остаться в демо-клинике и этого не заметить.
+  const clinics = user.isPlatformAdmin
+    ? await db().select({ id: organization.id, name: organization.name }).from(organization).orderBy(asc(organization.name))
+    : []
+  const activeOrg = user.isPlatformAdmin ? await getActiveOrg() : null
   const roleLabel = user.isPlatformAdmin
     ? "Платформенный администратор"
     : isOwner
@@ -30,7 +41,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           ДЕМО-ДАННЫЕ: все пациенты, полисы и документы на этом стенде вымышлены
         </div>
       )}
-      <AdminShell user={{ name: user.name, phone: user.phone, roleLabel }} role={role}>
+      <AdminShell
+        user={{ name: user.name, phone: user.phone, roleLabel }}
+        role={role}
+        clinics={clinics}
+        activeOrg={activeOrg}
+      >
         {children}
       </AdminShell>
     </>

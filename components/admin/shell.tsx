@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { logout } from "@/lib/server/auth/actions"
+import { ClinicSelector } from "./clinic-selector"
 
 export type NavRole = "platform" | "owner" | "staff"
 
@@ -115,10 +116,14 @@ function Brand() {
 export function AdminShell({
   user,
   role,
+  clinics = [],
+  activeOrg = null,
   children,
 }: {
   user: ShellUser
   role: NavRole
+  clinics?: { id: string; name: string }[]
+  activeOrg?: string | null
   children: React.ReactNode
 }) {
   const items = navFor(role)
@@ -152,7 +157,13 @@ export function AdminShell({
         <div className="md:hidden">
           <Brand />
         </div>
-        <div className="ml-auto">
+        {/* Выбор клиники — глобальный контекст: действует во всех разделах сразу. */}
+        {clinics.length > 0 && (
+          <div className="ml-auto mr-2">
+            <ClinicSelector clinics={clinics} current={activeOrg} />
+          </div>
+        )}
+        <div className={clinics.length > 0 ? "" : "ml-auto"}>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="gap-2 px-2">
