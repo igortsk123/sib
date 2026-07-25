@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation"
 import { resolveCoverage } from "@/lib/server/coverage/resolve"
 import { patientCard } from "@/lib/server/patients/queries"
 import { resolveRegistryScope } from "@/lib/server/scope"
+import { AskCoverage } from "@/components/admin/ask-coverage"
 import { CoverageRules } from "@/components/admin/coverage-rules"
 import { PageHeader } from "@/components/admin/page-header"
 import { Badge } from "@/components/ui/badge"
@@ -39,7 +40,7 @@ export default async function PatientPage({ params }: { params: Promise<{ key: s
         services: state.programs,
         onDate: new Date(),
       })
-    : { matchedPrograms: [], unmatched: [], rules: [] }
+    : { matchedPrograms: [], unmatched: [], fallbackProgram: null, rules: [] }
 
   return (
     <>
@@ -63,7 +64,9 @@ export default async function PatientPage({ params }: { params: Promise<{ key: s
         </Card>
       )}
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <AskCoverage patientKey={key} />
+
+      <div className="mt-4 grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Что действует сейчас</CardTitle>

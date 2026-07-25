@@ -190,7 +190,7 @@ export async function getLetter(id: string) {
         services: row.letter.services,
         onDate: row.letter.letterDate ? new Date(row.letter.letterDate) : null,
       })
-    : { matchedPrograms: [], unmatched: [], rules: [] }
+    : { matchedPrograms: [], unmatched: [], fallbackProgram: null, rules: [] }
 
   return { ...row, sourceEmails, attachments: atts, programDocs, coverage }
 }

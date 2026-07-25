@@ -1,4 +1,4 @@
-import { and, eq, inArray, isNull, or, sql } from "drizzle-orm"
+import { and, eq, inArray, isNotNull, isNull, or, sql } from "drizzle-orm"
 
 import { db } from "@/lib/db"
 import { coverageRule, programAlias, programDocument } from "@/lib/db/schema"
@@ -33,6 +33,9 @@ export type CoverageResolution = {
   matchedPrograms: string[]
   /** Строки письма, для которых не нашлось ни программы, ни услуги в правилах. */
   unmatched: string[]
+  /** Программа, взятая фолбэком (у страховой ровно одна программа с правилами, а в письме
+      программа не указана — РГС, Ренессанс пишут в прикреплениях пусто). */
+  fallbackProgram: string | null
   rules: ResolvedRule[]
 }
 
@@ -47,7 +50,7 @@ type Args = {
 export async function resolveCoverage(args: Args): Promise<CoverageResolution> {
   const raw = (Array.isArray(args.services) ? args.services : [])
     .filter((s): s is string => typeof s === "string" && s.trim().length > 0)
-  if (raw.length === 0 || !args.insuranceCompanyId) return { matchedPrograms: [], unmatched: [], rules: [] }
+  if (!args.insuranceCompanyId) return { matchedPrograms: [], unmatched: [], fallbackProgram: null, rules: [] }
 
   const aliases = await db()
     .select({ aliasNorm: programAlias.aliasNorm, programName: programAlias.programName, kind: programAlias.kind })
@@ -76,9 +79,28 @@ export async function resolveCoverage(args: Args): Promise<CoverageResolution> {
     }
   }
 
+  // Фолбэк: программа в письме не указана (или не распознана), но у страховой ровно ОДНА
+  // программа с правилами — берём её как типовые условия, явно помечая это в ответе.
+  let fallbackProgram: string | null = null
+  if (programNames.size === 0) {
+    const candidates = await db()
+      .selectDistinct({ programName: coverageRule.programName })
+      .from(coverageRule)
+      .innerJoin(programDocument, eq(programDocument.id, coverageRule.documentId))
+      .where(and(
+        eq(coverageRule.insuranceCompanyId, args.insuranceCompanyId),
+        isNull(programDocument.supersededById),
+        isNotNull(coverageRule.programName),
+      ))
+    if (candidates.length === 1 && candidates[0].programName) {
+      fallbackProgram = candidates[0].programName
+      programNames.add(fallbackProgram)
+    }
+  }
+
   const rows = await selectRules(args.insuranceCompanyId, [...programNames], args.onDate ?? null)
   const rules = applyPrecedence(rows, [...serviceQueries])
-  return { matchedPrograms: [...programNames], unmatched, rules }
+  return { matchedPrograms: [...programNames], unmatched, fallbackProgram, rules }
 }
 
 type RuleRow = ResolvedRule & { overridable: boolean }
