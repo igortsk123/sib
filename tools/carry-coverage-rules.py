@@ -41,7 +41,8 @@ def anchor_of(clause: str) -> str | None:
     if num:
         return num.group(0)
     phrase = re.search(r"[«\"]([^»\"]{6,})[»\"]", clause or "")
-    return phrase.group(1) if phrase else None
+    # пробелы нормализуем: в PDF/HTML один и тот же текст может прийти с двойными пробелами
+    return norm(phrase.group(1)) if phrase else None
 
 
 def main() -> None:
