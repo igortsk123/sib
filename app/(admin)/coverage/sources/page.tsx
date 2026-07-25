@@ -29,6 +29,7 @@ export default async function CoverageSourcesPage() {
         coveredShare={sources.coveredShare}
         gaps={gaps.length}
         gapPatients={gaps.reduce((sum, r) => sum + r.patients, 0)}
+        showDetailsLink={false}
       />
       <CoverageSourcesTable rows={sources.rows} />
     </>

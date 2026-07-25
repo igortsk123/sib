@@ -45,14 +45,14 @@ export default async function CoverageDocumentsPage() {
       </Card>
 
       <Card className="overflow-hidden p-0">
-        <Table className="w-full table-fixed">
+        <Table className="w-full max-w-full table-fixed">
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[34%]">Документ</TableHead>
-              <TableHead className="w-[10%]">Правил</TableHead>
-              <TableHead className="w-[13%]">Проверен</TableHead>
-              <TableHead className="w-[28%]">История проверок</TableHead>
-              <TableHead className="w-[15%]">Файлы</TableHead>
+              <TableHead className="w-[34%] whitespace-normal">Документ</TableHead>
+              <TableHead className="w-[10%] whitespace-normal">Правил</TableHead>
+              <TableHead className="w-[13%] whitespace-normal">Проверен</TableHead>
+              <TableHead className="w-[28%] whitespace-normal">История проверок</TableHead>
+              <TableHead className="w-[15%] whitespace-normal">Файлы</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -65,7 +65,7 @@ export default async function CoverageDocumentsPage() {
             )}
             {docs.map((d) => (
               <TableRow key={d.id}>
-                <TableCell className="break-words text-sm">
+                <TableCell className="whitespace-normal break-words text-sm">
                   {d.title}
                   <div className="text-xs text-muted-foreground">
                     {d.insurer ?? "—"} · {d.pages} стр.
@@ -73,7 +73,7 @@ export default async function CoverageDocumentsPage() {
                     {d.effectiveFrom ? ` · действует с ${new Date(d.effectiveFrom).toLocaleDateString("ru")}` : ""}
                   </div>
                 </TableCell>
-                <TableCell className="text-sm">
+                <TableCell className="whitespace-normal text-sm">
                   {d.rules}
                   {d.needsReview > 0 && (
                     <Badge variant="outline" className="ml-1">
@@ -81,8 +81,8 @@ export default async function CoverageDocumentsPage() {
                     </Badge>
                   )}
                 </TableCell>
-                <TableCell className="break-words text-xs">{dt(d.lastCheckedAt)}</TableCell>
-                <TableCell className="break-words text-xs">
+                <TableCell className="whitespace-normal break-words text-xs">{dt(d.lastCheckedAt)}</TableCell>
+                <TableCell className="whitespace-normal break-words text-xs">
                   {d.checks.length === 0 ? (
                     <span className="text-muted-foreground">ещё не проверялся</span>
                   ) : (
@@ -99,7 +99,7 @@ export default async function CoverageDocumentsPage() {
                     </div>
                   )}
                 </TableCell>
-                <TableCell className="break-words text-xs">
+                <TableCell className="whitespace-normal break-words text-xs">
                   {d.storagePath && (
                     <a href={`/api/original/program-doc/${d.id}`} target="_blank" rel="noreferrer" className="text-primary hover:underline">
                       наша копия 📄
