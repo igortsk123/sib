@@ -26,6 +26,9 @@ export default async function CoverageDocumentsPage() {
 
   return (
     <>
+      <Link href="/coverage" className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+        ← К правилам покрытия
+      </Link>
       <PageHeader
         title="Документы условий и обновления"
         description="Источники правил: что скачано, когда проверялось и что изменилось. Проверка автоматическая, по понедельникам в 06:30."
@@ -42,14 +45,14 @@ export default async function CoverageDocumentsPage() {
       </Card>
 
       <Card className="overflow-hidden p-0">
-        <Table>
+        <Table className="w-full table-fixed">
           <TableHeader>
             <TableRow>
-              <TableHead>Документ</TableHead>
-              <TableHead className="w-[120px]">Правил</TableHead>
-              <TableHead className="w-[150px]">Проверен</TableHead>
-              <TableHead>История проверок</TableHead>
-              <TableHead className="w-[130px]">Файлы</TableHead>
+              <TableHead className="w-[34%]">Документ</TableHead>
+              <TableHead className="w-[10%]">Правил</TableHead>
+              <TableHead className="w-[13%]">Проверен</TableHead>
+              <TableHead className="w-[28%]">История проверок</TableHead>
+              <TableHead className="w-[15%]">Файлы</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -62,7 +65,7 @@ export default async function CoverageDocumentsPage() {
             )}
             {docs.map((d) => (
               <TableRow key={d.id}>
-                <TableCell className="text-sm">
+                <TableCell className="break-words text-sm">
                   {d.title}
                   <div className="text-xs text-muted-foreground">
                     {d.insurer ?? "—"} · {d.pages} стр.
@@ -78,8 +81,8 @@ export default async function CoverageDocumentsPage() {
                     </Badge>
                   )}
                 </TableCell>
-                <TableCell className="text-xs">{dt(d.lastCheckedAt)}</TableCell>
-                <TableCell className="text-xs">
+                <TableCell className="break-words text-xs">{dt(d.lastCheckedAt)}</TableCell>
+                <TableCell className="break-words text-xs">
                   {d.checks.length === 0 ? (
                     <span className="text-muted-foreground">ещё не проверялся</span>
                   ) : (
@@ -96,7 +99,7 @@ export default async function CoverageDocumentsPage() {
                     </div>
                   )}
                 </TableCell>
-                <TableCell className="text-xs">
+                <TableCell className="break-words text-xs">
                   {d.storagePath && (
                     <a href={`/api/original/program-doc/${d.id}`} target="_blank" rel="noreferrer" className="text-primary hover:underline">
                       наша копия 📄
@@ -113,10 +116,6 @@ export default async function CoverageDocumentsPage() {
           </TableBody>
         </Table>
       </Card>
-
-      <p className="mt-4 text-sm">
-        <Link href="/coverage" className="text-primary hover:underline">← К правилам покрытия</Link>
-      </p>
     </>
   )
 }
