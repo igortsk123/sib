@@ -46,7 +46,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             WhatsApp +7-923-407-9168
           </a>
           {" · "}
-          <a href="https://web.max.ru" className="underline underline-offset-2">MAX +7-923-409-7976</a>
+          <a href="https://max.ru/u/f9LHodD0cOLNCk9w8ASRebnJy16g5FBLvifL1lspgVTwqusbiL0xYcC9r8Q" className="underline underline-offset-2">MAX +7-923-409-7976</a>
         </div>
       )}
       <AdminShell
