@@ -122,7 +122,7 @@ export async function latestProgramsByPatient(orgId: string | null | undefined, 
         ...(orgId ? [eq(guaranteeLetter.organizationId, orgId)] : []),
       ),
     )
-    .orderBy(desc(guaranteeLetter.letterDate))
+    .orderBy(sql`${guaranteeLetter.letterDate} desc nulls last`) // desc в PG = NULLS FIRST — запись без даты не должна считаться «последней»
   for (const r of rows) {
     const key = `${r.pk}|${r.ic ?? ""}`
     if (!map.has(key)) {

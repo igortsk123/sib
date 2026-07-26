@@ -1,6 +1,6 @@
 import "server-only"
 
-import { and, asc, eq } from "drizzle-orm"
+import { and, desc, eq } from "drizzle-orm"
 
 import { db } from "@/lib/db"
 import { coverageChatMessage } from "@/lib/db/schema"
@@ -21,6 +21,8 @@ const HISTORY_LIMIT = 100 // показываем в UI; в LLM уходит х�
 
 export async function listChatMessages(orgId: string | null, patientKey: string): Promise<ChatMessageDTO[]> {
   if (orgId === "__none__") return []
+  // ПОСЛЕДНИЕ N сообщений (desc+limit), затем разворот в хронологию —
+  // иначе после 100 сообщений новые перестали бы попадать в UI и в LLM.
   const rows = await db()
     .select()
     .from(coverageChatMessage)
@@ -30,8 +32,9 @@ export async function listChatMessages(orgId: string | null, patientKey: string)
         ...(orgId ? [eq(coverageChatMessage.organizationId, orgId)] : []),
       ),
     )
-    .orderBy(asc(coverageChatMessage.createdAt))
+    .orderBy(desc(coverageChatMessage.createdAt))
     .limit(HISTORY_LIMIT)
+  rows.reverse()
   return rows.map((r) => ({
     id: r.id,
     role: r.role === "assistant" ? "assistant" : "user",

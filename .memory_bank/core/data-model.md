@@ -3,7 +3,7 @@ tier: 1
 topic: data-model
 scope: Модель данных — сущности и ключевые поля
 tier2: ../domain/product-spec.md
-updated: 2026-07-23
+updated: 2026-07-26
 importance: high
 source: domain/product-spec.md §22 (факт кода), §7,§13
 status: working
@@ -37,6 +37,8 @@ review_after: ""
   отправителя (D10); aliases/typicalEmails/`rules`.
 - **Мультитенант + auth:** `organization`/`app_user`/`membership`; `session`/`login_attempt`/
   `telegram_contact` (вход телефон→код Telegram). **AuditLog** (`audit_log`, D4).
+- **Чат по правилам** (D41): `coverage_chat_message` — общая лента на пациента
+  (`patient_key`+org, роль user/assistant, `author_name`, индекс `ccm_patient_idx`).
 
 Enums (`enums.ts`, значения — §22): email_status, doc_type, approval_status (incl. `annul`),
 care_type, review_status, queue_*, doc_template_status, user_role. Хелперы:
