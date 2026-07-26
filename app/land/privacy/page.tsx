@@ -58,8 +58,8 @@ export default function PrivacyPage() {
         <h2 className="text-lg font-medium">Ваши права и контакты</h2>
         <p>
           Вы вправе запросить уточнение, блокирование или удаление своих данных, а также отозвать
-          согласие. Обращения: Telegram <b>@igortsk</b> · WhatsApp <b>+7 923 407-91-68</b> ·
-          MAX <b>+7 923 409-71-76</b>.
+          согласие. Обращения: Telegram <b>@igortsk</b> · WhatsApp <b>+7-923-407-9168</b> ·
+          MAX <b>+7-923-409-7976</b> · тел. <b>+7-923-409-7976</b>.
         </p>
       </section>
     </main>

@@ -38,14 +38,15 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <>
       {isDemo && (
         <div className="sticky top-0 z-50 border-b border-warning/40 bg-warning/15 px-4 py-1.5 text-center text-xs font-medium backdrop-blur">
-          <span className="mr-2">ДЕМО-ДАННЫЕ (вымышлены).</span>
+          <span className="mr-2">ДЕМО-ДАННЫЕ: все пациенты, полисы и документы на этом стенде вымышлены.</span>
           <span className="font-semibold">Подключить свою клинику:</span>{" "}
           <a href="tg://resolve?domain=igortsk" className="underline underline-offset-2">Telegram @igortsk</a>
           {" · "}
           <a href="https://api.whatsapp.com/send?phone=79234079168" className="underline underline-offset-2">
-            WhatsApp +7 923 407-91-68
+            WhatsApp +7-923-407-9168
           </a>
-          {" · "}MAX +7 923 409-71-76
+          {" · "}MAX +7-923-409-7976{" · тел. "}
+          <a href="tel:+79234097976" className="underline underline-offset-2">+7-923-409-7976</a>
         </div>
       )}
       <AdminShell
