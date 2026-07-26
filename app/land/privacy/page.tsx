@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import Link from "next/link"
 
 export const metadata: Metadata = {
-  title: "Политика конфиденциальности — сиб",
+  title: "Политика конфиденциальности — DocON",
   robots: { index: true, follow: true },
 }
 
@@ -21,7 +21,7 @@ export default function PrivacyPage() {
           (ОГРНИП 325420500121439, ИНН 420221376189), далее — «Оператор».
         </p>
         <p>
-          Настоящая политика действует для посетителей страниц sib.docon.pro/land и описывает
+          Настоящая политика действует для посетителей страниц сервиса DocON (sib.docon.pro/land) и описывает
           обработку данных, оставленных через форму заявки.
         </p>
       </section>
@@ -59,7 +59,7 @@ export default function PrivacyPage() {
         <p>
           Вы вправе запросить уточнение, блокирование или удаление своих данных, а также отозвать
           согласие. Обращения: Telegram <b>@igortsk</b> · WhatsApp <b>+7-923-407-9168</b> ·
-          MAX <b>+7-923-409-7976</b> · тел. <b>+7-923-409-7976</b>.
+          MAX <b>+7-923-409-7976</b>.
         </p>
       </section>
     </main>
