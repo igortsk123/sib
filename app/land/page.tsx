@@ -90,35 +90,59 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="flex flex-col gap-3">
-        <h2 className="text-xl font-semibold">Стоимость — по объёму писем</h2>
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[420px] text-sm">
-            <thead>
-              <tr className="border-b border-border text-left text-muted-foreground">
-                <th className="py-2 pr-4 font-medium">Писем ДМС в месяц</th>
-                <th className="py-2 pr-4 font-medium">Опция 1 · Реестр</th>
-                <th className="py-2 font-medium">+ Опция 2 · ИИ-помощник</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr className="border-b border-border/60">
-                <td className="py-2 pr-4">до 300</td>
-                <td className="py-2 pr-4">10 000 ₽/мес</td>
-                <td className="py-2">+10 000 ₽/мес</td>
-              </tr>
-              <tr className="border-b border-border/60">
-                <td className="py-2 pr-4">до 1 000</td>
-                <td className="py-2 pr-4">15 000 ₽/мес</td>
-                <td className="py-2">+10 000 ₽/мес</td>
-              </tr>
-              <tr>
-                <td className="py-2 pr-4">свыше 1 000 / сеть клиник</td>
-                <td className="py-2 pr-4" colSpan={2}>индивидуально — напишите нам</td>
-              </tr>
-            </tbody>
-          </table>
+      <section className="flex flex-col gap-4">
+        <h2 className="text-xl font-semibold">Стоимость — прозрачно</h2>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="rounded-xl border border-border bg-card p-4">
+            <p className="font-medium">Опция 1 · Реестр — по объёму писем</p>
+            <table className="mt-2 w-full text-sm">
+              <tbody>
+                <tr className="border-b border-border/60">
+                  <td className="py-1.5 pr-3 text-muted-foreground">до 300 писем/мес</td>
+                  <td className="py-1.5 text-right font-medium">10 000 ₽/мес</td>
+                </tr>
+                <tr className="border-b border-border/60">
+                  <td className="py-1.5 pr-3 text-muted-foreground">до 600 писем/мес</td>
+                  <td className="py-1.5 text-right font-medium">15 000 ₽/мес</td>
+                </tr>
+                <tr className="border-b border-border/60">
+                  <td className="py-1.5 pr-3 text-muted-foreground">до 1 000 писем/мес</td>
+                  <td className="py-1.5 text-right font-medium">20 000 ₽/мес</td>
+                </tr>
+                <tr>
+                  <td className="py-1.5 pr-3 text-muted-foreground">больше / сеть клиник</td>
+                  <td className="py-1.5 text-right font-medium">напишите нам</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div className="rounded-xl border border-border bg-card p-4">
+            <p className="font-medium">+ Опция 2 · ИИ-помощник — по числу пациентов на ДМС</p>
+            <table className="mt-2 w-full text-sm">
+              <tbody>
+                <tr className="border-b border-border/60">
+                  <td className="py-1.5 pr-3 text-muted-foreground">до 1 000 пациентов</td>
+                  <td className="py-1.5 text-right font-medium">+5 000 ₽/мес</td>
+                </tr>
+                <tr className="border-b border-border/60">
+                  <td className="py-1.5 pr-3 text-muted-foreground">до 5 000 пациентов</td>
+                  <td className="py-1.5 text-right font-medium">+10 000 ₽/мес</td>
+                </tr>
+                <tr className="border-b border-border/60">
+                  <td className="py-1.5 pr-3 text-muted-foreground">до 10 000 пациентов</td>
+                  <td className="py-1.5 text-right font-medium">+15 000 ₽/мес</td>
+                </tr>
+                <tr>
+                  <td className="py-1.5 pr-3 text-muted-foreground">больше</td>
+                  <td className="py-1.5 text-right font-medium">напишите нам</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
+
         <p className="text-sm text-muted-foreground">
           Подключение и настройка для первых клиник — 0 ₽ (пилотная цена фиксируется на 12 месяцев).
           Одна невыплата страховой обычно дороже месяца подписки.
