@@ -1,10 +1,11 @@
 import Link from "next/link"
 import { notFound, redirect } from "next/navigation"
 
+import { listChatMessages } from "@/lib/server/coverage/chat"
 import { resolveCoverage } from "@/lib/server/coverage/resolve"
 import { patientCard } from "@/lib/server/patients/queries"
 import { resolveRegistryScope } from "@/lib/server/scope"
-import { AskCoverage } from "@/components/admin/ask-coverage"
+import { CoverageChatPanel } from "@/components/admin/coverage-chat"
 import { CoverageRules } from "@/components/admin/coverage-rules"
 import { PageHeader } from "@/components/admin/page-header"
 import { Badge } from "@/components/ui/badge"
@@ -64,7 +65,7 @@ export default async function PatientPage({ params }: { params: Promise<{ key: s
         </Card>
       )}
 
-      <AskCoverage patientKey={key} />
+      <CoverageChatPanel patientKey={key} initialMessages={await listChatMessages(scope.orgId, key)} />
 
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
         <Card>

@@ -38,3 +38,4 @@ next-env.d.ts
 .claude/settings.local.json.proposed
 # memory-bank end
 .tmp/
+test-results/

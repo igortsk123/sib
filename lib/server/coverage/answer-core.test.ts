@@ -141,6 +141,14 @@ describe("rulesForService", () => {
     const found = rulesForService([rule({ servicePattern: "экстракция зубов", serviceClass: "стоматология-хирургия" })], "удаление 8-го зуба")
     expect(found).toHaveLength(1)
   })
+
+  it("генерические слова («зуба») НЕ притягивают чужое правило (баг 26.07: коронковая часть)", () => {
+    const found = rulesForService(
+      [rule({ servicePattern: "восстановление коронковой части зуба при значительном разрушении", serviceClass: "стоматология-ортопедия" })],
+      "удаление зуба 37 под общим наркозом",
+    )
+    expect(found).toHaveLength(0)
+  })
 })
 
 describe("определённые ответы (владелец 26.07): catch-all и уточнения", () => {

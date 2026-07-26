@@ -1,4 +1,6 @@
 import type { Metadata } from "next"
+import { headers } from "next/headers"
+import { redirect } from "next/navigation"
 import {
   ArchiveX,
   Bot,
@@ -6,7 +8,7 @@ import {
   FileSpreadsheet,
   Inbox,
   MailX,
-  Search,
+  MonitorPlay,
   ShieldCheck,
   UserX,
   Zap,
@@ -21,9 +23,12 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 }
 
-// Продающая структура (владелец 26.07 + разбор практик B2B-лендингов): hero с одним оффером
-// и живым соцдоказательством, карточные блоки вместо сплошного текста, шаги, диалог-примеры ИИ,
-// тарифы, финальный CTA. Посыл владельца дословно. Только семантические токены темы (ui-rules).
+// Продающая структура (владелец 26.07 + разбор практик B2B-лендингов): hero с одним оффером,
+// карточные блоки, шаги, диалог-примеры ИИ, тарифы, финальный CTA.
+// v3.1 (правки владельца 26.07): всё центрировано (на десктопе было «не оч»), демо — заметный
+// баннер «Посмотреть демо-версию», блок цифр убран, контакты один раз (финальный блок; в футере
+// только телефоны текстом), акценты контактов равнозначные, англ-версия /land/en с автоопределением
+// локали браузера (Accept-Language без ru → редирект). Только семантические токены темы (ui-rules).
 
 const PAINS = [
   { icon: MailX, title: "Письма тонут в почте", text: "Гарантийные письма, прикрепления и открепления теряются среди рассылок и спама." },
@@ -38,11 +43,33 @@ const STEPS = [
   { n: "3", title: "Отвечаете за секунды", text: "Регистратура видит: покроет ли страховая услугу, действует ли письмо, надо ли запросить новое." },
 ]
 
-export default function LandingPage() {
+function DemoBanner() {
+  // Демо — главный CTA (владелец 26.07: «выдели это как баннер, это важно»)
+  return (
+    <a
+      href="/demo"
+      className="flex w-full items-center justify-center gap-3 rounded-xl bg-primary px-6 py-4 text-lg font-semibold text-primary-foreground shadow-lg transition hover:opacity-90"
+    >
+      <MonitorPlay className="size-6" aria-hidden /> Посмотреть демо-версию
+    </a>
+  )
+}
+
+export default async function LandingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ lang?: string }>
+}) {
+  // Автовыбор языка: браузер без русского → английская версия (цены в USD).
+  // ?lang=ru — явный выбор с англ. страницы, автоперенаправление не срабатывает (иначе цикл).
+  const { lang } = await searchParams
+  const accept = (await headers()).get("accept-language") ?? ""
+  if (lang !== "ru" && accept && !accept.toLowerCase().includes("ru")) redirect("/land/en")
+
   return (
     <main className="mx-auto flex max-w-4xl flex-col gap-16 px-5 py-12">
-      {/* HERO: один оффер, прямые контакты, живое демо */}
-      <header className="flex flex-col items-start gap-5">
+      {/* HERO: один оффер, демо-баннер, прямые контакты */}
+      <header className="flex flex-col items-center gap-5 text-center">
         <span className="rounded-full border border-border bg-muted px-3 py-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
           Сервис для медицинских клиник
         </span>
@@ -54,31 +81,16 @@ export default function LandingPage() {
           в удобный реестр, а ИИ-помощник за секунды отвечает, покроет ли страховая услугу.
           Запуск за 7 дней с любой МИС.
         </p>
+        <DemoBanner />
         <ContactLinks />
-        <a
-          href="/demo"
-          className="rounded-md border border-border px-5 py-2.5 text-sm font-medium hover:bg-accent"
-        >
-          Открыть живое демо-реестра →
+        <a href="/land/en" className="text-xs text-muted-foreground underline underline-offset-2 hover:no-underline">
+          English version
         </a>
-        {/* соцдоказательство: живые цифры системы */}
-        <dl className="mt-2 grid w-full grid-cols-3 gap-3 rounded-xl border border-border bg-card p-4 text-center">
-          {[
-            ["~10 000", "записей реестра уже в бою"],
-            ["13", "страховых компаний"],
-            ["890+", "правил покрытия с пунктами"],
-          ].map(([v, l]) => (
-            <div key={l}>
-              <dt className="text-2xl font-semibold">{v}</dt>
-              <dd className="mt-0.5 text-xs text-muted-foreground">{l}</dd>
-            </div>
-          ))}
-        </dl>
       </header>
 
       {/* Боли */}
       <section className="flex flex-col gap-5">
-        <h2 className="text-2xl font-semibold">Как клиники теряют деньги на ДМС</h2>
+        <h2 className="text-center text-2xl font-semibold">Как клиники теряют деньги на ДМС</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           {PAINS.map((p) => (
             <div key={p.title} className="flex gap-3 rounded-xl border border-border bg-card p-4">
@@ -94,7 +106,7 @@ export default function LandingPage() {
 
       {/* Как работает */}
       <section className="flex flex-col gap-5">
-        <h2 className="text-2xl font-semibold">Как это работает</h2>
+        <h2 className="text-center text-2xl font-semibold">Как это работает</h2>
         <div className="grid gap-4 sm:grid-cols-3">
           {STEPS.map((s) => (
             <div key={s.n} className="rounded-xl border border-border bg-card p-4">
@@ -110,14 +122,14 @@ export default function LandingPage() {
 
       {/* ОПЦИЯ 1 */}
       <section className="flex flex-col gap-4">
-        <h2 className="text-2xl font-semibold">Что вы получаете</h2>
+        <h2 className="text-center text-2xl font-semibold">Что вы получаете</h2>
         <div className="rounded-xl border border-border bg-card p-5">
           <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Опция 1</p>
           <h3 className="mt-1 text-xl font-semibold">Единый реестр писем ДМС</h3>
           <div className="mt-4 grid gap-3 sm:grid-cols-3">
             {[
               [Inbox, "Все письма в одной системе", "Гарантийные, прикрепления, открепления, аннулирования: из тела, PDF, Word, архивов."],
-              [Zap, "Секунды вместо 15-25 минут", "Администраторы занимаются пациентами, а не разбором почты."],
+              [Zap, "Секунды вместо часов", "Администраторы занимаются пациентами, а не разбором почты."],
               [FileSpreadsheet, "Удобный импорт в МИС", "Поиск по пациенту и полису, карточка с оригиналами, выгрузка в Excel."],
             ].map(([Icon, t, d]) => {
               const I = Icon as typeof Inbox
@@ -143,9 +155,9 @@ export default function LandingPage() {
           </p>
           <div className="mt-4 flex flex-col gap-3">
             {[
-              ["Удаление зуба 3.7 пациенту с полисом СОГАЗ?", "Да, покрыто по п. 2.12 программы, включая ретинированные зубы."],
+              ["Удаление зуба 37", "Да, покрыто по п. 2.12 программы, включая ретинированные зубы."],
               ["Имплантация за 45 000 ₽?", "Не входит в программу (п. 5.2а). Нужно запросить гарантийное письмо, черновик уже готов."],
-              ["Лечение кариеса, пациент был у нас в марте?", "Пациент откреплён с 12.05, оплата по ДМС не гарантируется."],
+              ["Профгигиена второй раз за год?", "По программе — 1 раз в год (п. 4.7). Повторная чистка платно или по согласованию со страховой."],
             ].map(([q, a]) => (
               <div key={q} className="flex flex-col gap-1.5">
                 <p className="ml-auto max-w-[85%] rounded-lg bg-primary px-3 py-1.5 text-sm text-primary-foreground">{q}</p>
@@ -155,14 +167,14 @@ export default function LandingPage() {
           </div>
           <p className="mt-4 text-sm text-muted-foreground">
             В спорных случаях система сама составит запрос гарантийного письма в страховую и обработает
-            ответ по приходу. Невыплаты из-за «оказали без ГП» сводятся к нулю.
+            ответ по приходу. Невыплаты из-за ошибок сводятся к нулю.
           </p>
         </div>
       </section>
 
       {/* ТАРИФЫ */}
       <section className="flex flex-col gap-4">
-        <h2 className="text-2xl font-semibold">Сколько стоит</h2>
+        <h2 className="text-center text-2xl font-semibold">Сколько стоит</h2>
         <div className="overflow-x-auto rounded-xl border border-border bg-card p-4">
           <table className="w-full min-w-[440px] text-sm">
             <thead>
@@ -195,8 +207,8 @@ export default function LandingPage() {
             Объём писем виден в вашем же реестре, так что тариф легко проверить.
           </p>
         </div>
-        <p className="text-sm text-muted-foreground">
-          Подключение и настройка для первых клиник: 0 ₽. Одна невыплата страховой обычно дороже
+        <p className="text-center text-sm text-muted-foreground">
+          Подключение и настройка для первых клиник: 0 ₽. Одна невыплата страховой часто дороже
           месяца подписки.
         </p>
       </section>
@@ -213,32 +225,26 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ФИНАЛЬНЫЙ CTA */}
-      <section className="flex flex-col items-start gap-4 rounded-xl border border-border bg-muted/30 p-6">
-        <h2 className="flex items-center gap-2 text-2xl font-semibold">
-          <Search className="size-6 text-primary" aria-hidden /> Посмотрите на своих письмах
-        </h2>
-        <p className="text-sm text-muted-foreground">
-          Сначала живое демо на вымышленных данных. Понравится: подключим почту вашей клиники
-          и покажем то же самое на ваших письмах за 1 день.
+      {/* ФИНАЛЬНЫЙ CTA: демо + прямые контакты (единственное место с контактами, чтобы не дублировать футер) */}
+      <section className="flex flex-col items-center gap-5 rounded-xl border border-border bg-muted/30 p-8 text-center">
+        <h2 className="text-2xl font-semibold">Сколько писем страховых пришло вам за месяц?</h2>
+        <p className="max-w-xl text-sm text-muted-foreground">
+          Каждое из них — это деньги клиники. Начните с демо-версии на вымышленных данных, а дальше
+          подключим ящик вашей клиники в режиме «только чтение» и покажем реестр на ваших письмах
+          уже на следующий день. Ни доступа в МИС, ни установки на компьютеры не нужно.
         </p>
-        <div className="flex flex-wrap items-center gap-3">
-          <a
-            href="/demo"
-            className="rounded-md bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90"
-          >
-            Открыть демо →
-          </a>
-          <ContactLinks compact />
-        </div>
+        <DemoBanner />
+        <p className="text-sm text-muted-foreground">Или напишите напрямую, ответим быстро:</p>
+        <ContactLinks />
       </section>
 
-      <footer className="flex flex-col gap-2 border-t border-border pt-6 text-xs text-muted-foreground">
-        <ContactLinks compact />
+      <footer className="flex flex-col items-center gap-2 border-t border-border pt-6 text-center text-xs text-muted-foreground">
         <p>Телефоны: +7-923-409-7976 · +7-923-407-9168</p>
         <p>ИП Шубина Юлия Александровна · ОГРНИП 325420500121439 · ИНН 420221376189</p>
         <p>
           <a href="/land/privacy" className="underline">Политика конфиденциальности</a>
+          {" · "}
+          <a href="/land/en" className="underline">English</a>
         </p>
       </footer>
     </main>

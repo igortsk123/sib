@@ -49,9 +49,9 @@ export function ExportDialog({ defaultFrom, defaultTo }: { defaultFrom?: string;
               </div>
               <div className="flex flex-col gap-1">
                 <Label className="text-xs text-muted-foreground">Шаблон</Label>
-                <select name="template" className="h-9 rounded-md border border-input bg-background px-2 text-sm">
-                  <option value="">Стандартный (полный)</option>
+                <select name="template" defaultValue="dental" className="h-9 rounded-md border border-input bg-background px-2 text-sm">
                   <option value="dental">Дентал Про (загрузка пациентов)</option>
+                  <option value="full">Стандартный (полный)</option>
                 </select>
               </div>
               <div className="mt-1 flex justify-end gap-2">

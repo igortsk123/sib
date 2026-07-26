@@ -66,7 +66,9 @@ export async function answerCoverageQuestion(args: {
         role: "system",
         content:
           "Ты помощник клиники по ДМС. По списку правил программы страхования ответь, покрывается ли услуга. " +
-          "Отвечай строго по правилам из списка; если правила не позволяют сделать вывод — verdict=unknown. " +
+          "В списке могут быть правила, НЕ относящиеся к запрошенной услуге, — сначала выбери те, что прямо " +
+          "о ней говорят, и отвечай только по ним. Нет прямо подходящего правила — verdict=unknown; " +
+          "НЕ цитируй правило про другую услугу. " +
           "verdict: yes (покрыто), no (пациенту откажут), approval (нужно согласование страховой), " +
           "need_guarantee (нужно запросить гарантийное письмо), unknown. reason — одно предложение по-русски со ссылкой на пункт.",
       },
@@ -92,9 +94,30 @@ export async function answerCoverageQuestion(args: {
   }
 }
 
+// Хвост истории для LLM: контекст правил уходит ВСЕГДА целиком, история диалога — последние N
+// сообщений (владелец 26.07: «контекст правил отправляется в ЛЛМ всё время вместе с промптом
+// и накапливает историю диалога»).
+const LLM_HISTORY_TAIL = 24
+
+const VERDICT_LABEL: Record<CoverageAnswer["verdict"], string> = {
+  yes: "ДА, покрыто",
+  no: "НЕТ, не покрыто",
+  approval: "НУЖНО СОГЛАСОВАНИЕ СТРАХОВОЙ",
+  need_guarantee: "ЗАПРОСИТЬ ГАРАНТИЙНОЕ ПИСЬМО",
+  unknown: "В ПРАВИЛАХ НЕ НАЙДЕНО — уточните формулировку или запросите гарантийное письмо",
+}
+
+/** Текст ответа чата из детерминированных гейтов (LLM недоступен — обёртка §5: заданное user-facing состояние). */
+export function deterministicChatAnswer(base: CoverageAnswer): string {
+  const lines = [VERDICT_LABEL[base.verdict], ...base.reasons.map((r) => `• ${r}`)]
+  if (base.warnings.length) lines.push(...base.warnings.map((w) => `⚠ ${w}`))
+  return lines.join("\n")
+}
+
 /**
- * Диалог по правилам пациента (владелец 26.07): сотрудник доуточняет вопрос в чате,
- * контекст правил уже подгружен. ПДн в LLM не уходят — только правила и статус прикрепления.
+ * Диалог по правилам пациента (владелец 26.07): «просто клиника общается с ИИ» — много вопросов
+ * и ответов; история хранится в БД и видна всем с доступом. ПДн в LLM не уходят — только
+ * правила, статус прикрепления и сроки действующих ГП.
  */
 export async function chatAboutCoverage(args: {
   patientKey: string
@@ -104,7 +127,6 @@ export async function chatAboutCoverage(args: {
 }): Promise<{ ok: true; answer: string } | { ok: false; error: string }> {
   const card = await patientCard(args.patientKey, args.orgId)
   if (!card) return { ok: false, error: "Пациент не найден" }
-  if (!isLlmConfigured()) return { ok: false, error: "ИИ-чат недоступен — задайте вопрос по документам из карточки" }
 
   const coverage = card.state.insuranceCompanyId
     ? await resolveCoverage({
@@ -114,9 +136,22 @@ export async function chatAboutCoverage(args: {
       })
     : { matchedPrograms: [], unmatched: [], fallbackProgram: null, rules: [] }
 
+  // LLM недоступен → детерминированные гейты (прикреплён/ГП/правила/лимит) вместо отказа.
+  if (!isLlmConfigured()) {
+    const base = answerFromRules(card.state, coverage.rules, args.question, null, coverage.fallbackProgram)
+    return { ok: true, answer: deterministicChatAnswer(base) }
+  }
+
+  // Сроки действующих ГП — чтобы ИИ мог ответить «уже согласовано, действует до …» (без ПДн).
+  const gpLines = card.state.activeGuarantees
+    .slice(0, 10)
+    .map((g) => `- ${(g.services ?? []).join(", ") || "услуги не указаны"}${g.validUntil ? ` (действует до ${g.validUntil})` : ""}`)
+    .join("\n")
+
   const context =
     `Пациент: ${card.state.attached ? "прикреплён" : "ОТКРЕПЛЁН"}; страховая: ${card.state.insurer ?? "—"}; ` +
-    `программы: ${card.state.programs.join("; ") || "—"}; действующих ГП: ${card.state.activeGuarantees.length}.\n\n` +
+    `программы: ${card.state.programs.join("; ") || "—"}.\n` +
+    `Действующие гарантийные письма (${card.state.activeGuarantees.length}):\n${gpLines || "(нет)"}\n\n` +
     `Правила программы:\n${rulesDigest(coverage.rules) || "(правил нет)"}`
 
   const res = await chatComplete(
@@ -124,13 +159,16 @@ export async function chatAboutCoverage(args: {
       {
         role: "system",
         content:
-          "Ты помощник регистратуры клиники по ДМС. Отвечай КРАТКО и по-русски, строго по переданным " +
-          "правилам программы, всегда ссылайся на пункт. Если правила не позволяют сделать вывод — так и скажи " +
-          "и предложи запросить гарантийное письмо. Не выдумывай пункты. Не запрашивай персональные данные.",
+          "Ты помощник врача и регистратуры клиники по ДМС. Отвечай КРАТКО и по-русски, строго по переданным " +
+          "правилам программы, всегда ссылайся на пункт документа. В списке много правил ПРО РАЗНЫЕ услуги — " +
+          "используй только те, что прямо относятся к услуге из вопроса; правила про другие услуги не цитируй " +
+          "и не смешивай. Если прямо подходящего правила нет — скажи это честно и предложи запросить " +
+          "гарантийное письмо (кнопка «Составить запрос в страховую» под чатом). Не выдумывай пункты. " +
+          "Не запрашивай персональные данные. Учитывай предыдущие вопросы и ответы диалога.",
       },
       { role: "user", content: context },
       { role: "assistant", content: "Контекст принял. Задайте вопрос по покрытию." },
-      ...args.history.slice(-8),
+      ...args.history.slice(-LLM_HISTORY_TAIL),
       { role: "user", content: args.question },
     ],
     { timeoutMs: 30_000 },

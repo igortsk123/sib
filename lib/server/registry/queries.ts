@@ -89,6 +89,8 @@ export async function searchLetters(f: RegistryFilter, limit = 500, offset = 0) 
       reviewNote: guaranteeLetter.reviewNote,
       insurer: insuranceCompany.name,
       receivedAt: emailMessage.receivedAt,
+      patientKey: guaranteeLetter.patientKey,
+      insurerId: guaranteeLetter.insuranceCompanyId,
     })
     .from(guaranteeLetter)
     .leftJoin(insuranceCompany, eq(insuranceCompany.id, guaranteeLetter.insuranceCompanyId))
@@ -97,6 +99,38 @@ export async function searchLetters(f: RegistryFilter, limit = 500, offset = 0) 
     .orderBy(desc(emailMessage.receivedAt))
     .limit(limit)
     .offset(offset)
+}
+
+// Дентал Про: фолбэк «Страховой программы» — в письмах-откреплениях (и части прикреплений)
+// программы нет; берём её из ПОСЛЕДНЕГО прикрепления того же пациента у той же страховой.
+export async function latestProgramsByPatient(orgId: string | null | undefined, keys: string[]) {
+  const map = new Map<string, string>()
+  if (!keys.length) return map
+  const rows = await db()
+    .select({
+      pk: guaranteeLetter.patientKey,
+      ic: guaranteeLetter.insuranceCompanyId,
+      services: guaranteeLetter.services,
+    })
+    .from(guaranteeLetter)
+    .where(
+      and(
+        inArray(guaranteeLetter.patientKey, keys),
+        eq(guaranteeLetter.docType, "enroll"),
+        eq(guaranteeLetter.isDuplicate, false),
+        sql`coalesce(jsonb_array_length(${guaranteeLetter.services}),0) > 0`,
+        ...(orgId ? [eq(guaranteeLetter.organizationId, orgId)] : []),
+      ),
+    )
+    .orderBy(desc(guaranteeLetter.letterDate))
+  for (const r of rows) {
+    const key = `${r.pk}|${r.ic ?? ""}`
+    if (!map.has(key)) {
+      const prog = Array.isArray(r.services) ? (r.services as unknown[]).filter(Boolean).map(String).join(", ") : ""
+      if (prog) map.set(key, prog)
+    }
+  }
+  return map
 }
 
 // Число записей ПО ТЕКУЩИМ ФИЛЬТРАМ — для полной пагинации (все страницы кликабельны).

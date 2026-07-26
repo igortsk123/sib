@@ -1,7 +1,7 @@
 import ExcelJS from "exceljs"
 
 import { env } from "@/lib/env"
-import { searchLetters } from "@/lib/server/registry/queries"
+import { latestProgramsByPatient, searchLetters } from "@/lib/server/registry/queries"
 import { requireUser } from "@/lib/server/auth/guards"
 import { resolveRegistryScope } from "@/lib/server/scope"
 import { STATUS_LABELS, SOURCE_LABELS, METHOD_LABELS, docTypeLabel, cellText } from "@/lib/letter-status"
@@ -48,9 +48,22 @@ export async function GET(req: Request) {
   const appUrl = env.APP_URL.replace(/\/+$/, "")
   const stamp0 = new Date().toISOString().slice(0, 10)
 
-  // ── Шаблон «Дентал Про»: массовая загрузка пациентов (создание полисов) — колонки их импортёра
-  // байт-в-байт (включая хвостовые пробелы в заголовках). Программа ← услуги/программа записи.
-  if (p.get("template") === "dental") {
+  // ── Шаблон «Дентал Про» (ПО УМОЛЧАНИЮ, решение владельца 26.07): массовая загрузка пациентов
+  // (создание полисов) — колонки их импортёра байт-в-байт (включая хвостовые пробелы в заголовках).
+  // Полный реестр — ?template=full. Программа ← услуги/программа записи, иначе — из последнего
+  // прикрепления пациента. ГП без даты окончания → дата = срок действия ГП, строка ЖИРНЫМ.
+  if (p.get("template") !== "full") {
+    // мусорные типы (смена данных, служебное, пароли) в загрузку пациентов не идут
+    const SKIP_TYPES = new Set(["other", "service", "archive_password", "info_request"])
+    const dentalRows = rows.filter((r) => !SKIP_TYPES.has(r.docType ?? "") && (r.patient ?? "").trim())
+    // фолбэк программы: у откреплений (и части прикреплений) программы в письме нет
+    const needProg = dentalRows.filter(
+      (r) => !(Array.isArray(r.services) && (r.services as unknown[]).filter(Boolean).length) && r.patientKey,
+    )
+    const progFallback = await latestProgramsByPatient(
+      scope.orgId,
+      [...new Set(needProg.map((r) => r.patientKey as string))],
+    )
     const wbD = new ExcelJS.Workbook()
     const wsD = wbD.addWorksheet("Лист1")
     wsD.columns = [
@@ -64,12 +77,14 @@ export async function GET(req: Request) {
       { header: "Дата начала обслуживания", key: "cf", width: 16 },
       { header: "Дата окончания обслуживания", key: "cto", width: 16 },
     ]
-    for (const r of rows) {
+    for (const r of dentalRows) {
       const w = (r.patient ?? "").trim().split(/\s+/)
-      const prog = Array.isArray(r.services)
+      const own = Array.isArray(r.services)
         ? (r.services as unknown[]).filter(Boolean).map(String).join(", ")
         : ""
-      // нет даты окончания обслуживания → подставляем «Действует до» (validUntil) и выделяем ЖИРНЫМ
+      const prog = own || progFallback.get(`${r.patientKey}|${r.insurerId ?? ""}`) || ""
+      // нет даты окончания обслуживания → это ГП/направление: дата = срок действия письма
+      // (validUntil), ВСЯ строка жирным (правило владельца 26.07)
       const subEnd = !r.coverageTo && r.validUntil
       const rw = wsD.addRow({
         f: w[0] ?? "", i: w[1] ?? "", o: w.slice(2).join(" "),
@@ -77,7 +92,7 @@ export async function GET(req: Request) {
         pol: r.policy ?? "", cf: ruDate(r.coverageFrom),
         cto: ruDate(r.coverageTo ?? r.validUntil),
       })
-      if (subEnd) rw.getCell("cto").font = { bold: true }
+      if (subEnd) rw.font = { bold: true }
     }
     const bufD = await wbD.xlsx.writeBuffer()
     return new Response(bufD, {

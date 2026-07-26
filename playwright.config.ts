@@ -18,6 +18,9 @@ export default defineConfig({
     baseURL: "http://127.0.0.1:3106",
     locale: "ru-RU",
     trace: "retain-on-failure",
+    // Ядро 7.x (обновление ОС 26.07): сэндбокс chromium падает int3-трапом (ThreadPoolForeg/
+    // Compositor) → ERR_INSUFFICIENT_RESOURCES. Без сэндбокса стабильно; для локальных e2e безопасно.
+    launchOptions: { args: ["--no-sandbox", "--disable-dev-shm-usage"] },
   },
   globalSetup: "./e2e/global-setup.ts",
   projects: [

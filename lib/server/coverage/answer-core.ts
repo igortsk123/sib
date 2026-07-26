@@ -46,6 +46,15 @@ const KIND_TO_CLASSES: Record<string, string[]> = {
   консультация: ["стоматология-приёмы", "амбулатория-приёмы"],
 }
 
+// Слова, которые есть почти в каждом стоматологическом правиле, — совпадение по ним НЕ делает
+// правило относящимся к вопросу (баг 26.07: «удаление зуба 37» тянуло «восстановление
+// коронковой части зуба» через слово «зуба»).
+const GENERIC_WORDS = new Set([
+  "зуб", "зуба", "зубов", "зубы", "зубной", "зубного", "зубных",
+  "лечение", "лечения", "услуга", "услуги", "услуг", "пациент", "пациента",
+  "медицинская", "медицинских", "стоматологическая", "стоматологических", "проведение",
+])
+
 /** Правила, относящиеся к запрошенной услуге: по словам паттерна и по классу услуги. */
 export function rulesForService(rules: ResolvedRule[], serviceText: string): ResolvedRule[] {
   const query = serviceText.toLowerCase().replace(/ё/g, "е")
@@ -53,7 +62,9 @@ export function rulesForService(rules: ResolvedRule[], serviceText: string): Res
   const classes = new Set([...kinds].flatMap((k) => KIND_TO_CLASSES[k] ?? []))
 
   const byPattern = rules.filter((r) => {
-    const words = (r.servicePattern ?? "").split(/\s+/).filter((w) => w.length >= 4)
+    const words = (r.servicePattern ?? "")
+      .split(/\s+/)
+      .filter((w) => w.length >= 4 && !GENERIC_WORDS.has(w.toLowerCase().replace(/ё/g, "е")))
     return words.some((w) => query.includes(w.toLowerCase()))
   })
   // паттерн — точнее; класс — страховка, когда формулировка врача не совпала со словарём

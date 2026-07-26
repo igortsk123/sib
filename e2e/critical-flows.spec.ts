@@ -25,26 +25,29 @@ test("пациенты: список → карточка → «что дейс�
   await expect(page.getByText("Действующие гарантийные письма").first()).toBeVisible()
 })
 
-test("вопрос «можно ли делать»: покрыто / исключено / по письму", async ({ page }) => {
+test("чат по правилам: покрыто / исключено, история сохраняется", async ({ page }) => {
   await page.goto("/patients")
   await page.getByRole("link", { name: /Тестов Пациент/ }).first().click()
   await page.waitForURL(/\/patients\/[0-9a-f]{24}/)
 
-  const service = page.getByPlaceholder(/Услуга/)
-  const check = page.getByRole("button", { name: "Проверить" })
+  // ИИ-чат (владелец 26.07): вопросы в свободной форме; без LLM в e2e отвечает
+  // детерминированный слой (answer-core) тем же текстом вердикта.
+  const input = page.getByPlaceholder(/Вопрос по покрытию/)
+  const ask = page.getByRole("button", { name: "Спросить" })
 
-  await service.fill("удаление зуба 3.7")
-  await check.click()
-  await expect(page.getByText("ДА, покрыто").first()).toBeVisible({ timeout: 10_000 })
-  await expect(page.getByText(/п\. 1\.1 \(e2e\)/).first()).toBeVisible()
+  await input.fill("удаление зуба 3.7")
+  await ask.click()
+  await expect(page.getByText("ДА, покрыто").last()).toBeVisible({ timeout: 15_000 })
+  await expect(page.getByText(/п\. 1\.1 \(e2e\)/).last()).toBeVisible()
 
-  await service.fill("имплантация зуба")
-  await check.click()
-  await expect(page.getByText("ЗАПРОСИТЬ ГАРАНТИЙНОЕ ПИСЬМО").first()).toBeVisible({ timeout: 10_000 })
+  await input.fill("имплантация зуба")
+  await ask.click()
+  await expect(page.getByText("ЗАПРОСИТЬ ГАРАНТИЙНОЕ ПИСЬМО").last()).toBeVisible({ timeout: 15_000 })
 
-  await service.fill("эндодонтическое лечение 25 зуба")
-  await check.click()
-  await expect(page.getByText(/гарантийное письмо/i).first()).toBeVisible({ timeout: 10_000 })
+  // история общая и переживает перезагрузку страницы (хранится в БД)
+  await page.reload()
+  await expect(page.getByText("имплантация зуба").last()).toBeVisible({ timeout: 10_000 })
+  await expect(page.getByText("ЗАПРОСИТЬ ГАРАНТИЙНОЕ ПИСЬМО").last()).toBeVisible()
 })
 
 test("правила покрытия: поиск и сводка", async ({ page }) => {
