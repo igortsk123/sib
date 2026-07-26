@@ -18,15 +18,15 @@ sib — агрегатор и распознавание гарантийных 
 | Модель данных — сущности и ключевые поля | `core/data-model.md` | `../domain/product-spec.md` |
 | Реклама — спрос и семантика Wordstat (сколько и что ищут) | `core/demand-semantics.md` | `../domain/demand-semantics.md` |
 | Забор писем — IMAP/Яндекс, двойная пересылка, дедупликация | `core/email-ingestion.md` | `../domain/insurer-recognition.md` |
-| Список решений, которые принимает ТОЛЬКО владелец — остальное агент решает сам | `core/human-decisions.md` | `../domain/product-spec.md` |
+| Решения ТОЛЬКО владельца — остальное агент решает сам | `core/human-decisions.md` | `../domain/product-spec.md` |
 | Перед планированием — уроки; что пробовали и что НЕ сработало, отброшенные подходы | `core/lessons.md` | `../anti-patterns.md` |
 | Бизнес-контекст — зачем продукт, для кого, что в scope | `product_brief.md` | `domain/product-spec.md` |
 | Распознавание — извлечение текста, поля, confidence, ручная проверка | `core/recognition.md` | `../domain/recognition-architecture.md` |
 | Роли, права доступа (RBAC), ПДн и безопасность | `core/roles-and-access.md` | `../domain/product-spec.md` |
-| Рекламные кампании Директа для sib — статус, структура, запуск/остановка | `core/ads-campaigns.md` | `../domain/ads-campaigns-structure.md` |
+| Кампании Директа — статус, структура, лендинг, запуск | `core/ads-campaigns.md` | `../domain/ads-campaigns-structure.md` |
 | Термины ДМС/страхования и проекта — единый источник консистентности | `glossary.md` | — |
 | Ценообразование сервиса и QR-допродажи — вилки РФ, эффект, спрос, решения владельца | `core/pricing.md` | `../domain/pricing-research.md` |
-| Бизнес-идея ассистента покрытия ДМС — зачем, для кого, требования владельца; эталон для сверки решений | `core/coverage-assistant-vision.md` | `../plans/coverage-roadmap.md` |
+| Бизнес-идея ассистента покрытия — эталон для сверки решений | `core/coverage-assistant-vision.md` | `../plans/coverage-roadmap.md` |
 <!-- GENERATED:decision-tree END -->
 
 ## Always-on docs (Tier 0/1)

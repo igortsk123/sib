@@ -1,7 +1,7 @@
 ---
 tier: 1
 topic: coverage-assistant-vision
-scope: Бизнес-идея ассистента покрытия ДМС — зачем, для кого, требования владельца; эталон для сверки решений
+scope: Бизнес-идея ассистента покрытия — эталон для сверки решений
 updated: 2026-07-25
 source: manual
 importance: critical

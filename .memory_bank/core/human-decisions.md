@@ -1,7 +1,7 @@
 ---
 tier: 1
 topic: human-decisions
-scope: Список решений, которые принимает ТОЛЬКО владелец — остальное агент решает сам
+scope: Решения ТОЛЬКО владельца — остальное агент решает сам
 tier2: ../domain/product-spec.md
 updated: 2026-07-23
 importance: high

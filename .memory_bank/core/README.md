@@ -17,13 +17,13 @@
 | `data-model.md` | data-model | Модель данных — сущности и ключевые поля | `../domain/product-spec.md` | 2026-07-23 |
 | `demand-semantics.md` | demand-semantics | Реклама — спрос и семантика Wordstat (сколько и что ищут) | `../domain/demand-semantics.md` | 2026-07-26 |
 | `email-ingestion.md` | email-ingestion | Забор писем — IMAP/Яндекс, двойная пересылка, дедупликация | `../domain/insurer-recognition.md` | 2026-07-22 |
-| `human-decisions.md` | human-decisions | Список решений, которые принимает ТОЛЬКО владелец — остальное агент решает сам | `../domain/product-spec.md` | 2026-07-23 |
+| `human-decisions.md` | human-decisions | Решения ТОЛЬКО владельца — остальное агент решает сам | `../domain/product-spec.md` | 2026-07-23 |
 | `lessons.md` | lessons | Перед планированием — уроки; что пробовали и что НЕ сработало, отброшенные подходы | `../anti-patterns.md` | 2026-07-25 |
 | `recognition.md` | recognition | Распознавание — извлечение текста, поля, confidence, ручная проверка | `../domain/recognition-architecture.md` | 2026-07-26 |
 | `roles-and-access.md` | roles-and-access | Роли, права доступа (RBAC), ПДн и безопасность | `../domain/product-spec.md` | 2026-07-22 |
-| `ads-campaigns.md` | ads-campaigns | Рекламные кампании Директа для sib — статус, структура, запуск/остановка | `../domain/ads-campaigns-structure.md` | 2026-07-26 |
+| `ads-campaigns.md` | ads-campaigns | Кампании Директа — статус, структура, лендинг, запуск | `../domain/ads-campaigns-structure.md` | 2026-07-26 |
 | `pricing.md` | pricing | Ценообразование сервиса и QR-допродажи — вилки РФ, эффект, спрос, решения владельца | `../domain/pricing-research.md` | 2026-07-23 |
-| `coverage-assistant-vision.md` | coverage-assistant-vision | Бизнес-идея ассистента покрытия ДМС — зачем, для кого, требования владельца; эталон для сверки решений | `../plans/coverage-roadmap.md` | 2026-07-25 |
+| `coverage-assistant-vision.md` | coverage-assistant-vision | Бизнес-идея ассистента покрытия — эталон для сверки решений | `../plans/coverage-roadmap.md` | 2026-07-25 |
 <!-- GENERATED:core-registry END -->
 
 > Глоссарий ДМС — `../glossary.md` (Tier 1). Реестр и decision tree в INDEX регенерирует

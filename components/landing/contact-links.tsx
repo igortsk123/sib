@@ -11,13 +11,17 @@ import { Button } from "@/components/ui/button"
 const CONTACTS = [
   { key: "tg", label: "Telegram", value: "@igortsk", href: "tg://resolve?domain=igortsk" },
   { key: "wa", label: "WhatsApp", value: "+7-923-407-9168", href: "https://api.whatsapp.com/send?phone=79234079168" },
-  { key: "max", label: "MAX", value: "+7-923-409-7976", href: "https://max.ru" },
+  // у MAX нет диплинка по номеру — ведём в веб-мессенджер и копируем номер в буфер
+  { key: "max", label: "MAX", value: "+7-923-409-7976", href: "https://web.max.ru" },
 ]
 
 export function ContactLinks({ compact = false }: { compact?: boolean }) {
   function click(key: string) {
     trackGoal("lead") // клик по контакту = лид (на этой цели строится оплата за конверсии)
     trackGoal(`contact_${key}`)
+    if (key === "max" && typeof navigator !== "undefined" && navigator.clipboard) {
+      void navigator.clipboard.writeText("+79234097976").catch(() => {})
+    }
   }
 
   if (compact) {
