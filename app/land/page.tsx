@@ -168,8 +168,8 @@ export default function LandingPage() {
             <thead>
               <tr className="border-b border-border text-left text-muted-foreground">
                 <th className="py-2 pr-4 font-medium">Писем ДМС в месяц</th>
-                <th className="py-2 pr-4 font-medium">Опция 1 · Реестр</th>
-                <th className="py-2 font-medium">+ Опция 2 · ИИ-помощник</th>
+                <th className="py-2 pr-4 font-medium">Опция 1. Реестр</th>
+                <th className="py-2 font-medium">+ Опция 2. ИИ-помощник</th>
               </tr>
             </thead>
             <tbody>
