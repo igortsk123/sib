@@ -15,6 +15,9 @@ export type ParsingEntry = { doc: string; how: string }
 
 export type RecognitionMap = {
   parsing: ParsingEntry[]
+  /** Исключения распознавания — правила владельца (пример: «направление с „Гарантируем оплату“ = вид ГП»).
+   *  Авто-сверка (review_sweep) подставляет их в промпт LLM для этой страховой. */
+  exceptions: string[]
   registryUrl: string | null
   registryNote: string | null
   programs: { name: string; rules: number }[]
@@ -57,6 +60,9 @@ export async function recognitionMap(insurerId: string): Promise<RecognitionMap>
 
   return {
     parsing,
+    exceptions: Array.isArray(raw.recognitionExceptions)
+      ? (raw.recognitionExceptions as unknown[]).filter((x): x is string => typeof x === "string")
+      : [],
     registryUrl: typeof raw.registryUrl === "string" ? raw.registryUrl : null,
     registryNote: typeof raw.registryNote === "string" ? raw.registryNote : null,
     programs: programs.map((p) => ({ name: p.name, rules: Number(p.rules) })),

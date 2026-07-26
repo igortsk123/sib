@@ -111,6 +111,20 @@ export default async function InsurerPage({ params }: { params: Promise<{ id: st
             )}
           </section>
 
+          {recog.exceptions.length > 0 && (
+            <section>
+              <h3 className="mb-2 text-sm font-medium">Исключения распознавания (правила владельца)</h3>
+              <ul className="flex list-disc flex-col gap-1 pl-5 text-sm">
+                {recog.exceptions.map((e, i) => (
+                  <li key={i}>{e}</li>
+                ))}
+              </ul>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Авто-сверка учитывает эти правила при каждом прогоне очереди «проверить».
+              </p>
+            </section>
+          )}
+
           <section>
             <h3 className="mb-2 text-sm font-medium">Реестр правил на сайте страховой</h3>
             {recog.registryUrl ? (
