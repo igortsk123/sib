@@ -12,7 +12,6 @@ const CONTACTS = [
   { key: "tg", label: "Telegram", value: "@igortsk", href: "tg://resolve?domain=igortsk" },
   { key: "wa", label: "WhatsApp", value: "+7-923-407-9168", href: "https://api.whatsapp.com/send?phone=79234079168" },
   { key: "max", label: "MAX", value: "+7-923-409-7976", href: "https://max.ru" },
-  { key: "tel", label: "Позвонить", value: "+7-923-409-7976", href: "tel:+79234097976" },
 ]
 
 export function ContactLinks({ compact = false }: { compact?: boolean }) {
@@ -45,8 +44,7 @@ export function ContactLinks({ compact = false }: { compact?: boolean }) {
         ))}
       </div>
       <p className="text-xs text-muted-foreground">
-        Пишите напрямую: Telegram <b>@igortsk</b> · WhatsApp <b>+7-923-407-9168</b> · MAX <b>+7-923-409-7976</b> ·
-        тел. <b>+7-923-409-7976</b>
+        Пишите напрямую: Telegram <b>@igortsk</b> · WhatsApp <b>+7-923-407-9168</b> · MAX <b>+7-923-409-7976</b>
       </p>
     </div>
   )
