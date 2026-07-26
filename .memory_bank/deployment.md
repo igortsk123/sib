@@ -22,6 +22,9 @@ status: working
   (postgres:16-alpine) → `127.0.0.1:5434`, том `/opt/sib-db-data`. Оба `--restart unless-stopped`.
 - Чекаут: **`/opt/sib`** (git, ветка main, deploy-ключ `~/.ssh/sib_deploy`, алиас `github-sib`).
 - Окружение контейнера: **`/opt/sib.env`** (600) — `DATABASE_URL` (на `sib-db`), `NEXT_PUBLIC_APP_URL`.
+- ⚡ **БД: `ALTER DATABASE sib SET jit = off`** (D35, 2026-07-26) — на малых данных JIT-компиляция
+  съедала ~1.2с на тяжёлых агрегатах (сводка покрытия 1327→59 мс). Настройка живёт В БД (переживает
+  рестарты контейнера); при пересоздании БД с нуля — ВЫПОЛНИТЬ ЗАНОВО.
 - nginx: `/etc/nginx/sites-available/sib.docon.pro` → `proxy_pass 127.0.0.1:3006`, TLS Let's Encrypt
   (certbot, авто-renew). HTTP→HTTPS 301. `client_max_body_size 25m` (вложения писем).
 
@@ -66,6 +69,6 @@ status: working
   sup-frontend:3002, siberian:3001, strapi:1337. sib занял **3006 / 5434 / sib-net** — не пересекается.
 
 ## Follow-up (прод-устойчивость)
-- [ ] Бэкап `sib-db` (как `sup2-db-backup.sh` + restore-drill) — добавить при первых реальных данных.
+- [x] Бэкап `sib-db` — ✅ `sib-backup.timer` ежедневно 03:40 (`/usr/local/bin/sib-db-backup.sh` → `/opt/sib-backups/`, 600, ротация 14д; D34). Restore-drill — при случае.
 - [ ] Перенести почтовые/OpenAI/Inngest env в `/opt/sib.env` по мере появления срезов.
 - [ ] Долгосрочное размещение ПДн / оператор данных — решение владельца (ADR D4).
