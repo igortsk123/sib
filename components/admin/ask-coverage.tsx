@@ -8,16 +8,17 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 
+import { CoverageChat } from "./coverage-chat"
 import { GuaranteeRequest } from "./guarantee-request"
 
 // Вопрос «можно ли делать?» в карточке пациента (фаза Ф-A). Врач или регистратура вводит
 // услугу (и сумму, если есть) — ответ мгновенный по гейтам, с пунктами документов.
 const VERDICT: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
   yes: { label: "ДА, покрыто", variant: "default" },
-  no: { label: "НЕТ", variant: "destructive" },
+  no: { label: "НЕТ, не покрыто", variant: "destructive" },
   approval: { label: "НУЖНО СОГЛАСОВАНИЕ", variant: "secondary" },
   need_guarantee: { label: "ЗАПРОСИТЬ ГАРАНТИЙНОЕ ПИСЬМО", variant: "secondary" },
-  unknown: { label: "НЕТ ЯВНОГО ОТВЕТА", variant: "outline" },
+  unknown: { label: "В ПРАВИЛАХ НЕ НАЙДЕНО — ЗАПРОСИТЕ ГП", variant: "outline" },
 }
 
 export function AskCoverage({ patientKey }: { patientKey: string }) {
@@ -35,6 +36,13 @@ export function AskCoverage({ patientKey }: { patientKey: string }) {
     e.preventDefault()
     start(async () => {
       setResult(await askCoverage({ patientKey, serviceText: service, amount: parsedAmount }))
+    })
+  }
+
+  // Клик по тегу-уточнению (условие выполняется / ни одно) → окончательный вердикт.
+  function clarify(condition: string, satisfied: boolean) {
+    start(async () => {
+      setResult(await askCoverage({ patientKey, serviceText: service, amount: parsedAmount, clarify: { condition, satisfied } }))
     })
   }
 
@@ -106,9 +114,25 @@ export function AskCoverage({ patientKey }: { patientKey: string }) {
                 </ul>
               </details>
             )}
-            {(result.answer.verdict === "need_guarantee" || result.answer.verdict === "approval") && (
+            {(result.answer.clarifications?.length ?? 0) > 0 && (
+              <div className="flex flex-col gap-2 rounded-md border border-border bg-muted/30 p-3">
+                <p className="text-xs font-medium">Уточните — от этого зависит окончательный ответ. Что верно?</p>
+                <div className="flex flex-wrap gap-2">
+                  {result.answer.clarifications!.map((c, i) => (
+                    <Button key={i} type="button" size="sm" variant="outline" disabled={pending} onClick={() => clarify(c.condition, true)}>
+                      ✓ {c.condition.length > 90 ? `${c.condition.slice(0, 90)}…` : c.condition}
+                    </Button>
+                  ))}
+                  <Button type="button" size="sm" variant="secondary" disabled={pending} onClick={() => clarify("", false)}>
+                    ничего из перечисленного
+                  </Button>
+                </div>
+              </div>
+            )}
+            {["need_guarantee", "approval", "unknown", "no"].includes(result.answer.verdict) && (
               <GuaranteeRequest patientKey={patientKey} serviceText={service} amount={parsedAmount} />
             )}
+            <CoverageChat patientKey={patientKey} />
           </div>
         )}
       </CardContent>

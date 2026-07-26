@@ -142,3 +142,45 @@ describe("rulesForService", () => {
     expect(found).toHaveLength(1)
   })
 })
+
+describe("определённые ответы (владелец 26.07): catch-all и уточнения", () => {
+  const catchAll = rule({
+    servicePattern: "услуги не предусмотренные договором программой",
+    verdict: "excluded",
+    clause: "п. 5.2 а)",
+    scopeLevel: "insurer",
+  })
+
+  it("услуга не названа + есть сноска «непредусмотренное не покрывается» → чёткий НЕТ с пунктом", () => {
+    const a = answerFromRules(state({}), [catchAll], "имплантация зуба", null, null)
+    expect(a.verdict).toBe("no")
+    expect(a.needsLlm).toBe(false)
+    expect(a.reasons.join(" ")).toContain("5.2")
+    expect(a.reasons.join(" ")).toContain("не предусмотренные")
+  })
+
+  it("незнакомая формулировка услуги → не слепой НЕТ, а LLM/«не найдено»", () => {
+    const a = answerFromRules(state({}), [catchAll], "фотодинамическая абляция", null, null)
+    expect(a.verdict).toBe("unknown")
+    expect(a.needsLlm).toBe(true)
+  })
+
+  it("узкие исключения (аптеки/организации) catch-all-ом не считаются", () => {
+    const narrow = rule({ servicePattern: "лекарства в аптеке не предусмотренной договором", verdict: "excluded" })
+    const a = answerFromRules(state({}), [narrow], "имплантация зуба", null, null)
+    expect(a.verdict).toBe("unknown")
+  })
+
+  it("conditional-правило отдаёт уточнения-теги; подтверждение условия → ДА", () => {
+    const cond = rule({ verdict: "conditional", conditionText: "при острой боли" })
+    const first = answerFromRules(state({}), [cond], "удаление зуба", null, null)
+    expect(first.clarifications?.[0]?.condition).toBe("при острой боли")
+
+    const yes = answerFromRules(state({}), [cond], "удаление зуба", null, null, { condition: "при острой боли", satisfied: true })
+    expect(yes.verdict).toBe("yes")
+    expect(yes.reasons.join(" ")).toContain("подтверждено сотрудником")
+
+    const no = answerFromRules(state({}), [cond], "удаление зуба", null, null, { condition: "", satisfied: false })
+    expect(no.verdict).toBe("need_guarantee")
+  })
+})

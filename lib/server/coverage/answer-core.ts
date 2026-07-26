@@ -22,7 +22,13 @@ export type CoverageAnswer = {
   matchedRules: ResolvedRule[]
   /** Детерминированных данных не хватило — нужен LLM с выжимкой правил. */
   needsLlm: boolean
+  /** Вердикт зависит от условий — регистратура кликает подходящее и получает окончательный
+   *  ответ (владелец 26.07: «уточнения тегами: боль острая/не острая — от этого зависит»). */
+  clarifications?: { clause: string; condition: string }[]
 }
+
+/** Ответ сотрудника на уточнение: какое условие правила выполняется (или ни одно). */
+export type Clarify = { condition: string; satisfied: boolean }
 
 const KIND_TO_CLASSES: Record<string, string[]> = {
   имплантация: ["имплантация"],
@@ -61,6 +67,25 @@ export function rulesForService(rules: ResolvedRule[], serviceText: string): Res
   })
 }
 
+/**
+ * Правило-«сноска»: «услуги, не предусмотренные программой/договором, не покрываются».
+ * Есть у большинства СК (Альфа п.5.2а, Зетта п.4.4.1.1, ЭГ п.5.2.2, РГС сноска 55, Ингос п.2.7).
+ * С ним «услуга в правилах не названа» превращается в ОПРЕДЕЛЁННЫЙ «НЕТ» с пунктом
+ * (требование владельца: регистратура должна видеть чёткое да/нет, а не «нет явного ответа»).
+ */
+export function catchAllRule(rules: ResolvedRule[]): ResolvedRule | null {
+  return (
+    rules.find((r) => {
+      if (r.verdict !== "excluded") return false
+      const p = (r.servicePattern ?? "").toLowerCase()
+      if (!/не предусмотренн/.test(p)) return false
+      if (!/программ|договор/.test(p)) return false
+      // узкие исключения про клиники/аптеки/лекарства — не общий catch-all по услугам
+      return !/организаци|аптек|лекарствен|рецепт/.test(p)
+    }) ?? null
+  )
+}
+
 /** Сумма из лимита правила, если лимит денежный («15000», «15 000 руб», «1 000 000»). */
 export function moneyLimit(rule: ResolvedRule): number | null {
   const raw = rule.limitAmount ?? ""
@@ -76,6 +101,7 @@ export function answerFromRules(
   serviceText: string,
   amount: number | null,
   fallbackProgram: string | null,
+  clarify?: Clarify,
 ): CoverageAnswer {
   const reasons: string[] = []
   const warnings: string[] = []
@@ -120,14 +146,36 @@ export function answerFromRules(
     }
   }
 
+  const cite = (r: ResolvedRule) => `${r.clause ?? "—"} (${r.documentTitle})`
+
   // Гейт 3: правила программы.
   const matched = rulesForService(rules, serviceText)
   if (matched.length === 0) {
+    // Тип услуги словарю ЗНАКОМ (это не опечатка/жаргон), правил на него нет, а у страховой
+    // есть пункт-сноска «непредусмотренное не покрывается» → определённый НЕТ с пунктом.
+    const knownKind = serviceKinds(serviceText.toLowerCase().replace(/ё/g, "е")).size > 0
+    const ca = catchAllRule(rules)
+    if (knownKind && ca) {
+      return {
+        verdict: "no",
+        reasons: [
+          ...reasons,
+          `услуга «${serviceText}» в правилах программы прямо не названа`,
+          `${ca.clause ?? "пункт правил"}: услуги, не предусмотренные программой/договором, не покрываются — ${cite(ca)}. Оплата возможна только по отдельному согласованию (запросить гарантийное письмо)`,
+        ],
+        warnings,
+        matchedRules: [ca],
+        needsLlm: false,
+      }
+    }
     return {
       verdict: "unknown",
-      reasons: [...reasons, "в правилах программы услуга явно не названа"],
+      reasons: [
+        ...reasons,
+        `услуга «${serviceText}» в правилах не найдена${ca ? "" : ", пункта-сноски о непредусмотренных услугах у этой страховой тоже нет"} — запросите гарантийное письмо у страховой`,
+      ],
       warnings,
-      matchedRules: [],
+      matchedRules: ca ? [ca] : [],
       needsLlm: true,
     }
   }
@@ -135,7 +183,6 @@ export function answerFromRules(
   // Порядок силы: правило программы раньше правила страховой (rules уже так отсортированы),
   // внутри — самый строгий вердикт по конкретной услуге виден первым в matched.
   const top = matched[0]
-  const cite = (r: ResolvedRule) => `${r.clause ?? "—"} (${r.documentTitle})`
 
   // Гейт 4: денежный лимит, если задана сумма.
   if (amount != null) {
@@ -153,6 +200,27 @@ export function answerFromRules(
     }
   }
 
+  // Уточнение от сотрудника (клик по тегу условия) — окончательный вердикт.
+  if (clarify) {
+    const rule = matched.find((r) => (r.conditionText ?? "") === clarify.condition) ?? top
+    if (clarify.satisfied && clarify.condition) {
+      return {
+        verdict: "yes",
+        reasons: [...reasons, `условие «${clarify.condition}» подтверждено сотрудником → покрыто — ${cite(rule)}`],
+        warnings,
+        matchedRules: [rule],
+        needsLlm: false,
+      }
+    }
+    return {
+      verdict: "need_guarantee",
+      reasons: [...reasons, `условия правил не выполняются (по ответу сотрудника) — оплата только по отдельному согласованию, запросите гарантийное письмо${rule.conditionText ? `; условие было: «${rule.conditionText}» — ${cite(rule)}` : ""}`],
+      warnings,
+      matchedRules: [rule],
+      needsLlm: false,
+    }
+  }
+
   const map: Record<string, CoverageAnswer["verdict"]> = {
     covered: "yes",
     excluded: "need_guarantee",
@@ -166,12 +234,21 @@ export function answerFromRules(
       : top.verdict === "excluded"
         ? " — услуга исключена из программы; оплата возможна только по отдельному согласованию (запросить гарантийное письмо)"
         : ""
+
+  // Условные правила по этой услуге → предложить уточнения-теги (клик = окончательный ответ).
+  const conditional = matched.filter((r) => r.verdict === "conditional" && (r.conditionText ?? "").trim())
+  const clarifications = conditional.slice(0, 4).map((r) => ({
+    clause: r.clause ?? "—",
+    condition: (r.conditionText ?? "").trim(),
+  }))
+
   return {
     verdict,
     reasons: [...reasons, `${top.servicePattern ?? top.serviceClass}: ${verdictRu(top.verdict)}${detail} — ${cite(top)}`],
     warnings,
     matchedRules: matched.slice(0, 5),
     needsLlm: false,
+    ...(clarifications.length ? { clarifications } : {}),
   }
 }
 

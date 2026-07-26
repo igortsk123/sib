@@ -52,7 +52,7 @@ describe("composeGuaranteeRequest", () => {
   it("без суммы строка стоимости не выводится; без полиса — «уточняется»", () => {
     const d = composeGuaranteeRequest({ ...base, amount: null, policyNumber: null })
     expect(d.body).not.toContain("стоимость")
-    expect(d.body).toContain("Полис: уточняется")
+    expect(d.body).toContain("Полис ДМС: уточняется")
   })
 })
 
