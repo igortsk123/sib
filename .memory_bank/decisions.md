@@ -736,7 +736,9 @@ lib/metrika.ts, domain/ads-campaigns-structure.md, ACCESS.md (ids кампани
 в LLM каждый ход уходит ПОЛНЫЙ digest правил + хвост истории (24); без LLM — детерминированный
 ответ answer-core тем же вердиктом (обёртка §5). Релевантность: GENERIC_WORDS-стоп-слова в
 rulesForService + промпт «не цитируй правила про другие услуги». Старый виджет удалён
-(action `askCoverage` оставлен как API). **Влияет на:** components/admin/coverage-chat.tsx,
+(action `askCoverage` оставлен как API). Дополнения 26.07: **жирный** markdown в ответах ИИ
+рендерится; откреплённый пациент → мгновенный детерминированный ответ «откреплён с даты» БЕЗ
+вызова LLM (правило владельца). **Влияет на:** components/admin/coverage-chat.tsx,
 lib/server/coverage/{chat,actions,answer,answer-core}.ts, e2e.
 
 ## D42 — 2026-07-26 — Экспорт «Дентал Про» по умолчанию; данные списков — из преамбулы и фолбэков
@@ -747,7 +749,8 @@ lib/server/coverage/{chat,actions,answer,answer-core}.ts, e2e.
 coverage_to = дата письма; «Вид изменяемых данных» → doc_type=other; (2) backfill только NULL
 (600 дозаполнено, 575 → прочее); (3) экспорт: dental — шаблон по умолчанию (?template=full —
 полный), ГП-строки жирным с датой=validUntil, программа-фолбэк из последнего прикрепления
-пациента. Программы 115 старых откреплений не восстановимы (прикрепление было до сбора почты) —
+пациента; последним добавлен столбец «Статус» (Аннулировать/Открепить/…, метки STATUS_LABELS,
+26.07). Программы 115 старых откреплений не восстановимы (прикрепление было до сбора почты) —
 честно пусто. **Влияет на:** .mail-intake/extract_dataset.py, backfill_list_fields.py,
 app/api/registry/export/route.ts, lib/server/registry/queries.ts.
 
