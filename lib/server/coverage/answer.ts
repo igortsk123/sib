@@ -128,6 +128,22 @@ export async function chatAboutCoverage(args: {
   const card = await patientCard(args.patientKey, args.orgId)
   if (!card) return { ok: false, error: "Пациент не найден" }
 
+  // Пациент ОТКРЕПЛЁН → мгновенный детерминированный ответ, в LLM не ходим (владелец 26.07:
+  // «надо сразу писать, что откреплён»). Токены не тратим, ответ однозначный.
+  if (!card.state.attached) {
+    const since = card.state.since ? ` с ${new Date(card.state.since).toLocaleDateString("ru")}` : ""
+    const gpNote = card.state.activeGuarantees.length
+      ? `\n⚠ При этом в реестре есть действующее гарантийное письмо (${card.state.activeGuarantees.length} шт.) — уточните у страховой, действует ли оно после открепления.`
+      : ""
+    return {
+      ok: true,
+      answer:
+        `Пациент ОТКРЕПЛЁН${since} — программа ДМС не действует, страховая оплату не гарантирует.` +
+        gpNote +
+        `\nЕсли пациент прикрепят заново, запись появится в реестре с новым письмом.`,
+    }
+  }
+
   const coverage = card.state.insuranceCompanyId
     ? await resolveCoverage({
         insuranceCompanyId: card.state.insuranceCompanyId,
