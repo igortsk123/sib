@@ -104,7 +104,7 @@ export default async function LandingPage({
         </div>
       </section>
 
-      {/* Отраслевой факт */}
+      {/* Отраслевой факт — все цифры дословно из источника (сверено 26.07) */}
       <section className="rounded-xl border border-primary/40 bg-muted/30 p-5">
         <p className="text-lg font-medium">
           Отраслевой ориентир: системная работа с гарантийными письмами снижает долю отказов
@@ -114,6 +114,17 @@ export default async function LandingPage({
         <p className="mt-2 text-sm text-muted-foreground">
           DocON делает эту системную работу автоматически: ни одно письмо не теряется, сроки и
           лимиты под контролем, спорные случаи уходят запросом в страховую до оказания услуги.
+        </p>
+        <p className="mt-2 text-xs text-muted-foreground">
+          Источник:{" "}
+          <a
+            href="https://medbusiness.space/blog/management/dms-i-korporativnye-programmy-kliniki-kak-ne-rabotat-v-minus/"
+            target="_blank"
+            rel="noreferrer nofollow"
+            className="underline underline-offset-2 hover:no-underline"
+          >
+            «ДМС и корпоративные программы клиники: как не работать в минус», medbusiness.space
+          </a>
         </p>
       </section>
 
