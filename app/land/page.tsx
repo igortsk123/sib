@@ -15,7 +15,7 @@ import {
 import { ContactLinks } from "@/components/landing/contact-links"
 
 export const metadata: Metadata = {
-  title: "DocON — перестаньте терять деньги на невыплатах ДМС",
+  title: "DocON: перестаньте терять деньги на невыплатах ДМС",
   description:
     "Гарантийные письма страховых сами превращаются в реестр из почты клиники. ИИ-помощник отвечает, покроет ли страховая услугу. Работает вместе с вашей МИС.",
   robots: { index: true, follow: true },
@@ -27,14 +27,14 @@ export const metadata: Metadata = {
 
 const PAINS = [
   { icon: MailX, title: "Письма тонут в почте", text: "Гарантийные письма, прикрепления и открепления теряются среди рассылок и спама." },
-  { icon: Clock, title: "15–25 минут на письмо", text: "Ручной разбор и перенос в МИС занимают часы работы регистратуры каждый день." },
-  { icon: ArchiveX, title: "Отказ в оплате", text: "Услуга оказана, а действующего гарантийного письма нет — страховая не платит." },
+  { icon: Clock, title: "15-25 минут на письмо", text: "Ручной разбор и перенос в МИС занимают часы работы регистратуры каждый день." },
+  { icon: ArchiveX, title: "Отказ в оплате", text: "Услуга оказана, а действующего гарантийного письма нет. Страховая не платит." },
   { icon: UserX, title: "Пациент уходит", text: "Не дождавшись согласования, пациент не возвращается за продолжением лечения." },
 ]
 
 const STEPS = [
-  { n: "1", title: "Подключаете почту", text: "Ящик, куда пишут страховые. Строго режим чтения — письма не изменяются и не удаляются." },
-  { n: "2", title: "Реестр строится сам", text: "ФИО, полис, услуги, сроки, лимиты — из тела письма, PDF, Word и архивов с паролем." },
+  { n: "1", title: "Подключаете почту", text: "Ящик, куда пишут страховые. Только чтение: письма не изменяются и не удаляются." },
+  { n: "2", title: "Реестр строится сам", text: "ФИО, полис, услуги, сроки и лимиты берутся из тела письма, PDF, Word и архивов с паролем." },
   { n: "3", title: "Отвечаете за секунды", text: "Регистратура видит: покроет ли страховая услугу, действует ли письмо, надо ли запросить новое." },
 ]
 
@@ -51,7 +51,7 @@ export default function LandingPage() {
         </h1>
         <p className="max-w-2xl text-lg text-muted-foreground">
           DocON закрывает невыплаты ДМС: письма страховых из почты клиники сами превращаются
-          в проверяемый реестр, а ИИ-помощник за секунды отвечает — покроет ли страховая услугу.
+          в проверяемый реестр, а ИИ-помощник за секунды отвечает, покроет ли страховая услугу.
           Работает вместе с вашей МИС.
         </p>
         <ContactLinks />
@@ -76,7 +76,7 @@ export default function LandingPage() {
         </dl>
       </header>
 
-      {/* БОЛИ — карточки */}
+      {/* Боли */}
       <section className="flex flex-col gap-5">
         <h2 className="text-2xl font-semibold">Как клиники теряют деньги на ДМС</h2>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -92,7 +92,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* КАК РАБОТАЕТ — 3 шага */}
+      {/* Как работает */}
       <section className="flex flex-col gap-5">
         <h2 className="text-2xl font-semibold">Как это работает</h2>
         <div className="grid gap-4 sm:grid-cols-3">
@@ -110,14 +110,14 @@ export default function LandingPage() {
 
       {/* ОПЦИЯ 1 */}
       <section className="flex flex-col gap-4">
-        <h2 className="text-2xl font-semibold">Две опции — прозрачно</h2>
+        <h2 className="text-2xl font-semibold">Что вы получаете</h2>
         <div className="rounded-xl border border-border bg-card p-5">
           <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Опция 1</p>
           <h3 className="mt-1 text-xl font-semibold">Единый реестр писем ДМС</h3>
           <div className="mt-4 grid gap-3 sm:grid-cols-3">
             {[
-              [Inbox, "Все письма — в одной системе", "Гарантийные, прикрепления, открепления, аннулирования: из тела, PDF, Word, архивов."],
-              [Zap, "Секунды вместо 15–25 минут", "Администраторы занимаются пациентами, а не разбором почты."],
+              [Inbox, "Все письма в одной системе", "Гарантийные, прикрепления, открепления, аннулирования: из тела, PDF, Word, архивов."],
+              [Zap, "Секунды вместо 15-25 минут", "Администраторы занимаются пациентами, а не разбором почты."],
               [FileSpreadsheet, "Удобный импорт в МИС", "Поиск по пациенту и полису, карточка с оригиналами, выгрузка в Excel."],
             ].map(([Icon, t, d]) => {
               const I = Icon as typeof Inbox
@@ -132,20 +132,20 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* ОПЦИЯ 2 — диалог-примеры */}
+        {/* Опция 2 */}
         <div className="rounded-xl border-2 border-primary/40 bg-card p-5">
           <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Опция 2</p>
           <h3 className="mt-1 flex items-center gap-2 text-xl font-semibold">
             <Bot className="size-5 text-primary" aria-hidden /> ИИ-помощник врача и регистратуры
           </h3>
           <p className="mt-2 text-sm text-muted-foreground">
-            Любой вопрос — ответ по правилам страховой конкретного застрахованного, с пунктом документа:
+            Задаёте вопрос и получаете ответ по правилам страховой конкретного пациента, с пунктом документа:
           </p>
           <div className="mt-4 flex flex-col gap-3">
             {[
-              ["Удаление зуба 3.7 пациенту с полисом СОГАЗ?", "Да, покрыто — п. 2.12 программы, включая ретинированные зубы."],
-              ["Имплантация за 45 000 ₽?", "Не входит в программу (п. 5.2а) — нужно запросить гарантийное письмо. Черновик запроса готов."],
-              ["Лечение кариеса, пациент был у нас в марте?", "Пациент откреплён с 12.05 — оплата по ДМС не гарантируется."],
+              ["Удаление зуба 3.7 пациенту с полисом СОГАЗ?", "Да, покрыто по п. 2.12 программы, включая ретинированные зубы."],
+              ["Имплантация за 45 000 ₽?", "Не входит в программу (п. 5.2а). Нужно запросить гарантийное письмо, черновик уже готов."],
+              ["Лечение кариеса, пациент был у нас в марте?", "Пациент откреплён с 12.05, оплата по ДМС не гарантируется."],
             ].map(([q, a]) => (
               <div key={q} className="flex flex-col gap-1.5">
                 <p className="ml-auto max-w-[85%] rounded-lg bg-primary px-3 py-1.5 text-sm text-primary-foreground">{q}</p>
@@ -162,7 +162,7 @@ export default function LandingPage() {
 
       {/* ТАРИФЫ */}
       <section className="flex flex-col gap-4">
-        <h2 className="text-2xl font-semibold">Стоимость — одна понятная шкала</h2>
+        <h2 className="text-2xl font-semibold">Сколько стоит</h2>
         <div className="overflow-x-auto rounded-xl border border-border bg-card p-4">
           <table className="w-full min-w-[440px] text-sm">
             <thead>
@@ -192,11 +192,11 @@ export default function LandingPage() {
             </tbody>
           </table>
           <p className="mt-2 text-xs text-muted-foreground">
-            Объём писем считается автоматически в вашем же реестре — тариф всегда прозрачен.
+            Объём писем виден в вашем же реестре, так что тариф легко проверить.
           </p>
         </div>
         <p className="text-sm text-muted-foreground">
-          Подключение и настройка для первых клиник — 0 ₽. Одна невыплата страховой обычно дороже
+          Подключение и настройка для первых клиник: 0 ₽. Одна невыплата страховой обычно дороже
           месяца подписки.
         </p>
       </section>
@@ -207,7 +207,7 @@ export default function LandingPage() {
         <div>
           <h2 className="text-lg font-semibold">Безопасность данных</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Персональные и медицинские данные — по 152-ФЗ: почта клиники строго в режиме чтения,
+            Персональные и медицинские данные обрабатываются по 152-ФЗ: почта клиники строго в режиме чтения,
             оригиналы писем на защищённом сервере, доступ сотрудников по ролям.
           </p>
         </div>
@@ -219,7 +219,7 @@ export default function LandingPage() {
           <Search className="size-6 text-primary" aria-hidden /> Посмотрите на своих письмах
         </h2>
         <p className="text-sm text-muted-foreground">
-          Сначала — живое демо на вымышленных данных. Понравится — подключим почту вашей клиники
+          Сначала живое демо на вымышленных данных. Понравится: подключим почту вашей клиники
           и покажем то же самое на ваших письмах за 1 день.
         </p>
         <div className="flex flex-wrap items-center gap-3">

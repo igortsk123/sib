@@ -3,15 +3,15 @@
 import { trackGoal } from "@/lib/metrika"
 import { Button } from "@/components/ui/button"
 
-// Прямые контакты владельца — «минимум трений, это B2B» (решение 26.07).
+// Прямые контакты владельца: «минимум трений, это B2B» (решение 26.07).
 // РФ-специфика (проверено с ру-сервера): t.me/wa.me блокированы → Telegram через tg://-диплинк
 // (открывает приложение в обход веб-блока), WhatsApp через api.whatsapp.com (работает, 200),
-// MAX — номер текстом. Ники и номера ВСЕГДА дублируются текстом — человек найдёт вручную.
+// MAX: номер текстом. Ники и номера ВСЕГДА дублируются текстом, человек найдёт вручную.
 
 const CONTACTS = [
   { key: "tg", label: "Telegram", value: "@igortsk", href: "tg://resolve?domain=igortsk" },
   { key: "wa", label: "WhatsApp", value: "+7-923-407-9168", href: "https://api.whatsapp.com/send?phone=79234079168" },
-  // персональная ссылка профиля владельца (получена 26.07) — прямо в чат
+  // персональная ссылка профиля владельца (получена 26.07), ведёт прямо в чат
   { key: "max", label: "MAX", value: "+7-923-409-7976", href: "https://max.ru/u/f9LHodD0cOLNCk9w8ASRebnJy16g5FBLvifL1lspgVTwqusbiL0xYcC9r8Q" },
 ]
 
