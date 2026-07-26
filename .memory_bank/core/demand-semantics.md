@@ -1,7 +1,7 @@
 ---
 tier: 1
 topic: demand-semantics
-scope: Спрос и семантика для рекламы sib — сколько ищут и по каким фразам (Wordstat)
+scope: Реклама — спрос и семантика Wordstat (сколько и что ищут)
 tier2: ../domain/demand-semantics.md
 updated: 2026-07-26
 importance: high

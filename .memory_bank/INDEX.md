@@ -16,7 +16,7 @@ sib — агрегатор и распознавание гарантийных 
 | Архитектура — пайплайн обработки писем, стек, слои, фоновые задачи | `core/architecture.md` | `../domain/product-spec.md` |
 | Конвейер покрытия — как документы страховых превращаются в правила и попадают в карточку пациента | `core/coverage-pipeline.md` | `../guides/coverage-extraction-prompt.md` |
 | Модель данных — сущности и ключевые поля | `core/data-model.md` | `../domain/product-spec.md` |
-| Спрос и семантика для рекламы sib — сколько ищут и по каким фразам (Wordstat) | `core/demand-semantics.md` | `../domain/demand-semantics.md` |
+| Реклама — спрос и семантика Wordstat (сколько и что ищут) | `core/demand-semantics.md` | `../domain/demand-semantics.md` |
 | Забор писем — IMAP/Яндекс, двойная пересылка, дедупликация | `core/email-ingestion.md` | `../domain/insurer-recognition.md` |
 | Список решений, которые принимает ТОЛЬКО владелец — остальное агент решает сам | `core/human-decisions.md` | `../domain/product-spec.md` |
 | Перед планированием — уроки; что пробовали и что НЕ сработало, отброшенные подходы | `core/lessons.md` | `../anti-patterns.md` |

@@ -1,6 +1,6 @@
 ---
 tier: 2
-topic: demand-semantics
+topic: demand-semantics-details
 scope: Wordstat-семантика спроса под рекламу sib — кластеры, цифры/мес, рекомендации таргетинга
 tier1: ../core/demand-semantics.md
 updated: 2026-07-26
