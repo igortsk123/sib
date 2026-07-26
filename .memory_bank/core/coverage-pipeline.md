@@ -23,14 +23,14 @@ tier2: ../guides/coverage-extraction-prompt.md
 | Пациент | `guarantee_letter.patient_key` | sha256(ФИО+дата рождения), триггер + индекс |
 
 ## Автоматика (`sib-programs.service`, Пн 06:30)
-`poll_program_docs.py` (сверка sha; веб-страницы — по тексту без разметки) →
-`extract_doc_texts.py` (pdftotext постранично) → `carry_coverage_rules.py` (перенос правил на новую
-редакцию; изменившийся пункт → `needs_review`).
+`poll_program_docs.py` (sha) → `extract_doc_texts.py` → `carry_coverage_rules.py` (перенос правил;
+изменившийся пункт → `needs_review`) → `registry_watch.py` (D33: реестры сайтов СК из
+`insurance_company.rules.registryUrl`, LLM-нормализация названий, редакции НОВЕЕ нашей скачиваются
+и ждут экстракции). Онбординг новой СК/клиники — `../guides/onboarding.md`.
 
 ## Ручной шаг — экстракция (агент, без внешних LLM)
-Промпты по типу документа (A–E) и форме подачи (Ф1–Ф7) + чек-лист «новый источник» (13 пунктов):
-`guides/coverage-extraction-prompt.md`. Исходники прогонов — `guides/coverage-sql/`.
-Проверки: `tools/verify-coverage-rules.py` (по документу), `tools/audit-sources.py` (по процессу).
+Промпты A–E × Ф1–Ф7 + чек-лист источника: `guides/coverage-extraction-prompt.md`; прогоны —
+`guides/coverage-sql/`; проверки `tools/{verify-coverage-rules,audit-sources}.py`.
 
 ## Ответ «можно ли делать X за Y» (Ф-A, D30) и запрос ГП (Ф-D, D29)
 `resolve.ts`: строка письма → `normalize` → алиас → программы → правила (программа сильнее СК;
