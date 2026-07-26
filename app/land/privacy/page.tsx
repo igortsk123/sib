@@ -58,8 +58,8 @@ export default function PrivacyPage() {
         <h2 className="text-lg font-medium">Ваши права и контакты</h2>
         <p>
           Вы вправе запросить уточнение, блокирование или удаление своих данных, а также отозвать
-          согласие. Обращения — в Telegram{" "}
-          <a href="https://t.me/doconpro_bot" className="underline">@doconpro_bot</a>.
+          согласие. Обращения: Telegram <b>@igortsk</b> · WhatsApp <b>+7 923 407-91-68</b> ·
+          MAX <b>+7 923 409-71-76</b>.
         </p>
       </section>
     </main>

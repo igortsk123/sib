@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 
+import { ContactLinks } from "@/components/landing/contact-links"
 import { LeadForm } from "@/components/landing/lead-form"
 
 export const metadata: Metadata = {
@@ -26,6 +27,13 @@ export default function LandingPage() {
           открепления) распознаются и сводятся в реестр. Контроль согласований, сроков, лимитов
           и риска неоплаты. МИС менять не нужно.
         </p>
+        <ContactLinks />
+        <a
+          href="/demo"
+          className="w-fit rounded-md border border-border px-4 py-2 text-sm font-medium hover:bg-accent"
+        >
+          Открыть живое демо-реестра (вымышленные данные) →
+        </a>
       </header>
 
       <section className="grid gap-4 sm:grid-cols-3">
@@ -63,15 +71,16 @@ export default function LandingPage() {
       <section id="lead" className="flex flex-col gap-4 rounded-xl border border-border bg-muted/30 p-6">
         <h2 className="text-xl font-semibold">Демо на данных вашей клиники — за 1 день</h2>
         <p className="text-sm text-muted-foreground">
-          Покажем реестр на ваших реальных письмах: подключение — час, дальше всё само.
+          Быстрее всего — написать напрямую (Telegram/WhatsApp/MAX выше). Или оставьте контакт —
+          свяжемся сами:
         </p>
         <LeadForm />
       </section>
 
-      <footer className="flex flex-col gap-1 border-t border-border pt-6 text-xs text-muted-foreground">
+      <footer className="flex flex-col gap-2 border-t border-border pt-6 text-xs text-muted-foreground">
+        <ContactLinks compact />
         <p>ИП Шубина Юлия Александровна · ОГРНИП 325420500121439 · ИНН 420221376189</p>
         <p>
-          Связь: Telegram <a href="https://t.me/doconpro_bot" className="underline">@doconpro_bot</a> ·{" "}
           <a href="/land/privacy" className="underline">Политика конфиденциальности</a>
         </p>
       </footer>
