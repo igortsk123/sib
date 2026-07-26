@@ -21,6 +21,7 @@
 | `lessons.md` | lessons | Перед планированием — уроки; что пробовали и что НЕ сработало, отброшенные подходы | `../anti-patterns.md` | 2026-07-25 |
 | `recognition.md` | recognition | Распознавание — извлечение текста, поля, confidence, ручная проверка | `../domain/recognition-architecture.md` | 2026-07-26 |
 | `roles-and-access.md` | roles-and-access | Роли, права доступа (RBAC), ПДн и безопасность | `../domain/product-spec.md` | 2026-07-22 |
+| `ads-campaigns.md` | ads-campaigns | Рекламные кампании Директа для sib — статус, структура, запуск/остановка | `../domain/ads-campaigns-structure.md` | 2026-07-26 |
 | `pricing.md` | pricing | Ценообразование сервиса и QR-допродажи — вилки РФ, эффект, спрос, решения владельца | `../domain/pricing-research.md` | 2026-07-23 |
 | `coverage-assistant-vision.md` | coverage-assistant-vision | Бизнес-идея ассистента покрытия ДМС — зачем, для кого, требования владельца; эталон для сверки решений | `../plans/coverage-roadmap.md` | 2026-07-25 |
 <!-- GENERATED:core-registry END -->

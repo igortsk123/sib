@@ -23,6 +23,7 @@ sib — агрегатор и распознавание гарантийных 
 | Бизнес-контекст — зачем продукт, для кого, что в scope | `product_brief.md` | `domain/product-spec.md` |
 | Распознавание — извлечение текста, поля, confidence, ручная проверка | `core/recognition.md` | `../domain/recognition-architecture.md` |
 | Роли, права доступа (RBAC), ПДн и безопасность | `core/roles-and-access.md` | `../domain/product-spec.md` |
+| Рекламные кампании Директа для sib — статус, структура, запуск/остановка | `core/ads-campaigns.md` | `../domain/ads-campaigns-structure.md` |
 | Термины ДМС/страхования и проекта — единый источник консистентности | `glossary.md` | — |
 | Ценообразование сервиса и QR-допродажи — вилки РФ, эффект, спрос, решения владельца | `core/pricing.md` | `../domain/pricing-research.md` |
 | Бизнес-идея ассистента покрытия ДМС — зачем, для кого, требования владельца; эталон для сверки решений | `core/coverage-assistant-vision.md` | `../plans/coverage-roadmap.md` |
