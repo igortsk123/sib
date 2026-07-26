@@ -8,13 +8,13 @@ import {
   FileSpreadsheet,
   Inbox,
   MailX,
-  MonitorPlay,
   ShieldCheck,
   UserX,
   Zap,
 } from "lucide-react"
 
 import { ContactLinks } from "@/components/landing/contact-links"
+import { DemoBanner } from "@/components/landing/demo-banner"
 
 export const metadata: Metadata = {
   title: "DocON: перестаньте терять деньги на невыплатах ДМС",
@@ -42,18 +42,6 @@ const STEPS = [
   { n: "2", title: "Реестр строится сам", text: "ФИО, полис, услуги, сроки и лимиты берутся из тела письма, PDF, Word и архивов с паролем." },
   { n: "3", title: "Отвечаете за секунды", text: "Регистратура видит: покроет ли страховая услугу, действует ли письмо, надо ли запросить новое." },
 ]
-
-function DemoBanner() {
-  // Демо — главный CTA (владелец 26.07: «выдели это как баннер, это важно»)
-  return (
-    <a
-      href="/demo"
-      className="flex w-full items-center justify-center gap-3 rounded-xl bg-primary px-6 py-4 text-lg font-semibold text-primary-foreground shadow-lg transition hover:opacity-90"
-    >
-      <MonitorPlay className="size-6" aria-hidden /> Посмотреть демо-версию
-    </a>
-  )
-}
 
 export default async function LandingPage({
   searchParams,
@@ -124,7 +112,7 @@ export default async function LandingPage({
       </section>
 
       {/* Как работает */}
-      <section className="flex flex-col gap-5">
+      <section id="how" className="flex flex-col gap-5">
         <h2 className="text-center text-2xl font-semibold">Как это работает</h2>
         <div className="grid gap-4 sm:grid-cols-3">
           {STEPS.map((s) => (
@@ -164,7 +152,7 @@ export default async function LandingPage({
         </div>
 
         {/* Опция 2 */}
-        <div className="rounded-xl border-2 border-primary/40 bg-card p-5">
+        <div id="ai" className="rounded-xl border-2 border-primary/40 bg-card p-5">
           <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Опция 2</p>
           <h3 className="mt-1 flex items-center gap-2 text-xl font-semibold">
             <Bot className="size-5 text-primary" aria-hidden /> ИИ-помощник врача и регистратуры
@@ -192,7 +180,7 @@ export default async function LandingPage({
       </section>
 
       {/* ТАРИФЫ */}
-      <section className="flex flex-col gap-4">
+      <section id="pricing" className="flex flex-col gap-4">
         <h2 className="text-center text-2xl font-semibold">Сколько стоит</h2>
         <div className="overflow-x-auto rounded-xl border border-border bg-card p-4">
           <table className="w-full min-w-[440px] text-sm">

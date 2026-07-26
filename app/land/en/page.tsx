@@ -6,13 +6,13 @@ import {
   FileSpreadsheet,
   Inbox,
   MailX,
-  MonitorPlay,
   ShieldCheck,
   UserX,
   Zap,
 } from "lucide-react"
 
 import { ContactLinks } from "@/components/landing/contact-links"
+import { DemoBanner } from "@/components/landing/demo-banner"
 
 export const metadata: Metadata = {
   title: "DocON: stop losing money on unpaid insurance claims",
@@ -38,17 +38,6 @@ const STEPS = [
   { n: "3", title: "Answer in seconds", text: "The front desk sees whether the insurer covers a service, if the letter is valid, and when to request a new one." },
 ]
 
-function DemoBanner() {
-  return (
-    <a
-      href="/demo"
-      className="flex w-full items-center justify-center gap-3 rounded-xl bg-primary px-6 py-4 text-lg font-semibold text-primary-foreground shadow-lg transition hover:opacity-90"
-    >
-      <MonitorPlay className="size-6" aria-hidden /> View the live demo
-    </a>
-  )
-}
-
 export default function LandingPageEn() {
   return (
     <main className="mx-auto flex max-w-4xl flex-col gap-16 px-5 py-12">
@@ -64,7 +53,7 @@ export default function LandingPageEn() {
           collected into a clean registry, and an AI assistant answers in seconds whether a service
           is covered. Up and running in 7 days with any practice management system.
         </p>
-        <DemoBanner />
+        <DemoBanner label="View the live demo" />
         <ContactLinks />
         <a href="/land?lang=ru" className="text-xs text-muted-foreground underline underline-offset-2 hover:no-underline">
           Русская версия
@@ -209,7 +198,7 @@ export default function LandingPageEn() {
           your clinic&apos;s mailbox in read-only mode and show the registry on your own letters the next
           day. No PMS access, no software to install.
         </p>
-        <DemoBanner />
+        <DemoBanner label="View the live demo" />
         <p className="text-sm text-muted-foreground">Or message us directly, we reply fast:</p>
         <ContactLinks />
       </section>
