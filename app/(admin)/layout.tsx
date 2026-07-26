@@ -45,7 +45,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <a href="https://api.whatsapp.com/send?phone=79234079168" className="underline underline-offset-2">
             WhatsApp +7-923-407-9168
           </a>
-          {" · "}MAX +7-923-409-7976{" · тел. "}
+          {" · "}
+          <a href="https://max.ru" className="underline underline-offset-2">MAX +7-923-409-7976</a>
+          {" · тел. "}
           <a href="tel:+79234097976" className="underline underline-offset-2">+7-923-409-7976</a>
         </div>
       )}
