@@ -14,7 +14,7 @@ sib — агрегатор и распознавание гарантийных 
 |----------------|--------|--------|
 | Админка — реальные страницы, реестр, карточка, справочники, шаблоны, Excel-экспорт | `core/admin-panel.md` | `../domain/product-spec.md` |
 | Архитектура — пайплайн обработки писем, стек, слои, фоновые задачи | `core/architecture.md` | `../domain/product-spec.md` |
-| Конвейер покрытия — как документы страховых превращаются в правила и попадают в карточку пациента | `core/coverage-pipeline.md` | `../guides/coverage-extraction-prompt.md` |
+| Конвейер покрытия: документы страховых → правила → карточка пациента | `core/coverage-pipeline.md` | `../guides/coverage-extraction-prompt.md` |
 | Модель данных — сущности и ключевые поля | `core/data-model.md` | `../domain/product-spec.md` |
 | Реклама — спрос и семантика Wordstat (сколько и что ищут) | `core/demand-semantics.md` | `../domain/demand-semantics.md` |
 | Забор писем — IMAP/Яндекс, двойная пересылка, дедупликация | `core/email-ingestion.md` | `../domain/insurer-recognition.md` |
@@ -25,7 +25,7 @@ sib — агрегатор и распознавание гарантийных 
 | Роли, права доступа (RBAC), ПДн и безопасность | `core/roles-and-access.md` | `../domain/product-spec.md` |
 | Кампании Директа — статус, структура, лендинг, запуск | `core/ads-campaigns.md` | `../domain/ads-campaigns-structure.md` |
 | Термины ДМС/страхования и проекта — единый источник консистентности | `glossary.md` | — |
-| Ценообразование сервиса и QR-допродажи — вилки РФ, эффект, спрос, решения владельца | `core/pricing.md` | `../domain/pricing-research.md` |
+| Ценообразование и тарифы — решения владельца | `core/pricing.md` | `../domain/pricing-research.md` |
 | Бизнес-идея ассистента покрытия — эталон для сверки решений | `core/coverage-assistant-vision.md` | `../plans/coverage-roadmap.md` |
 <!-- GENERATED:decision-tree END -->
 

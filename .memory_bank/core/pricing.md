@@ -1,7 +1,7 @@
 ---
 tier: 1
 topic: pricing
-scope: Ценообразование сервиса и QR-допродажи — вилки РФ, эффект, спрос, решения владельца
+scope: Ценообразование и тарифы — решения владельца
 tier2: ../domain/pricing-research.md
 updated: 2026-07-23
 importance: med
