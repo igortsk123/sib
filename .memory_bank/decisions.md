@@ -516,7 +516,7 @@ LLM (`gpt-5.4-mini` через RU-прокси, strict jsonSchema) зовётс�
 о качестве данных (нераспознанный срок/объём ГП — «проверьте оригинал», фолбэк программы).
 **Почему:** скорость <2с и предсказуемость для регистратуры; LLM-затраты и галлюцинации — только на
 остаточных случаях. **Влияет на:** `lib/server/coverage/{answer-core,answer,actions}.ts`,
-`components/admin/ask-coverage.tsx`, карточка пациента.
+виджет «можно ли» на карточке пациента (26.07 заменён чатом — D41).
 
 ## [2026-07-26] D31. Классификатор типов: явный маркер ГП сильнее слова «открепл» из оговорки бланка
 
@@ -665,7 +665,7 @@ cost до миллиардов и включал JIT (56 функций, Inlinin
    клиника↔страховая (реквизиты: пациент/полис/услуги/стоимость/просьба гарантировать; в Sent
    клиники образцов нет — запросы шлются с внешнего mail.ru-ящика).
 **Влияет на:** answer-core (catchAllRule, Clarify, clarifications), answer.ts (rulesDigest,
-chatAboutCoverage), actions (clarify, coverageChat), ask-coverage/coverage-chat UI. Unit 75.
+chatAboutCoverage), actions (clarify), coverage-chat UI (26.07 → чат, D41). Unit 75.
 
 ## [2026-07-26] D38. Гарантийные письма → правила-ПРЕЦЕДЕНТЫ со сроками (авто)
 

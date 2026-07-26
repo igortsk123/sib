@@ -11,10 +11,10 @@
 
 | Файл | topic | Когда читать (scope) | Tier 2 | updated |
 |------|-------|----------------------|--------|---------|
-| `admin-panel.md` | admin-panel | Админка — реальные страницы, реестр, карточка, справочники, шаблоны, Excel-экспорт | `../domain/product-spec.md` | 2026-07-23 |
+| `admin-panel.md` | admin-panel | Админка — реальные страницы, реестр, карточка, справочники, шаблоны, Excel-экспорт | `../domain/product-spec.md` | 2026-07-26 |
 | `architecture.md` | architecture | Архитектура — пайплайн обработки писем, стек, слои, фоновые задачи | `../domain/product-spec.md` | 2026-07-23 |
-| `coverage-pipeline.md` | coverage-pipeline | Конвейер покрытия: документы страховых → правила → карточка пациента | `../guides/coverage-extraction-prompt.md` | 2026-07-25 |
-| `data-model.md` | data-model | Модель данных — сущности и ключевые поля | `../domain/product-spec.md` | 2026-07-23 |
+| `coverage-pipeline.md` | coverage-pipeline | Конвейер покрытия: документы страховых → правила → карточка пациента | `../guides/coverage-extraction-prompt.md` | 2026-07-26 |
+| `data-model.md` | data-model | Модель данных — сущности и ключевые поля | `../domain/product-spec.md` | 2026-07-26 |
 | `demand-semantics.md` | demand-semantics | Реклама — спрос и семантика Wordstat (сколько и что ищут) | `../domain/demand-semantics.md` | 2026-07-26 |
 | `email-ingestion.md` | email-ingestion | Забор писем — IMAP/Яндекс, двойная пересылка, дедупликация | `../domain/insurer-recognition.md` | 2026-07-22 |
 | `human-decisions.md` | human-decisions | Решения ТОЛЬКО владельца — остальное агент решает сам | `../domain/product-spec.md` | 2026-07-23 |
@@ -22,7 +22,7 @@
 | `recognition.md` | recognition | Распознавание — извлечение текста, поля, confidence, ручная проверка | `../domain/recognition-architecture.md` | 2026-07-26 |
 | `roles-and-access.md` | roles-and-access | Роли, права доступа (RBAC), ПДн и безопасность | `../domain/product-spec.md` | 2026-07-22 |
 | `ads-campaigns.md` | ads-campaigns | Кампании Директа — статус, структура, лендинг, запуск | `../domain/ads-campaigns-structure.md` | 2026-07-26 |
-| `pricing.md` | pricing | Ценообразование и тарифы — решения владельца | `../domain/pricing-research.md` | 2026-07-23 |
+| `pricing.md` | pricing | Ценообразование и тарифы — решения владельца | `../domain/pricing-research.md` | 2026-07-26 |
 | `coverage-assistant-vision.md` | coverage-assistant-vision | Бизнес-идея ассистента покрытия — эталон для сверки решений | `../plans/coverage-roadmap.md` | 2026-07-25 |
 <!-- GENERATED:core-registry END -->
 
