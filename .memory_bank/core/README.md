@@ -15,6 +15,7 @@
 | `architecture.md` | architecture | Архитектура — пайплайн обработки писем, стек, слои, фоновые задачи | `../domain/product-spec.md` | 2026-07-23 |
 | `coverage-pipeline.md` | coverage-pipeline | Конвейер покрытия — как документы страховых превращаются в правила и попадают в карточку пациента | `../guides/coverage-extraction-prompt.md` | 2026-07-25 |
 | `data-model.md` | data-model | Модель данных — сущности и ключевые поля | `../domain/product-spec.md` | 2026-07-23 |
+| `demand-semantics.md` | demand-semantics | Спрос и семантика для рекламы sib — сколько ищут и по каким фразам (Wordstat) | `../domain/demand-semantics.md` | 2026-07-26 |
 | `email-ingestion.md` | email-ingestion | Забор писем — IMAP/Яндекс, двойная пересылка, дедупликация | `../domain/insurer-recognition.md` | 2026-07-22 |
 | `human-decisions.md` | human-decisions | Список решений, которые принимает ТОЛЬКО владелец — остальное агент решает сам | `../domain/product-spec.md` | 2026-07-23 |
 | `lessons.md` | lessons | Перед планированием — уроки; что пробовали и что НЕ сработало, отброшенные подходы | `../anti-patterns.md` | 2026-07-25 |
