@@ -76,6 +76,9 @@ export async function GET(req: Request) {
       { header: "Номер полиса ", key: "pol", width: 20 },
       { header: "Дата начала обслуживания", key: "cf", width: 16 },
       { header: "Дата окончания обслуживания", key: "cto", width: 16 },
+      // ПОСЛЕДНИМ (владелец 26.07): статус записи — «Аннулировать», «Открепить», «Отказ»…
+      // Импортёр лишние колонки справа игнорирует, порядок первых девяти не меняется.
+      { header: "Статус", key: "st", width: 16 },
     ]
     for (const r of dentalRows) {
       const w = (r.patient ?? "").trim().split(/\s+/)
@@ -91,6 +94,7 @@ export async function GET(req: Request) {
         bd: ruDate(r.birthDate), ins: r.insurer ?? "", prog,
         pol: r.policy ?? "", cf: ruDate(r.coverageFrom),
         cto: ruDate(r.coverageTo ?? r.validUntil),
+        st: STATUS_LABELS[r.status] ?? r.status ?? "",
       })
       if (subEnd) rw.font = { bold: true }
     }

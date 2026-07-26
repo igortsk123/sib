@@ -21,6 +21,13 @@ function stamp(iso: string) {
   return Number.isNaN(d.getTime()) ? "" : timeFmt.format(d)
 }
 
+// ИИ отвечает с markdown-жирным (**…**) — рендерим его, остальной markdown не трогаем
+function renderBold(text: string) {
+  return text.split(/(\*\*[^*]+\*\*)/g).map((part, i) =>
+    part.startsWith("**") && part.endsWith("**") ? <b key={i}>{part.slice(2, -2)}</b> : part,
+  )
+}
+
 export function CoverageChatPanel({
   patientKey,
   initialMessages,
@@ -86,7 +93,7 @@ export function CoverageChatPanel({
                       : "inline-block max-w-[85%] whitespace-pre-wrap rounded-lg bg-muted px-3 py-1.5"
                   }
                 >
-                  {m.content}
+                  {m.role === "assistant" ? renderBold(m.content) : m.content}
                 </span>
               </li>
             ))}
