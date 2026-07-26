@@ -4,8 +4,7 @@ sib — агрегатор и распознавание гарантийных 
 
 ## Decision tree — что читать
 
-**Tier 1 (`core/<тема>.md`, сводки)** → drill-down в Tier 2 (`domain/`, `reference/`) при нехватке.
-Только нужное по дереву, не сканируй всё; не дублируй факт.
+**Tier 1 (`core/*`) → drill в Tier 2** по дереву; не сканируй всё, не дублируй факт.
 
 <!-- GENERATED:decision-tree START -->
 <!-- Таблицу регенерирует tools/memory-audit.mjs из frontmatter. Не редактируй вручную. -->
@@ -42,5 +41,4 @@ sib — агрегатор и распознавание гарантийных 
 `archive/` · `changelog/` (memory-log, project-history) · `_secrets/ACCESS.md` (gitignored, 600).
 
 ## Обслуживание памяти
-`/memory-check` (или `node tools/memory-audit.mjs`) · глубоко — `/memory-cleanup`.
-Схема — `METADATA_SCHEMA.md`, очистка — `CLEANUP_POLICY.md`.
+`/memory-check` (audit: `tools/memory-audit.mjs`) · глубоко — `/memory-cleanup` (`CLEANUP_POLICY.md`).
