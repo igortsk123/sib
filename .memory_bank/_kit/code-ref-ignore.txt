@@ -3,3 +3,5 @@
 lib/api/
 live/state.json
 live/manifest.json
+demo/fill_demo_gaps.sql
+backfill_list_fields.py
