@@ -15,6 +15,7 @@
 | slug | Название | Завершён |
 |------|----------|----------|
 | demo-stand-anonymization | — | — |
+| ads-bounce-cleanup | — | 2026-07-28 |
 | gp-vision-backfill | — | 2026-07-26 |
 | gp-to-rules | — | 2026-07-26 |
 | dental-export-and-coverage-chat | — | 2026-07-26 |
