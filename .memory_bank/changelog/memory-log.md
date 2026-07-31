@@ -75,3 +75,8 @@ Approval: владелец («план в целом принимаю»)
   core/lessons.md (+ anti-patterns №22); D46-строка в core/recognition.md; project-state — снимок
   31.07 (прикреплённых 4488→6358); план attach-status-audit → completed_plans/. Сжатие под лимиты:
   D35–D39 блок → project-history, уроки 19–21 ужаты, recognition уплотнён; audit чисто.
+- 2026-07-31 — Аудит «письма/файлы → шаблоны → парсеры» по 13 СК: 0 писем без СК, вложения 2714/2714
+  извлечены; закрыто сразу — карты parsing Ренессанс (3) и Астра-Волга (1), Ренессанс-detach
+  new→parser_ready, образцы 5 шаблонов (Лучи ×3, Ингос/Совком annul; РЕСО-annul ждёт первого письма);
+  валидация золотым корпусом сохранена (golden.sql). Планы: plans/doc-extractor-energogarant.md,
+  plans/rules-field-gaps.md.
