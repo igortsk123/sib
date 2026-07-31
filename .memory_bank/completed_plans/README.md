@@ -15,6 +15,8 @@
 | slug | Название | Завершён |
 |------|----------|----------|
 | demo-stand-anonymization | — | — |
+| rules-field-gaps | — | 2026-07-31 |
+| doc-extractor-energogarant | — | 2026-07-31 |
 | attach-status-audit | — | 2026-07-31 |
 | ads-bounce-cleanup | — | 2026-07-28 |
 | gp-vision-backfill | — | 2026-07-26 |

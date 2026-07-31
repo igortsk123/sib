@@ -80,3 +80,7 @@ Approval: владелец («план в целом принимаю»)
   new→parser_ready, образцы 5 шаблонов (Лучи ×3, Ингос/Совком annul; РЕСО-annul ждёт первого письма);
   валидация золотым корпусом сохранена (golden.sql). Планы: plans/doc-extractor-energogarant.md,
   plans/rules-field-gaps.md.
+- 2026-07-31 — Деплой двух планов аудита: doc-extractor-energogarant (antiword, eg_referral,
+  очередь ЭГ 21→1) и rules-field-gaps (ADR D47 — семантика дат; правила Зетта/ВСК/СОГАЗ/Совком;
+  77 записей приведены; регресс 97–100%). Планы → completed_plans/; урок 23 (+анти-паттерн №23);
+  project-state обновлён.
