@@ -41,4 +41,5 @@ sib — агрегатор и распознавание гарантийных 
 `archive/` · `changelog/` (memory-log, project-history) · `_secrets/ACCESS.md` (gitignored, 600).
 
 ## Обслуживание памяти
-`/memory-check` (audit: `tools/memory-audit.mjs`) · глубоко — `/memory-cleanup` (`CLEANUP_POLICY.md`).
+`/memory-check` — audit ТОЛЬКО с `--tier1-max-kb 4` (кириллица 2 б/симв; без флага 11 ложных
+TIER1-BLOAT) · глубоко `/memory-cleanup`. Права рукописные — `apply.sh --permission-mode` не запускать.

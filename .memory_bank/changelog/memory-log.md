@@ -60,3 +60,18 @@ Approval: владелец («план в целом принимаю»)
 - ACT    optional: sync-with-external, quality-criteria, glossary, anti-patterns, deployment, `reference/quality-standards/*`
 - MOVE   бриф → `domain/product-spec.md` (Tier 2, +frontmatter); intake → `_intake/_processed/`
 - ADR    D7: типизация — простые типы + явные DTO + Zod на границах; tRPC отложен
+- 2026-07-31 — автопилот подтверждён (D45); сверка с китом (по следам фикса прав в remlab): промптов у sib нет и не было —
+  `defaultMode: bypassPermissions`, `ask: []`, жёсткие блоки в `deny`, склейки пресетов не случилось
+  (23.07 merge добавил только `hooks`). `agent-workflow.md` уже переписан под AUTOPILOT. Банк чист
+  под проектным порогом (`--tier1-max-kb 4`, 61 док, Tier 0 7.7KB / 1.1%); дефолтные 3KB дают
+  11 ложных TIER1-BLOAT — команда с флагом вынесена в INDEX, чтобы никто не «чинил» здоровые сводки.
+  Заведён `_kit/permission-mode.txt` = `custom` (список прав рукописный; `apply.sh --permission-mode`
+  на sib не запускать — затрёт 67 записей allow). Кит: `merge-settings` больше не вычитает `deny`
+  (на sib первая редакция фикса срезала бы 4 хардблока из 6) — v1.4.1, регресс-тест 09.
+- 2026-07-31 — D45: `deny` дожат до 11 записей (+`sudo`, `push --force`, `push -f`, `reset --hard`,
+  `clean -fdx`), `_kit/permission-mode.txt` исправлен `custom` → `autopilot`. Режим прав
+  остаётся `bypassPermissions`: вопросов нет, страхует `deny`.
+- 2026-07-31 — D46 (критический фикс статусов прикрепления): ADR в decisions.md; урок 22 →
+  core/lessons.md (+ anti-patterns №22); D46-строка в core/recognition.md; project-state — снимок
+  31.07 (прикреплённых 4488→6358); план attach-status-audit → completed_plans/. Сжатие под лимиты:
+  D35–D39 блок → project-history, уроки 19–21 ужаты, recognition уплотнён; audit чисто.
