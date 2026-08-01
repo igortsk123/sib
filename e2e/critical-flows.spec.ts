@@ -21,10 +21,11 @@ test("гейт новых типов (D48): held-запись скрыта, ба
   await expect(page.getByText(/Есть новые типы писем/)).toBeVisible()
   await expect(page.getByText(/напишите в поддержку/)).toBeVisible()
   // отложенная запись НЕ показывается в общем списке даже через поиск
+  // (пустой результат — валидное состояние: таблицы может не быть вовсе)
   const search = page.getByPlaceholder(/поиск|фамилия|пациент/i).first()
   await search.fill("Отложенный")
   await search.press("Enter")
-  await expect(page.getByRole("table")).toBeVisible()
+  await page.waitForLoadState("networkidle")
   await expect(page.getByText("Отложенный Тип Письма")).toHaveCount(0)
 })
 
