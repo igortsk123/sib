@@ -3,7 +3,7 @@ import { redirect } from "next/navigation"
 import { AlertTriangle, Download, Inbox, Search } from "lucide-react"
 
 import { resolveRegistryScope } from "@/lib/server/scope"
-import { countFiltered, countLetters, listInsurerOptions, searchLetters } from "@/lib/server/registry/queries"
+import { countFiltered, countHeldEmails, countLetters, listInsurerOptions, searchLetters } from "@/lib/server/registry/queries"
 import { STATUS_LABELS, SOURCE_LABELS } from "@/lib/letter-status"
 import { CARE_TYPE_LABELS } from "@/lib/care-type"
 import { isoFromRu, ruDate } from "@/lib/format"
@@ -46,6 +46,7 @@ export default async function RegistryPage({
   const page = Math.max(1, parseInt(sp.page ?? "1", 10) || 1)
   const total = await countLetters(scope.orgId)
   const found = await countFiltered(f)
+  const heldEmails = await countHeldEmails(scope.orgId)
   const pages = Math.max(1, Math.ceil(found / PAGE_SIZE))
   const rows = await searchLetters(f, PAGE_SIZE, (page - 1) * PAGE_SIZE)
   // компактный ряд страниц: 1 … p-2 p-1 [p] p+1 p+2 … N
@@ -77,6 +78,13 @@ export default async function RegistryPage({
           </div>
         }
       />
+
+      {heldEmails > 0 && (
+        <div className="mb-4 rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm">
+          <span className="font-medium">Есть новые типы писем ({heldEmails} шт.)</span> — они не
+          загружены в общий список. Для загрузки напишите в поддержку.
+        </div>
+      )}
 
       <form className="mb-4 flex flex-col gap-3 rounded-lg border border-border bg-card p-3" action="/registry" method="get">
         <div className="relative">

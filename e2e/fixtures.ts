@@ -104,6 +104,15 @@ async function main() {
         services: ["Эндодонтическое лечение 25 зуба"], letterDate: "2026-06-01",
         validUntil: "2099-01-01", source: "e2e",
       },
+      // Гейт D48: письмо нового типа — отложено (is_held), в общем списке его быть НЕ должно,
+      // в реестре — баннер «Есть новые типы писем».
+      {
+        emailMessageId: em.id, insuranceCompanyId: insurerId, organizationId: orgId,
+        patientFullName: "Отложенный Тип Письма", patientBirthDate: "1990-01-01",
+        policyNumber: "E2E-HELD-01", approvalStatus: "unknown", docType: "referral",
+        services: ["Новый тип (e2e)"], letterDate: "2026-07-01", source: "e2e",
+        isHeld: true,
+      },
     ])
   }
 

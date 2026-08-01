@@ -15,6 +15,19 @@ test("реестр писем ДМС открывается и ищет", async 
   await expect(page.getByRole("table")).toBeVisible() // поиск не роняет страницу
 })
 
+test("гейт новых типов (D48): held-запись скрыта, баннер виден", async ({ page }) => {
+  await page.goto("/registry")
+  // баннер «есть новые типы писем — напишите в поддержку» (фикстура держит 1 held-письмо)
+  await expect(page.getByText(/Есть новые типы писем/)).toBeVisible()
+  await expect(page.getByText(/напишите в поддержку/)).toBeVisible()
+  // отложенная запись НЕ показывается в общем списке даже через поиск
+  const search = page.getByPlaceholder(/поиск|фамилия|пациент/i).first()
+  await search.fill("Отложенный")
+  await search.press("Enter")
+  await expect(page.getByRole("table")).toBeVisible()
+  await expect(page.getByText("Отложенный Тип Письма")).toHaveCount(0)
+})
+
 test("пациенты: список → карточка → «что действует сейчас»", async ({ page }) => {
   await page.goto("/patients")
   await expect(page.getByRole("heading", { name: "Пациенты" })).toBeVisible()

@@ -5,7 +5,7 @@ import { Plus, Trash2 } from "lucide-react"
 
 import { DOC_TYPE_LABELS, METHOD_LABELS } from "@/lib/letter-status"
 import { FIELD_HINTS } from "@/lib/review-hints"
-import { addDocTemplate, deleteDocTemplate, updateDocTemplateSample } from "@/lib/server/templates/actions"
+import { activateDocTemplate, addDocTemplate, deleteDocTemplate, updateDocTemplateSample } from "@/lib/server/templates/actions"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -122,8 +122,23 @@ function TemplateCard({ t }: { t: TemplateRow }) {
             файл{t.sampleFilename ? `: ${t.sampleFilename}` : ""}
           </a>
         )}
+        {t.status === "new" && (
+          <Button
+            size="sm" variant="outline" className="ml-auto" disabled={pending}
+            title="Парсер настроен: активировать шаблон и выпустить отложенные письма этого типа в общий список (гейт D48)"
+            onClick={() =>
+              start(async () => {
+                const r = await activateDocTemplate(t.id)
+                if (r.ok) alert(`Шаблон активирован. Загружено отложенных записей: ${r.value.released}`)
+                else alert(r.error)
+              })
+            }
+          >
+            Активировать
+          </Button>
+        )}
         <Button
-          size="sm" variant="ghost" className="ml-auto" disabled={pending}
+          size="sm" variant="ghost" className={t.status === "new" ? "" : "ml-auto"} disabled={pending}
           onClick={() => { if (confirm("Удалить тип?")) start(async () => { await deleteDocTemplate(t.id) }) }}
           title="Удалить тип"
         >

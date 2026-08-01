@@ -25,6 +25,8 @@ export type RegistryFilter = {
 
 function whereClause(f: RegistryFilter) {
   const conds = []
+  // Гейт D48: записи нового типа без активного шаблона в общий список не попадают.
+  conds.push(eq(guaranteeLetter.isHeld, false))
   // Скоуп по клинике: реальный id → фильтр; "__none__" → ничего; null → все клиники (админ, БЕЗ демо).
   if (f.orgId === "__none__") conds.push(sql`false`)
   else if (f.orgId) conds.push(eq(guaranteeLetter.organizationId, f.orgId))
@@ -118,6 +120,7 @@ export async function latestProgramsByPatient(orgId: string | null | undefined, 
         inArray(guaranteeLetter.patientKey, keys),
         eq(guaranteeLetter.docType, "enroll"),
         eq(guaranteeLetter.isDuplicate, false),
+        eq(guaranteeLetter.isHeld, false),
         sql`coalesce(jsonb_array_length(${guaranteeLetter.services}),0) > 0`,
         ...(orgId ? [eq(guaranteeLetter.organizationId, orgId)] : []),
       ),
@@ -149,13 +152,29 @@ export async function listInsurerOptions() {
 }
 
 export async function countLetters(orgId?: string | null) {
-  const where =
+  const scope =
     orgId === "__none__"
       ? sql`false`
       : orgId
         ? eq(guaranteeLetter.organizationId, orgId)
         : notDemoOrg // админ «все клиники» — без демо-стенда
-  const r = await db().select({ n: sql<number>`count(*)::int` }).from(guaranteeLetter).where(where)
+  const r = await db().select({ n: sql<number>`count(*)::int` }).from(guaranteeLetter)
+    .where(and(scope, eq(guaranteeLetter.isHeld, false)))
+  return r[0]?.n ?? 0
+}
+
+// Гейт D48: сколько ПИСЕМ нового типа отложено (для баннера «напишите в поддержку»).
+export async function countHeldEmails(orgId?: string | null) {
+  const scope =
+    orgId === "__none__"
+      ? sql`false`
+      : orgId
+        ? eq(guaranteeLetter.organizationId, orgId)
+        : notDemoOrg
+  const r = await db()
+    .select({ n: sql<number>`count(distinct ${guaranteeLetter.emailMessageId})::int` })
+    .from(guaranteeLetter)
+    .where(and(scope, eq(guaranteeLetter.isHeld, true)))
   return r[0]?.n ?? 0
 }
 

@@ -4,11 +4,11 @@ import { randomUUID } from "node:crypto"
 import { mkdir, writeFile } from "node:fs/promises"
 import path from "node:path"
 
-import { eq } from "drizzle-orm"
+import { and, eq } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 
 import { db } from "@/lib/db"
-import { docTemplate } from "@/lib/db/schema"
+import { docTemplate, guaranteeLetter } from "@/lib/db/schema"
 import { requirePlatformAdmin } from "@/lib/server/auth/guards"
 import { chatComplete } from "@/lib/server/llm/openai"
 import { GOLD_MODEL, GOLD_SYSTEM, goldUserMessage } from "@/lib/server/templates/prompt"
@@ -93,8 +93,41 @@ export async function extractGold(templateId: string): Promise<Result<null>> {
     .update(docTemplate)
     .set({ goldJson: gold, status: "llm_parsed", updatedAt: new Date() })
     .where(eq(docTemplate.id, templateId))
+  // Шаблон стал активным (≠ new) → отложенные записи пары выходят в общий список (гейт D48).
+  if (tpl.status === "new") await unholdPair(tpl.insuranceCompanyId, tpl.docType)
   revalidatePath(`/insurers/${tpl.insuranceCompanyId}`)
   return ok(null)
+}
+
+// Гейт D48: снять hold с записей пары (страховая, тип) — «дозагрузка» после настройки парсера.
+async function unholdPair(insurerId: string, docType: string): Promise<number> {
+  const rows = await db()
+    .update(guaranteeLetter)
+    .set({ isHeld: false })
+    .where(and(
+      eq(guaranteeLetter.insuranceCompanyId, insurerId),
+      eq(guaranteeLetter.docType, docType as never),
+      eq(guaranteeLetter.isHeld, true),
+    ))
+    .returning({ id: guaranteeLetter.id })
+  return rows.length
+}
+
+// Активировать шаблон: парсер настроен → status parser_ready + отложенные записи в общий список.
+export async function activateDocTemplate(templateId: string): Promise<Result<{ released: number }>> {
+  const auth = await requirePlatformAdmin()
+  if (!auth.ok) return err(auth.error)
+  const rows = await db().select().from(docTemplate).where(eq(docTemplate.id, templateId)).limit(1)
+  const tpl = rows[0]
+  if (!tpl) return err("Шаблон не найден")
+  await db()
+    .update(docTemplate)
+    .set({ status: "parser_ready", updatedAt: new Date() })
+    .where(eq(docTemplate.id, templateId))
+  const released = await unholdPair(tpl.insuranceCompanyId, tpl.docType)
+  revalidatePath(`/insurers/${tpl.insuranceCompanyId}`)
+  revalidatePath("/registry")
+  return ok({ released })
 }
 
 // Редактировать письмо-образец шаблона (тема + тело).

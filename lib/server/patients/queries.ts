@@ -29,6 +29,7 @@ export async function patientsList({ orgId, q, page = 1 }: ListArgs) {
     orgId ? eq(guaranteeLetter.organizationId, orgId) : undefined,
     isNotNull(guaranteeLetter.patientKey),
     eq(guaranteeLetter.isDuplicate, false),
+    eq(guaranteeLetter.isHeld, false),
     q
       ? or(
           ilike(guaranteeLetter.patientFullName, `%${q}%`),
@@ -83,6 +84,7 @@ export async function patientsList({ orgId, q, page = 1 }: ListArgs) {
       orgId ? eq(guaranteeLetter.organizationId, orgId) : undefined,
       isNull(guaranteeLetter.patientKey),
       eq(guaranteeLetter.isDuplicate, false),
+      eq(guaranteeLetter.isHeld, false),
     ))
 
   return {
@@ -121,6 +123,7 @@ export async function patientCard(key: string, orgId: string | null) {
       and(
         orgId ? eq(guaranteeLetter.organizationId, orgId) : undefined,
         eq(guaranteeLetter.patientKey, key),
+        eq(guaranteeLetter.isHeld, false),
       ),
     )
     .orderBy(desc(guaranteeLetter.letterDate))

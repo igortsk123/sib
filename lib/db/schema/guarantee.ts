@@ -67,6 +67,9 @@ export const guaranteeLetter = pgTable(
     // (Ингосстрах — с разбегом ~16 мин). duplicateOfId — первая (каноническая) запись.
     isDuplicate: boolean("is_duplicate").notNull().default(false),
     duplicateOfId: uuid("duplicate_of_id"),
+    // Гейт новых типов (D48): нет активного шаблона (insurer, docType) → запись распознана и
+    // сохранена, но в общий список/экспорт/пациентов НЕ попадает, пока поддержка не активирует шаблон.
+    isHeld: boolean("is_held").notNull().default(false),
     // Низкая уверенность → человеку: перепроверить перед переносом в систему клиники.
     needsReview: boolean("needs_review").notNull().default(false),
     reviewNote: text("review_note"), // причина пометки (какие поля сомнительны)

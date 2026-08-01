@@ -17,8 +17,11 @@ import {
 // Живой приём (S1): инкрементальный UPSERT дельты новых писем в реестр — БЕЗ wipe.
 // Идемпотентно по rawSha256 письма (уже принятое письмо пропускаем). Файлы (.eml/вложения)
 // раскладывает раннер до вызова (в STORAGE_DIR), здесь только пишем записи в БД.
-// Self-healing: письмо с известного домена, но НОВОГО типа/шаблона → запись всё равно в реестре,
-// шаблон авто-создаётся (status "new"), запись помечается needsReview, админу — алерт (error_report).
+// Гейт новых типов (правило владельца, ADR D48): «есть шаблон → идёт по шаблону; нет — в общий
+// список не грузим». Активный шаблон = doc_template(insurer, docType) со статусом ≠ "new".
+// Письмо нового типа: записи распознаются и СОХРАНЯЮТСЯ, но с is_held=true (реестр/экспорт/
+// пациенты их не видят); шаблон авто-создаётся (status "new", образец), админу — алерт
+// (error_report + баннер в реестре). Поддержка настраивает парсер → активация шаблона снимает hold.
 // Общие нормализаторы полей — shared.ts (тот же код, что batch-сид corpus.ts).
 // ─────────────────────────────────────────────────────────────────────
 
@@ -33,7 +36,7 @@ async function main() {
 
   const client = postgres(url, { prepare: false, max: 1 })
   const db = drizzle(client, { schema })
-  const summary = { newEmails: 0, skipped: 0, newLetters: 0, duplicates: 0, newTemplates: 0, needsReview: 0, alerts: 0 }
+  const summary = { newEmails: 0, skipped: 0, newLetters: 0, duplicates: 0, newTemplates: 0, needsReview: 0, alerts: 0, held: 0 }
   try {
     const insurers = await db
       .select({ id: insuranceCompany.id, name: insuranceCompany.name, aliases: insuranceCompany.aliases })
@@ -70,9 +73,16 @@ async function main() {
     }
 
     // Какие пары (insurerId::docType) уже имеют шаблон — новые считаем self-healing.
+    // АКТИВНЫЙ шаблон (status ≠ "new") пропускает записи в общий список; неактивный/отсутствующий → hold (D48).
     const existingTpl = new Set<string>()
-    const tplRows = await db.select({ ic: docTemplate.insuranceCompanyId, dt: docTemplate.docType }).from(docTemplate)
-    for (const t of tplRows) existingTpl.add(`${t.ic}::${t.dt}`)
+    const activeTpl = new Set<string>()
+    const tplRows = await db
+      .select({ ic: docTemplate.insuranceCompanyId, dt: docTemplate.docType, st: docTemplate.status })
+      .from(docTemplate)
+    for (const t of tplRows) {
+      existingTpl.add(`${t.ic}::${t.dt}`)
+      if (t.st !== "new") activeTpl.add(`${t.ic}::${t.dt}`)
+    }
 
     // Индекс дублей (ADR D6): существующие записи клиники → ключ → id первой (канонической) записи.
     // Страховые пере-шлют один список повторно (Ингосстрах ~16 мин) — повтор помечаем, НЕ удаляем.
@@ -82,12 +92,14 @@ async function main() {
         id: guaranteeLetter.id, icid: guaranteeLetter.insuranceCompanyId,
         p: guaranteeLetter.patientFullName, pol: guaranteeLetter.policyNumber,
         dt: guaranteeLetter.docType, ld: guaranteeLetter.letterDate, dup: guaranteeLetter.isDuplicate,
+        held: guaranteeLetter.isHeld,
       })
       .from(guaranteeLetter)
       .where(eq(guaranteeLetter.organizationId, orgId))
     for (const r of exRows) {
       const k = dupKey({ insurerId: r.icid, patient: r.p, policy: r.pol, docType: r.dt, letterDate: r.ld })
-      if (k && !r.dup && !dupIndex.has(k)) dupIndex.set(k, r.id)
+      // held-записи каноном дублей не становятся (скрытый канон + видимый «дубль» путал бы реестр)
+      if (k && !r.dup && !r.held && !dupIndex.has(k)) dupIndex.set(k, r.id)
     }
 
     // Вставка новых писем + вложений.
@@ -173,6 +185,8 @@ async function main() {
           })
         }
       }
+      // Гейт D48: нет АКТИВНОГО шаблона (в т.ч. СК не опознана) → hold, в общий список не грузим.
+      const held = !tplKey || !activeTpl.has(tplKey)
       // self-healing: новый шаблон → форсим ручную проверку записи.
       const forcedReview = isNewTpl
       const willReview = (l.needsReview ?? false) || forcedReview
@@ -211,13 +225,17 @@ async function main() {
         method: l.method ?? null,
         confidence: l.confidence ?? {},
         fieldStatus: l.fieldStatus ?? {},
+        isHeld: held,
         needsReview: willReview,
-        reviewNote: forcedReview ? "Новый тип документа — авто-распознан, проверьте поля" : (l.reviewNote ?? null),
+        reviewNote: held
+          ? "Новый тип письма — не загружено в общий список; для загрузки напишите в поддержку"
+          : (forcedReview ? "Новый тип документа — авто-распознан, проверьте поля" : (l.reviewNote ?? null)),
         reviewStatus: "auto",
       }).returning({ id: guaranteeLetter.id })
+      if (held) summary.held++
       summary.newLetters++
       if (dupOf) summary.duplicates++
-      else if (k) dupIndex.set(k, ins.id) // первая запись с этим ключом — каноническая
+      else if (k && !held) dupIndex.set(k, ins.id) // первая ВИДИМАЯ запись с этим ключом — каноническая
       if (willReview) summary.needsReview++
       if (tplKey && isNewTpl && !firstLetterOfTpl.has(tplKey)) firstLetterOfTpl.set(tplKey, ins.id)
 
@@ -260,7 +278,7 @@ async function main() {
       if (letterId) {
         await db.insert(errorReport).values({
           letterId,
-          message: `Self-healing: новый тип документа «${docType}» от «${idToName.get(insuranceCompanyId) ?? insuranceCompanyId}» — авто-создан шаблон, распознано LLM. Проверьте разбор и настройте шаблон.`,
+          message: `Новый тип документа «${docType}» от «${idToName.get(insuranceCompanyId) ?? insuranceCompanyId}» — в общий список НЕ загружен (гейт D48), образец сохранён в шаблоне. Настройте парсер и активируйте шаблон.`,
           status: "open",
         })
         summary.alerts++

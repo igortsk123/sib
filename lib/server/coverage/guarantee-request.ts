@@ -103,6 +103,7 @@ export async function lastInsurerEmail(patientKey: string, orgId: string | null,
     .where(
       and(
         eq(guaranteeLetter.patientKey, patientKey),
+        eq(guaranteeLetter.isHeld, false),
         orgId && orgId !== "__none__" ? eq(guaranteeLetter.organizationId, orgId) : undefined,
         insuranceCompanyId ? eq(guaranteeLetter.insuranceCompanyId, insuranceCompanyId) : undefined,
       ),

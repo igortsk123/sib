@@ -14,6 +14,7 @@
     "db:seed": "tsx lib/db/seed/run.ts",
     "db:seed:corpus": "tsx lib/db/seed/corpus.ts",
     "db:ingest": "tsx lib/db/seed/ingest.ts",
+    "digest:newtypes": "tsx lib/db/seed/tg-digest.ts",
     "db:studio": "drizzle-kit studio",
     "test:e2e": "playwright test"
   },
