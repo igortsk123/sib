@@ -84,3 +84,9 @@ Approval: владелец («план в целом принимаю»)
   очередь ЭГ 21→1) и rules-field-gaps (ADR D47 — семантика дат; правила Зетта/ВСК/СОГАЗ/Совком;
   77 записей приведены; регресс 97–100%). Планы → completed_plans/; урок 23 (+анти-паттерн №23);
   project-state обновлён.
+- 2026-08-01 — D48 (гейт новых типов): ADR в decisions.md; project-state; план new-type-gate.
+  Срез: is_held (миграция 0026) + гейт в ingest + фильтры выборок + баннер + «Активировать»
+  (unhold) + tg-digest скрипт и systemd-таймер 09:00; e2e-тест баннера в critical-flows.
+- 2026-08-01 — D48 задеплоен: e2e 7/7 на сервере, таймер дайджеста включён; план new-type-gate →
+  completed_plans/; ACCESS: rsync-исключения .env*/.e2e-env и пересоздание sib-e2e-db; авто-память
+  e2e-on-server обновлена (mirrored ACCESS).

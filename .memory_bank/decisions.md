@@ -832,3 +832,22 @@ typecheck+76 unit зелёные; снимок статусов для отка�
 (vision-путь). Ингос: в бланке периода полиса нет — coverage у ГП исторически = срок письма, не трогаем.
 **Влияет на:** `.mail-intake/rules_gp.py`, `.mail-intake/semantic_fix.py`, записи ВСК/РГС/Совкома,
 `plans/rules-field-gaps.md`.
+
+## D48 — 2026-08-01 — Гейт новых типов писем: нет активного шаблона → в общий список не грузим
+**Контекст:** правило владельца (2026-08-01): «есть шаблон — идёт по шаблону; нет — ничего не грузим
+в общий список, вместо строк алерт "есть новые типы писем, для загрузки напишите в поддержку";
+мне раз в день в Telegram: есть новые типы (N шт.), нужно писать парсер». Ранее self-healing грузил
+записи нового типа сразу (needsReview) — риск мусора в реестре до настройки парсера.
+**Решение:** «активный шаблон» = `doc_template(insurer, doc_type)` со status ≠ `new`; письмо без
+опознанной СК = нет шаблона. Записи нового типа распознаются и СОХРАНЯЮТСЯ с `is_held=true`
+(миграция 0026), но реестр/экспорт/пациенты/coverage их не видят; канон дублей held не бывает.
+Self-healing оставлен как заготовка (шаблон status `new` + образец письма + error_report).
+Активация: кнопка «Активировать» на шаблоне (или извлечение эталона) → status ≠ new + unhold
+записей пары — «дозагрузка» без повторного парсинга. Баннер в реестре: N отложенных писем.
+Дайджест: `npm run digest:newtypes` (`lib/db/seed/tg-digest.ts`, без ПДн — СК/тип/кол-во),
+`sib-tg-digest.timer` 09:00 MSK ежедневно, получатели — платформенные админы с Telegram; пусто → молчим.
+**Гейт:** typecheck+lint+76 unit+build зелёные; e2e «held скрыт, баннер виден» добавлен в critical-flows.
+**Влияет на:** `guarantee_letter.is_held`, `lib/db/seed/ingest.ts`, `lib/server/registry/queries.ts`,
+`lib/server/patients/queries.ts`, `lib/server/coverage/guarantee-request.ts`,
+`lib/server/templates/actions.ts` (+UI кнопка), `app/(admin)/registry/page.tsx`, `package.json`,
+`e2e/*`, systemd `sib-tg-digest.{service,timer}`.
