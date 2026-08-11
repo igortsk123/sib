@@ -3,6 +3,7 @@ import postgres from "postgres"
 
 import { and, eq, isNotNull, sql } from "drizzle-orm"
 
+import { liveOrgsOnly } from "@/lib/server/demo-org"
 import * as schema from "@/lib/db/schema"
 import { appUser, docTemplate, guaranteeLetter, insuranceCompany } from "@/lib/db/schema"
 
@@ -14,7 +15,6 @@ import { appUser, docTemplate, guaranteeLetter, insuranceCompany } from "@/lib/d
 // сервере раз в день (docker exec sib-frontend npm run digest:newtypes).
 // ─────────────────────────────────────────────────────────────────────
 
-const DEMO_ORG_NAME = "Демо-клиника"
 
 async function sendTelegram(chatId: string, text: string) {
   const base = process.env.TELEGRAM_API_BASE || "https://tg.claude-access.ru"
@@ -37,7 +37,8 @@ async function main() {
   const client = postgres(url, { prepare: false, max: 1 })
   const db = drizzle(client, { schema })
   try {
-    const notDemo = sql`${guaranteeLetter.organizationId} not in (select id from organization where name = ${DEMO_ORG_NAME})`
+    // Дайджест — про рабочий контур: демо-стенд в него не входит (ADR D50).
+    const notDemo = liveOrgsOnly(sql`${guaranteeLetter.organizationId}`)
     const rows = await db
       .select({
         insurer: sql<string>`coalesce(${insuranceCompany.name}, 'СК не опознана')`,

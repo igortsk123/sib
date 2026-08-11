@@ -1,6 +1,7 @@
 import "server-only"
-import { and, desc, eq } from "drizzle-orm"
+import { and, desc, eq, sql } from "drizzle-orm"
 
+import { orgScope } from "@/lib/server/demo-org"
 import { db } from "@/lib/db"
 import { emailMessage, guaranteeLetter, organization } from "@/lib/db/schema"
 
@@ -104,7 +105,7 @@ export async function lastInsurerEmail(patientKey: string, orgId: string | null,
       and(
         eq(guaranteeLetter.patientKey, patientKey),
         eq(guaranteeLetter.isHeld, false),
-        orgId && orgId !== "__none__" ? eq(guaranteeLetter.organizationId, orgId) : undefined,
+        orgScope(sql`${guaranteeLetter.organizationId}`, orgId === "__none__" ? null : orgId),
         insuranceCompanyId ? eq(guaranteeLetter.insuranceCompanyId, insuranceCompanyId) : undefined,
       ),
     )

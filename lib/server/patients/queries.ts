@@ -1,6 +1,7 @@
 import "server-only"
 import { and, desc, eq, ilike, inArray, isNotNull, isNull, ne, or, sql } from "drizzle-orm"
 
+import { orgScope } from "@/lib/server/demo-org"
 import { db } from "@/lib/db"
 import { guaranteeLetter, insuranceCompany } from "@/lib/db/schema"
 
@@ -26,7 +27,7 @@ export async function patientsList({ orgId, q, page = 1 }: ListArgs) {
     return { rows: [], total: 0, unmatched: { noName: 0, noBirth: 0 }, page: 1, pageSize: PAGE_SIZE }
   }
   const scope = and(
-    orgId ? eq(guaranteeLetter.organizationId, orgId) : undefined,
+    orgScope(sql`${guaranteeLetter.organizationId}`, orgId),
     isNotNull(guaranteeLetter.patientKey),
     eq(guaranteeLetter.isDuplicate, false),
     eq(guaranteeLetter.isHeld, false),
@@ -81,7 +82,7 @@ export async function patientsList({ orgId, q, page = 1 }: ListArgs) {
     })
     .from(guaranteeLetter)
     .where(and(
-      orgId ? eq(guaranteeLetter.organizationId, orgId) : undefined,
+      orgScope(sql`${guaranteeLetter.organizationId}`, orgId),
       isNull(guaranteeLetter.patientKey),
       eq(guaranteeLetter.isDuplicate, false),
       eq(guaranteeLetter.isHeld, false),
@@ -121,7 +122,7 @@ export async function patientCard(key: string, orgId: string | null) {
     .leftJoin(insuranceCompany, eq(insuranceCompany.id, guaranteeLetter.insuranceCompanyId))
     .where(
       and(
-        orgId ? eq(guaranteeLetter.organizationId, orgId) : undefined,
+        orgScope(sql`${guaranteeLetter.organizationId}`, orgId),
         eq(guaranteeLetter.patientKey, key),
         eq(guaranteeLetter.isHeld, false),
       ),
@@ -154,7 +155,7 @@ export async function patientCard(key: string, orgId: string | null) {
         .selectDistinct({ key: guaranteeLetter.patientKey, fullName: guaranteeLetter.patientFullName })
         .from(guaranteeLetter)
         .where(and(
-          orgId ? eq(guaranteeLetter.organizationId, orgId) : undefined,
+          orgScope(sql`${guaranteeLetter.organizationId}`, orgId),
           inArray(guaranteeLetter.policyNumber, policies),
           isNotNull(guaranteeLetter.patientKey),
           ne(guaranteeLetter.patientKey, key),

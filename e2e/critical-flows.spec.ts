@@ -75,6 +75,21 @@ test("правила покрытия: поиск и сводка", async ({ pag
   await expect(page.getByRole("heading", { name: "Источники и покрытие" })).toBeVisible()
 })
 
+// Граница контуров (ADR D50, требование владельца): «чтоб в рабочий контур ничего не попадало
+// из демо». Админ без выбранной клиники видит РАБОЧИЙ контур — записи демо-стенда там
+// не показываются ни в реестре, ни в пациентах, ни в поиске.
+test("демо-стенд не виден в рабочем контуре", async ({ page }) => {
+  await page.goto("/registry")
+  await expect(page.getByRole("heading", { name: /реестр/i })).toBeVisible()
+  await expect(page.getByText("Демостендов")).toHaveCount(0)
+
+  await page.goto("/registry?q=Демостендов")
+  await expect(page.getByText("Демостендов")).toHaveCount(0)
+
+  await page.goto("/patients?q=Демостендов")
+  await expect(page.getByText("Демостендов")).toHaveCount(0)
+})
+
 test("выход из аккаунта работает", async ({ page }) => {
   await page.goto("/logout")
   await page.waitForURL(/login/)

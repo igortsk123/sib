@@ -1,4 +1,4 @@
-import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core"
+import { boolean, index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core"
 
 import { orgStatusEnum } from "./enums"
 
@@ -13,6 +13,9 @@ export const organization = pgTable(
     id: uuid("id").primaryKey().defaultRandom(),
     name: text("name").notNull(),
     status: orgStatusEnum("status").notNull().default("active"),
+    // Демо-стенд продаж (ADR D50). Рабочий контур НИКОГДА не показывает записи демо-организаций:
+    // признак живёт в БД, а не в совпадении названия — переименование клиники границу не ломает.
+    isDemo: boolean("is_demo").notNull().default(false),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },

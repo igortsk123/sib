@@ -2,7 +2,7 @@ import "server-only"
 import { sql } from "drizzle-orm"
 
 import { db } from "@/lib/db"
-import { notDemoOrg } from "@/lib/server/demo-org"
+import { orgScope } from "@/lib/server/demo-org"
 
 // ─────────────────────────────────────────────────────────────────────
 // Сводка источников и покрытия (требование владельца): по каждой ПРОГРАММЕ видно, сколько
@@ -56,9 +56,7 @@ export async function coverageSources(orgId: string | null) {
   if (orgId === "__none__") return { rows: [], total: 0, covered: 0, coveredShare: 0 }
   // Явно выбранная клиника — считаем её (в т.ч. демо: стенд продаж должен показывать свои цифры).
   // Режим «все клиники» — демо исключаем, иначе синтетика стенда занижает боевую долю (ADR D22).
-  const orgFilter = orgId
-    ? sql`and gl.organization_id = ${orgId}`
-    : sql`and ${notDemoOrg(sql`gl.organization_id`)}`
+  const orgFilter = sql`and ${orgScope(sql`gl.organization_id`, orgId)}`
 
   const rows = await db().execute<{
     insurer: string

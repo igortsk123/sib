@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto"
 
+import { eq } from "drizzle-orm"
 import { drizzle } from "drizzle-orm/postgres-js"
 import postgres from "postgres"
 
@@ -13,6 +14,7 @@ import * as schema from "@/lib/db/schema"
 // ─────────────────────────────────────────────────────────────────────
 
 const PATIENT = { fullName: "Тестов Пациент Игоревич", birthDate: "1990-04-15" }
+export const DEMO_PATIENT = "Демостендов Демо Демович"
 const ORG = "Тестовая клиника (e2e)"
 const TEST_PHONE = process.env.TEST_LOGIN_PHONE ?? "+79998887777"
 const INSURER = "Тестовая страховая (e2e)"
@@ -29,7 +31,12 @@ async function main() {
   const orgRows = await db.select({ id: schema.organization.id }).from(schema.organization)
   const orgId = orgRows[0]?.id ?? (await db.insert(schema.organization).values({ name: ORG }).returning())[0].id
   const userRows = await db.select({ id: schema.appUser.id }).from(schema.appUser)
-  const userId = userRows[0]?.id ?? (await db.insert(schema.appUser).values({ phone: TEST_PHONE }).returning())[0].id
+  const userId =
+    userRows[0]?.id ??
+    (await db.insert(schema.appUser).values({ phone: TEST_PHONE }).returning())[0].id
+  // Платформенный админ — чтобы e2e шли в режиме «все клиники» (orgId = null). Именно этот режим
+  // проверяет границу контуров (ADR D50): без него фильтр демо просто не задействован.
+  await db.update(schema.appUser).set({ isPlatformAdmin: true }).where(eq(schema.appUser.id, userId))
   await db.insert(schema.membership)
     .values({ organizationId: orgId, userId, role: "registry", status: "active" })
     .onConflictDoNothing()
@@ -116,7 +123,42 @@ async function main() {
     ])
   }
 
-  console.log("[e2e-fixtures] готово: пациент, программа, правила, ГП")
+  // Граница контуров (ADR D50): демо-организация со «своей» записью. В рабочем контуре
+  // («все клиники») её быть не должно ни в реестре, ни в пациентах — это проверяет e2e.
+  const demoRows = await db
+    .select({ id: schema.organization.id })
+    .from(schema.organization)
+    .where(eq(schema.organization.isDemo, true))
+  const demoOrgId =
+    demoRows[0]?.id ??
+    (
+      await db
+        .insert(schema.organization)
+        .values({ name: "Демо-клиника (e2e)", isDemo: true })
+        .returning()
+    )[0].id
+  const demoLetters = await db
+    .select({ id: schema.guaranteeLetter.id })
+    .from(schema.guaranteeLetter)
+    .where(eq(schema.guaranteeLetter.organizationId, demoOrgId))
+  if (demoLetters.length === 0) {
+    const [demoEm] = await db
+      .insert(schema.emailMessage)
+      .values({
+        mailbox: "demo@local", organizationId: demoOrgId, messageId: `<demo-${randomUUID()}@local>`,
+        fromAddr: "demo@e2e.example", subject: "Демо-письмо (стенд)",
+        receivedAt: new Date("2026-01-11T09:00:00Z"), rawSha256: `demo-${randomUUID()}`,
+      })
+      .returning()
+    await db.insert(schema.guaranteeLetter).values({
+      emailMessageId: demoEm.id, insuranceCompanyId: insurerId, organizationId: demoOrgId,
+      patientFullName: DEMO_PATIENT, patientBirthDate: "1980-02-02",
+      policyNumber: "DEMO-000001", approvalStatus: "approved", docType: "guarantee",
+      services: ["Демо-услуга (стенд)"], letterDate: "2026-01-11", source: "demo",
+    })
+  }
+
+  console.log("[e2e-fixtures] готово: пациент, программа, правила, ГП, демо-контур")
   await client.end()
 }
 
