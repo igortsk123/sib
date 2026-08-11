@@ -1,0 +1,12 @@
+{
+  // Конфиг для CLI-скриптов под tsx (ads:watchdog и т.п.). Отличие от основного одно:
+  // пакет "server-only" в node_modules не лежит — его резолвит сам Next. В обычном Node
+  // импорт падает, поэтому алиасим в тот же no-op стаб, что и в vitest.config.ts.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./*"],
+      "server-only": ["./test/server-only-stub.ts"]
+    }
+  }
+}

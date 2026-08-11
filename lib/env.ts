@@ -41,6 +41,13 @@ const schema = z.object({
   TEST_LOGIN_CODE: z.string().optional(),
 
   NEXT_PUBLIC_APP_URL: z.string().optional(),
+
+  // Робот-минусовщик Директа (ADR D49): токен Директа (только чтение отчётов + добавление
+  // минус-слов), список кампаний и режим. dry — считает и отчитывается, но ничего не применяет.
+  YANDEX_DIRECT_TOKEN: z.string().optional(),
+  ADS_CAMPAIGN_IDS: z.string().default("713064872,713064874,713064875"),
+  ADS_WATCHDOG_MODEL: z.string().default("gpt-5.4-mini"),
+  ADS_WATCHDOG_MODE: z.enum(["apply", "dry"]).default("apply"),
 })
 
 export const env = schema.parse(process.env)

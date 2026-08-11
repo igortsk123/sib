@@ -31,7 +31,6 @@ draft → in_progress → completed → перенос в completed_plans/
 | coverage-roadmap | — | in_progress | — | 2026-07-25 |
 | coverage-resolver | — | in_progress | — | 2026-07-25 |
 | coverage-pipeline | — | in_progress | — | 2026-07-25 |
-| ads-b2b-semantics-review | Разбор идеи рекламы sib — семантика Wordstat, стратегия Директа | in_progress | 2026-07-26 | 2026-07-26 |
 | mail-backfill-2026 | — | draft | 2026-07-22 | 2026-07-22 |
 | self-healing-recognition | — | draft | 2026-06-22 | 2026-06-22 |
 | per-template-parse-journal | — | draft | 2026-06-22 | 2026-06-22 |

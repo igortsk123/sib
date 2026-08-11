@@ -1,0 +1,9 @@
+[Unit]
+Description=sib — робот-минусовщик Яндекс.Директа (ADR D49)
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/docker exec sib-frontend npm run ads:watchdog
+TimeoutStartSec=900
