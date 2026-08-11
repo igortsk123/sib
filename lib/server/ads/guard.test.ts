@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 
 import { blocks, buildProtection, filterRoots, isCore, words } from "./guard"
+import { findConflicts } from "./watchdog"
 
 // Предохранитель — единственное, что стоит между LLM и боевым рекламным аккаунтом,
 // поэтому покрыт построчно: цена ложного минуса — навсегда срезанный целевой спрос.
@@ -101,5 +102,12 @@ describe("filterRoots — что робот НЕ имеет права прим�
   it("режет слишком длинные и слишком короткие корни", () => {
     const { rejected } = filterRoots({ ...base, roots: ["счет 76 01 01", "лк"] })
     expect(rejected.map((r) => r.reason)).toEqual(["длиннее 3 слов", "слишком короткий"])
+  })
+})
+
+describe("findConflicts — самопроверка действующего минус-листа", () => {
+  it("замечает, что применённый минус режет защищённую фразу", () => {
+    const conflicts = findConflicts(["!пришло", "пострадавш"], ["сколько писем пришло за месяц"])
+    expect(conflicts).toEqual([{ minus: "пришло", phrase: "сколько писем пришло за месяц" }])
   })
 })

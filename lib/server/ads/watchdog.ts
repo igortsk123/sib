@@ -131,6 +131,22 @@ export type WatchdogReport = {
   spendAtRisk: number
   dryRun: boolean
   errors: string[]
+  /** Уже применённые минусы, которые режут защищённую фразу (наследие ручных чисток). */
+  conflicts: { minus: string; phrase: string }[]
+}
+
+/**
+ * Самопроверка: робот не может удалять минусы, но обязан заметить, что действующий минус-лист
+ * режет собственную целевую фразу, и сказать об этом человеку.
+ */
+export function findConflicts(existing: string[], protection: string[]) {
+  const out: { minus: string; phrase: string }[] = []
+  for (const item of existing) {
+    const minus = item.replace(/^!/, "")
+    const phrase = protection.find((p) => blocks(minus, p))
+    if (phrase) out.push({ minus, phrase })
+  }
+  return out
 }
 
 export async function runWatchdog(): Promise<Result<WatchdogReport>> {
@@ -170,11 +186,12 @@ export async function runWatchdog(): Promise<Result<WatchdogReport>> {
       !protection.some((p) => p === r.query.toLowerCase()),
   )
   const spendAtRisk = fresh.reduce((s, r) => s + r.cost, 0)
-  log.info("ads_watchdog_scan", { scanned, fresh: fresh.length, spendAtRisk })
+  const conflicts = findConflicts(existing, protection)
+  log.info("ads_watchdog_scan", { scanned, fresh: fresh.length, spendAtRisk, conflicts })
 
   const dryRun = env.ADS_WATCHDOG_MODE === "dry"
   if (!fresh.length) {
-    return ok({ scanned, fresh: 0, applied: [], rejected: [], spendAtRisk: 0, dryRun, errors: [] })
+    return ok({ scanned, fresh: 0, applied: [], rejected: [], spendAtRisk: 0, dryRun, errors: [], conflicts })
   }
 
   const errors: string[] = []
@@ -203,11 +220,11 @@ export async function runWatchdog(): Promise<Result<WatchdogReport>> {
     }
   }
   log.info("ads_watchdog_done", { applied, rejected: rejected.length, dryRun, errors })
-  return ok({ scanned, fresh: fresh.length, applied, rejected, spendAtRisk, dryRun, errors })
+  return ok({ scanned, fresh: fresh.length, applied, rejected, spendAtRisk, dryRun, errors, conflicts })
 }
 
 export function formatReport(r: WatchdogReport): string {
-  if (!r.applied.length && !r.errors.length) return ""
+  if (!r.applied.length && !r.errors.length && !r.conflicts.length) return ""
   const head = r.dryRun ? "🧪 Директ (проверка, без применения)" : "🧹 Директ: добавлены минус-слова"
   const lines = [
     `${head}`,
@@ -216,6 +233,12 @@ export function formatReport(r: WatchdogReport): string {
   ]
   if (r.applied.length) lines.push(`Минусы (${r.applied.length}): ${r.applied.join(", ")}`)
   if (r.rejected.length) lines.push(`Отклонено предохранителем: ${r.rejected.length}`)
+  if (r.conflicts.length) {
+    lines.push(
+      `⚠️ Действующие минусы режут целевые фразы (нужно убрать руками): ` +
+        r.conflicts.map((c) => `«${c.minus}» → «${c.phrase}»`).join("; "),
+    )
+  }
   if (r.errors.length) lines.push(`⚠️ Ошибки: ${r.errors.join("; ")}`)
   return lines.join("\n")
 }
