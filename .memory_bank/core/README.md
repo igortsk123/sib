@@ -23,7 +23,7 @@
 | `roles-and-access.md` | roles-and-access | Роли, права доступа (RBAC), ПДн и безопасность | `../domain/product-spec.md` | 2026-07-22 |
 | `ads-campaigns.md` | ads-campaigns | Кампании Директа — статус, структура, лендинг, запуск | `../domain/ads-campaigns-structure.md` | 2026-08-11 |
 | `pricing.md` | pricing | Ценообразование и тарифы — решения владельца | `../domain/pricing-research.md` | 2026-07-26 |
-| `coverage-assistant-vision.md` | coverage-assistant-vision | Бизнес-идея ассистента покрытия — эталон для сверки решений | `../plans/coverage-roadmap.md` | 2026-07-25 |
+| `coverage-assistant-vision.md` | coverage-assistant-vision | Бизнес-идея ассистента покрытия — эталон для сверки решений | `../plans/coverage-roadmap.md` | 2026-08-11 |
 <!-- GENERATED:core-registry END -->
 
 > Глоссарий ДМС — `../glossary.md` (Tier 1). Реестр и decision tree в INDEX регенерирует
