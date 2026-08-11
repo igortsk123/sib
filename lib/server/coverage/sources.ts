@@ -20,13 +20,19 @@ import { db } from "@/lib/db"
 const NORM = (expr: ReturnType<typeof sql>) =>
   sql`btrim(regexp_replace(replace(lower(translate(${expr}, '«»"''\`', '     ')), 'ё', 'е'), '\\s+', ' ', 'g'), ' .,;:')`
 
-/** Строка письма → отдельные программы: режем по кавычкам-группам, «+» и «;». */
+/**
+ * Строка письма → отдельные программы: режем по кавычкам-группам, «+» и «;».
+ * Разделитель ВНУТРИ скобок программой не считается («ДМС Стандарт (поликлиника + стоматология)»
+ * — одна программа), поэтому такие «+»/«;» заранее заменяются пробелом — как в splitPrograms().
+ */
 const PROGRAM_ROWS = (orgFilter: ReturnType<typeof sql>) => sql`
   select gl.insurance_company_id as ck, gl.patient_key,
          ${NORM(sql`part`)} as program
   from guarantee_letter gl,
        jsonb_array_elements_text(gl.services) as svc,
-       unnest(regexp_split_to_array(svc, '\\s*[;+]\\s*|"\\s*"|»\\s*«')) as part
+       unnest(regexp_split_to_array(
+         regexp_replace(svc, '[;+](?=[^()]*\\))', ' ', 'g'),
+         '\\s*[;+]\\s*|"\\s*"|»\\s*«')) as part
   where gl.patient_key is not null
     and gl.is_duplicate = false
     and gl.approval_status in ('enroll', 'detach')  -- гарантийные письма в покрытие не входят

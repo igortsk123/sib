@@ -36,8 +36,31 @@ function quotedGroups(raw: string): QuotedGroup[] {
  */
 export function splitPrograms(raw: string): string[] {
   const groups = quotedGroups(raw)
-  const parts = groups.length > 0 ? groups.map((g) => g.text) : raw.split(/\s*[;+]\s*/)
+  const parts = groups.length > 0 ? groups.map((g) => g.text) : splitOutsideParens(raw)
   return parts.map(normalizeAlias).filter(isMeaningful)
+}
+
+/**
+ * Режет по «;»/«+», НО не внутри скобок: «ДМС Стандарт (поликлиника + стоматология)» — это одна
+ * программа, а не «дмс стандарт (поликлиника» и «стоматология)». На проде такой разрыв давал
+ * две несуществующие программы на 250 пациентов каждая и занижал долю найденных правил.
+ */
+function splitOutsideParens(raw: string): string[] {
+  const parts: string[] = []
+  let depth = 0
+  let cur = ""
+  for (const ch of raw) {
+    if (ch === "(") depth++
+    else if (ch === ")") depth = Math.max(0, depth - 1)
+    if ((ch === ";" || ch === "+") && depth === 0) {
+      parts.push(cur)
+      cur = ""
+      continue
+    }
+    cur += ch
+  }
+  parts.push(cur)
+  return parts.map((p) => p.trim()).filter(Boolean)
 }
 
 function isMeaningful(alias: string): boolean {
