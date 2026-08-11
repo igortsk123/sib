@@ -3,12 +3,13 @@ import { and, desc, eq, ilike, inArray, isNull, or, sql } from "drizzle-orm"
 
 import { db } from "@/lib/db"
 import { resolveCoverage } from "@/lib/server/coverage/resolve"
+import { notDemoOrg } from "@/lib/server/demo-org"
 import { attachment, emailMessage, guaranteeLetter, insuranceCompany, programDocument } from "@/lib/db/schema"
 
 // Демо-организация (стенд продаж, ADR D22): в админском режиме «все клиники» (orgId=null)
 // её записи СКРЫВАЕМ — иначе счётчики/список мешаются с боевыми. Видна при явном выборе.
-const DEMO_ORG_NAME = "Демо-клиника"
-const notDemoOrg = sql`${guaranteeLetter.organizationId} not in (select id from organization where name = ${DEMO_ORG_NAME})`
+// Правило общее для реестра, покрытия и дайджеста — lib/server/demo-org.ts.
+const notDemoOrgFilter = notDemoOrg(sql`${guaranteeLetter.organizationId}`)
 
 export type RegistryFilter = {
   q?: string // поиск: пациент / полис / № ГП
@@ -30,7 +31,7 @@ function whereClause(f: RegistryFilter) {
   // Скоуп по клинике: реальный id → фильтр; "__none__" → ничего; null → все клиники (админ, БЕЗ демо).
   if (f.orgId === "__none__") conds.push(sql`false`)
   else if (f.orgId) conds.push(eq(guaranteeLetter.organizationId, f.orgId))
-  else conds.push(notDemoOrg)
+  else conds.push(notDemoOrgFilter)
   // ПОИСК (текст): пациент / полис / № ГП; «2003» — год рождения; «дд.мм.гггг» — точная ДР.
   if (f.q && f.q.trim()) {
     const t = f.q.trim()
@@ -157,7 +158,7 @@ export async function countLetters(orgId?: string | null) {
       ? sql`false`
       : orgId
         ? eq(guaranteeLetter.organizationId, orgId)
-        : notDemoOrg // админ «все клиники» — без демо-стенда
+        : notDemoOrgFilter // админ «все клиники» — без демо-стенда
   const r = await db().select({ n: sql<number>`count(*)::int` }).from(guaranteeLetter)
     .where(and(scope, eq(guaranteeLetter.isHeld, false)))
   return r[0]?.n ?? 0
@@ -170,7 +171,7 @@ export async function countHeldEmails(orgId?: string | null) {
       ? sql`false`
       : orgId
         ? eq(guaranteeLetter.organizationId, orgId)
-        : notDemoOrg
+        : notDemoOrgFilter
   const r = await db()
     .select({ n: sql<number>`count(distinct ${guaranteeLetter.emailMessageId})::int` })
     .from(guaranteeLetter)
